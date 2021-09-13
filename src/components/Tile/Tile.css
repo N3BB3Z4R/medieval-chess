@@ -1,0 +1,116 @@
+/* ñapa temporal para ocultar casillas no ocupables */
+.tile:nth-child(1) {visibility: hidden;}
+.tile:nth-child(2) {visibility: hidden;}
+.tile:nth-child(3) {visibility: hidden;}
+.tile:nth-child(4) {visibility: hidden;}
+.tile:nth-child(17) {visibility: hidden;}
+.tile:nth-child(18) {visibility: hidden;}
+.tile:nth-child(19) {visibility: hidden;}
+.tile:nth-child(20) {visibility: hidden;}
+.tile:nth-child(33) {visibility: hidden;}
+.tile:nth-child(34) {visibility: hidden;}
+.tile:nth-child(35) {visibility: hidden;}
+.tile:nth-child(36) {visibility: hidden;}
+.tile:nth-child(49) {visibility: hidden;}
+.tile:nth-child(50) {visibility: hidden;}
+.tile:nth-child(51) {visibility: hidden;}
+.tile:nth-child(52) {visibility: hidden;}
+
+.tile:nth-child(13) {visibility: hidden;}
+.tile:nth-child(14) {visibility: hidden;}
+.tile:nth-child(15) {visibility: hidden;}
+.tile:nth-child(16) {visibility: hidden;}
+.tile:nth-child(29) {visibility: hidden;}
+.tile:nth-child(30) {visibility: hidden;}
+.tile:nth-child(31) {visibility: hidden;}
+.tile:nth-child(32) {visibility: hidden;}
+.tile:nth-child(45) {visibility: hidden;}
+.tile:nth-child(46) {visibility: hidden;}
+.tile:nth-child(47) {visibility: hidden;}
+.tile:nth-child(48) {visibility: hidden;}
+.tile:nth-child(61) {visibility: hidden;}
+.tile:nth-child(62) {visibility: hidden;}
+.tile:nth-child(63) {visibility: hidden;}
+.tile:nth-child(64) {visibility: hidden;}
+
+.tile:nth-child(193) {visibility: hidden;}
+.tile:nth-child(194) {visibility: hidden;}
+.tile:nth-child(195) {visibility: hidden;}
+.tile:nth-child(196) {visibility: hidden;}
+.tile:nth-child(209) {visibility: hidden;}
+.tile:nth-child(210) {visibility: hidden;}
+.tile:nth-child(211) {visibility: hidden;}
+.tile:nth-child(212) {visibility: hidden;}
+.tile:nth-child(225) {visibility: hidden;}
+.tile:nth-child(226) {visibility: hidden;}
+.tile:nth-child(227) {visibility: hidden;}
+.tile:nth-child(228) {visibility: hidden;}
+.tile:nth-child(241) {visibility: hidden;}
+.tile:nth-child(242) {visibility: hidden;}
+.tile:nth-child(243) {visibility: hidden;}
+.tile:nth-child(244) {visibility: hidden;}
+
+.tile:nth-child(205) {visibility: hidden;}
+.tile:nth-child(206) {visibility: hidden;}
+.tile:nth-child(207) {visibility: hidden;}
+.tile:nth-child(208) {visibility: hidden;}
+.tile:nth-child(221) {visibility: hidden;}
+.tile:nth-child(222) {visibility: hidden;}
+.tile:nth-child(223) {visibility: hidden;}
+.tile:nth-child(224) {visibility: hidden;}
+.tile:nth-child(237) {visibility: hidden;}
+.tile:nth-child(238) {visibility: hidden;}
+.tile:nth-child(239) {visibility: hidden;}
+.tile:nth-child(240) {visibility: hidden;}
+.tile:nth-child(253) {visibility: hidden;}
+.tile:nth-child(254) {visibility: hidden;}
+.tile:nth-child(255) {visibility: hidden;}
+.tile:nth-child(256) {visibility: hidden;}
+
+.tile {
+  width: 50px;
+  height: 50px;
+  border-radius: 10%;
+  display: grid; /* modo grid */
+  place-content: center; /* centrar la pieza en el tile*/
+  border-bottom: 4px solid hsl(159, 12%, 27%);
+  box-shadow: 0 4px 10px 3px hsl(160, 10%, 11%), inset 0 0 20px 0px hsl(86, 22%, 39%), 0 0 20px 0px hsl(155, 84%, 83%, 0%);;
+  transition: 1s ease-in-out;
+}
+
+.tile:hover {
+  transition: 0.1s ease-in-out;
+  /* size: 120%; */
+  box-shadow: 0 4px 10px 3px hsl(160, 10%, 11%, 0%), inset 0 0 10px 0px rgb(174, 212, 129), 0 0 25px 0px rgb(222, 255, 131);
+}
+
+.black-tile {
+  background-color: rgb(60, 87, 71);
+}
+.black-tile:hover {
+  background-color: rgb(86, 117, 77);
+}
+
+.white-tile {
+  background-color: rgb(226, 255, 198);
+}
+
+.tile .mess-piece {
+  height: 50px; /* tamaño pieza */
+  width: 50px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 42px;
+  padding: 1px;
+  opacity: 100%;
+  /* transition: 0.3s ease-in-out; */
+}
+
+.tile .mess-piece:hover {
+  cursor: grab;
+}
+
+.tile .mess-piece:active {
+  cursor: grabbing;
+  opacity: 40%;  
+}
