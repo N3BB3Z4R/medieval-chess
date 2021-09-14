@@ -1,11 +1,11 @@
 # MESS - Medieval Chess - React TS & Redux Project
 
-## ToDo Fixes
-Pieces can be deatatched from the grid and shouldnt. 
-Pieces cant go to hidden tiles and shouldnt
-Change grid drawing px to % with grid template to allow zoom adaptation to parent cointainer
-Pieces can pass own and opponent pieces and black cant eat whites.
-Change some rules, need some pieces to kill in diagonal, also some special moves for first move in farmers.
+## ToDo Fixes ##
+* Pieces can be deatatched from the grid and shouldnt. 
+* Pieces cant go to hidden tiles and shouldnt
+* Change grid drawing px to % with grid template to allow zoom adaptation to parent cointainer
+* Pieces can pass own and opponent pieces and black cant eat whites.
+* Change some rules, need some pieces to kill in diagonal, also some special moves for first move in farmers.
 
 ## Available Scripts
 
@@ -43,9 +43,3 @@ If you aren’t satisfied with the build tool and configuration choices, you can
 Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
