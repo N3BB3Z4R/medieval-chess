@@ -1,98 +1,24 @@
 import React, { useRef, useState } from 'react';
-import Tile from '../Tile/Tile';
 import './Messboard.css';
+import Tile from '../Tile/Tile';
 import Referee from "../../referee/Referee";
+import {
+  VERTICAL_AXIS,
+  HORIZONTAL_AXIS,
+  GRID_SIZE,
+  Piece,
+  PieceType,
+  TeamType,
+  initialBoardState,
+  Position,
+  samePosition,
+} from '../../Constants';
 
-// Tablero 16x16 para 4 jugadores
-const verticalAxis = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"];
-const horizontalAxis = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"];
-
-// Definimos las props de elementos Piece
-export interface Piece {
-  image: string;
-  x: number;
-  y: number;
-  type: PieceType;
-  team: TeamType;
-}
-
-// definimos los equipos
-export enum TeamType {
-  OPPONENT,
-  OUR,
-  // OPPONENT 2
-  // OPPONENT 3
-}
-
-// definimos el tipo de piezas que hay en el juego
-export enum PieceType {
-  FARMER,
-  RAM,
-  TRAP,
-  KNIGHT,
-  TEMPLAR,
-  SCOUT,
-  TREBUCHET,
-  TREASURE,
-  KING,
-  OPPONENT
-}
-
-const initialBoardState: Piece[] = [];
-
-// Define Piezas y Color de piezas segun player · 2 players
-  // Primera fila
-  for (let p1 = 0; p1 < 2; p1++) {
-    const teamType1 = (p1 === 0) ? TeamType.OPPONENT : TeamType.OUR;
-    const type = (teamType1 === TeamType.OPPONENT) ? "b" : "w"; // b = black = topOponent / w = white = bottomYou
-    const y = (teamType1 === TeamType.OPPONENT) ? 13 : 2;
-    // Campesinos x8
-    for (let i = 0; i < 8; i++) {
-      initialBoardState.push({ image: `assets/images/farmer_${type}.svg`, x: i+4, y: y, type: PieceType.FARMER, team: teamType1 });
-    }
-  }
-  // Segunda fila
-  for (let p2 = 0; p2 < 2; p2++) {
-    const teamType2 = (p2 === 0) ? TeamType.OPPONENT : TeamType.OUR;
-    const type = (teamType2 === TeamType.OPPONENT) ? "b" : "w"; // b = black = topOponent / w = white = bottomYou
-    const y = (teamType2 === TeamType.OPPONENT) ? 14 : 1;
-    // Dragon / Ariete x2
-    initialBoardState.push({ image: `assets/images/ram_${type}.svg`, x: 4, y: y, type: PieceType.RAM, team: teamType2 });
-    initialBoardState.push({ image: `assets/images/ram_${type}.svg`, x: 11, y: y, type: PieceType.RAM, team: teamType2 });
-    // Trampa x2
-    initialBoardState.push({ image: `assets/images/trap_${type}.svg`, x: 5, y: y, type: PieceType.TRAP, team: teamType2 });
-    initialBoardState.push({ image: `assets/images/trap_${type}.svg`, x: 10, y: y, type: PieceType.TRAP, team: teamType2 });
-    // Caballero x2
-    initialBoardState.push({ image: `assets/images/knight_${type}.svg`, x: 6, y: y, type: PieceType.KNIGHT, team: teamType2 });
-    initialBoardState.push({ image: `assets/images/knight_${type}.svg`, x: 9, y: y, type: PieceType.KNIGHT, team: teamType2 });
-    // Templario x2
-    initialBoardState.push({ image: `assets/images/templar_${type}.svg`, x: 7, y: y, type: PieceType.TEMPLAR, team: teamType2 });
-    initialBoardState.push({ image: `assets/images/templar_${type}.svg`, x: 8, y: y, type: PieceType.TEMPLAR, team: teamType2 });
-  }
-  // Tercera fila
-  for (let p3 = 0; p3 < 2; p3++) {
-    const teamType3 = (p3 === 0) ? TeamType.OPPONENT : TeamType.OUR;
-    const type = (teamType3 === TeamType.OPPONENT) ? "b" : "w"; // b = black = topOponent / w = white = bottomYou
-    const y = (teamType3 === TeamType.OPPONENT) ? 15 : 0;
-    // Exploradores x4
-    initialBoardState.push({ image: `assets/images/hunter_${type}.svg`, x: 5, y: y, type: PieceType.SCOUT, team: teamType3 });
-    initialBoardState.push({ image: `assets/images/hunter_${type}.svg`, x: 6, y: y, type: PieceType.SCOUT, team: teamType3 });
-    initialBoardState.push({ image: `assets/images/hunter_${type}.svg`, x: 9, y: y, type: PieceType.SCOUT, team: teamType3 });
-    initialBoardState.push({ image: `assets/images/hunter_${type}.svg`, x: 10, y: y, type: PieceType.SCOUT, team: teamType3 });
-    // Catapulta x2
-    initialBoardState.push({ image: `assets/images/catapult_${type}.svg`, x: 4, y: y, type: PieceType.TREBUCHET, team: teamType3 });
-    initialBoardState.push({ image: `assets/images/catapult_${type}.svg`, x: 11, y: y, type: PieceType.TREBUCHET, team: teamType3 });
-    // Tesoro x1
-    initialBoardState.push({ image: `assets/images/treasure_${type}.svg`, x: 8, y: y, type: PieceType.TREASURE, team: teamType3 });
-    // Rey x1
-    initialBoardState.push({ image: `assets/images/king_${type}.svg`, x: 7, y: y, type: PieceType.KING, team: teamType3 });
-  }
 
 // Lanza el tablero
 export default function Messboard() {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
-  const [gridX, setGridX] = useState(0);
-  const [gridY, setGridY] = useState(0);
+  const [grabPosition, setGrabPosition] = useState<Position>({x: -1, y: -1});
   const [pieces, setPieces] = useState<Piece[]>(initialBoardState);
   const messboardRef = useRef<HTMLDivElement>(null);
   const referee = new Referee();
@@ -102,10 +28,12 @@ export default function Messboard() {
     const element = e.target as HTMLElement;
     const messboard = messboardRef.current;
     if (element.classList.contains("mess-piece") && messboard) {
-      setGridX(Math.floor((e.clientX - messboard.offsetLeft) / 50));
-      setGridY(Math.abs(Math.ceil((e.clientY - messboard.offsetTop - 800) / 50))); //Math.abs nos convierte los negativos invertidos a posicion inversa de enteros
-      const x = e.clientX - 25;
-      const y = e.clientY - 25;
+      const grabX = Math.floor((e.clientX - messboard.offsetLeft) / GRID_SIZE);
+      const grabY = Math.abs(Math.ceil((e.clientY - messboard.offsetTop - 800) / GRID_SIZE));
+      setGrabPosition({ x: grabX, y: grabY });
+
+      const x = e.clientX - GRID_SIZE / 2;
+      const y = e.clientY - GRID_SIZE / 2;
       element.style.position = "absolute";
       element.style.left = `${x}px`;
       element.style.top = `${y}px`;
@@ -157,96 +85,102 @@ export default function Messboard() {
     // Estos math floor convierten cantidades de pixels (50 por casilla) a posiciones
     if (activePiece && messboard) {
       // Math.floor convierte pixeles a posicion en enteros
-      const x = Math.floor((e.clientX - messboard.offsetLeft) / 50);
+      const x = Math.floor((e.clientX - messboard.offsetLeft) / GRID_SIZE);
       // Math.abs nos convierte los negativos invertidos a posicion inversa de enteros para vertical
       const y = Math.abs(
-        Math.ceil((e.clientY - messboard.offsetTop - 800) / 50)
+        Math.ceil((e.clientY - messboard.offsetTop - 800) / GRID_SIZE)
       );
 
-      const currentPiece = pieces.find(p => p.x === gridX && p.y === gridY);
-      // const attackedPiece = pieces.find(p => p.x === x && p.y === y);
+      const currentPiece = pieces.find((p) => 
+        samePosition(p.position, grabPosition)
+          // p.position.x === grabPosition.x && p.position.y === grabPosition.y
+      );
 
       // Borrar la pieza que estaba ahi
       if(currentPiece) {
         const validMove = referee.isValidMove(
-          gridX,
-          gridY,
-          x,
-          y,
+          grabPosition,
+          { x, y },
           currentPiece.type,
           currentPiece.team,
           pieces
         );
 
-        if(validMove) {
-        // ACTUALIZA LA POSICION DE LA PIEZA
-        // Si la pieza es atacada, eliminarla del tablero
-        const updatedPieces = pieces.reduce((results, piece) => {
-          // if(piece.x === currentPiece.x && piece.y === currentPiece.y) {
-          if(piece.x === gridX && piece.y === gridY) {
-            piece.x = x;
-            piece.y = y;
-            results.push(piece);
-          } else if (!(piece.x === x && piece.y === y)) {
-            results.push(piece);
-          }
-          return results;
-        }, [] as Piece[]);
+        // EnPassant function
+        const isEnPassantMove = referee.isEnPassantMove(
+          grabPosition,
+          { x, y },
+          currentPiece.type,
+          currentPiece.team,
+          pieces
+        );
+        
+        const pawnDirection = currentPiece.team === TeamType.OUR ? 1 : -1;
 
-        setPieces(updatedPieces);
-         
-      } else {
-        // RESETEA LA POSICION DE LA PIEZA
-        activePiece.style.position = 'relative';
-        activePiece.style.removeProperty('top');
-        activePiece.style.removeProperty('left');
-      }
+        if (isEnPassantMove) {
+          const updatedPieces = pieces.reduce((results, piece) => {
+            if (samePosition(piece.position, grabPosition)) {
+              piece.enPassant = false;
+              piece.position.x = x;
+              piece.position.y = y;
+              results.push(piece);
+            } else if (
+              !samePosition(piece.position, { x, y: y - pawnDirection })
+            ) {
+              if (piece.type === PieceType.FARMER || piece.type === PieceType.KING) {
+                piece.enPassant = false;
+              }
+              results.push(piece);
+            }
+
+            return results;
+          }, [] as Piece[]);
+
+          setPieces(updatedPieces);
+          } else if (validMove) {
+          // ACTUALIZA LA POSICION DE LA PIEZA
+          // Si la pieza es atacada, eliminarla del tablero
+          const updatedPieces = pieces.reduce((results, piece) => {
+            if(samePosition(piece.position, grabPosition)) {
+              // SPECIAL MOVE
+              piece.enPassant =
+                Math.abs(grabPosition.y - y) === 2 &&
+                (piece.type === PieceType.FARMER || piece.type === PieceType.KING);
+
+              piece.position.x = x;
+              piece.position.y = y;
+              results.push(piece);
+            } else if (!(samePosition(piece.position, { x, y }))) {
+              if (piece.type === PieceType.FARMER || piece.type === PieceType.KING) {
+                piece.enPassant = false;
+              }
+              results.push(piece);
+            }
+
+            return results;
+          }, [] as Piece[]);
+        
+          setPieces(updatedPieces);
+        } else {
+          // RESETEA LA POSICION DE LA PIEZA
+          activePiece.style.position = 'relative';
+          activePiece.style.removeProperty('top');
+          activePiece.style.removeProperty('left');
+        }
       }     
-
-      // Actualiza la posicion de la pieza (viejo)
-      // setPieces((value) => {
-      //   const pieces = value.map((p) => {
-      //     if (p.x === gridX && p.y === gridY) {
-      //       // Esta pieza puede hacer este movimiento?
-      //       const validMove = referee.isValidMove(
-      //         gridX,
-      //         gridY,
-      //         x,
-      //         y,
-      //         p.type,
-      //         p.team,
-      //         value
-      //       );
-
-      //       if (validMove) {
-      //       p.x = x;
-      //       p.y = y;
-      //       } else {
-      //         activePiece.style.position = 'relative';
-      //         activePiece.style.removeProperty('top');
-      //         activePiece.style.removeProperty('left');
-      //       }
-      //     }
-      //     return p;
-      //   });
-      //   return pieces;
-      // });
       setActivePiece(null);
     }
   }
 
   let board =[];
 
-  for (let j = verticalAxis.length-1; j >= 0; j--) {
-    for (let i = 0; i < horizontalAxis.length; i++) {
+  for (let j = VERTICAL_AXIS.length-1; j >= 0; j--) {
+    for (let i = 0; i < HORIZONTAL_AXIS.length; i++) {
       const number = j + i + 2;
-      let image = undefined;
-
-      pieces.forEach((p) => {
-        if (p.x === i && p.y === j) {
-          image = p.image;
-        }
-      });
+      const piece = pieces.find((p) =>
+        samePosition(p.position, { x: i, y: j })
+      );
+      let image = piece ? piece.image : undefined;
 
       board.push(<Tile key={`${j},${i}`} image={image} number={number} />);
     }
@@ -262,5 +196,6 @@ export default function Messboard() {
       ref={messboardRef}
     >
       {board}
-    </div>);
+    </div>
+  );
 }

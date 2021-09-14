@@ -1,5 +1,5 @@
 CAMPESINO - FARMER:
-- Mueve 1 casilla. Ataca en diagonal?
+- Mueve 1 casilla. Ataca en diagonal o hace EnPassant?
 ARIETE - RAM:
 - Mueve 1 o 2 casillas, si en su camino hay uno o dos enemigos los eliminara.
 TRAMPA - TRAP:
@@ -15,4 +15,4 @@ CATAPULTA - TREBUCHET:
 TESORO - TREASURE:
 - Mueve 1 casilla.
 REY - KING:
-- Mueve 2 o 3 casillas. Si le matan todas nuestras piezas pueden mover una casilla menos excepto el tesoro.
+- Mueve 2 o 3 casillas. Hace EnPassant. Si le matan todas nuestras piezas pueden mover una casilla menos excepto el tesoro.

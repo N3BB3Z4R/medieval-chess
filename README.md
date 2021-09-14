@@ -1,6 +1,11 @@
-# Getting Started with Create React App
+# MESS - Medieval Chess - React TS & Redux Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## ToDo Fixes
+Pieces can be deatatched from the grid and shouldnt. 
+Pieces cant go to hidden tiles and shouldnt
+Change grid drawing px to % with grid template to allow zoom adaptation to parent cointainer
+Pieces can pass own and opponent pieces and black cant eat whites.
+Change some rules, need some pieces to kill in diagonal, also some special moves for first move in farmers.
 
 ## Available Scripts
 
@@ -44,11 +49,3 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
-
-
-## ToDo Fixes
-Pieces can be deatatched from the grid and shouldnt. 
-Pieces can jump other pieces and shouldnt
-Pieces cant go to hidden tiles and shouldnt
-Change grid drawing px to % with grid template to allow zoom adaptation to parent cointainer
-Refactorizar funcion pieceDirection en Referee.ts para manejar todo
