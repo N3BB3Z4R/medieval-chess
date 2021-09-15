@@ -10,7 +10,7 @@ export default class Referee {
       (p) => p.position.x === x && p.position.y === y
     );
 
-    // modo original simple usando tileIsOccupiedByOpponent que no chuta
+    // modo original simple usando tileIsOccupiedByOpponent
     if(piece) {
       return true;
     } else {
@@ -29,10 +29,16 @@ export default class Referee {
       (p) => p.position.x === x && p.position.y === y && p.team !== team
     );
 
-    if(piece) {
-    return true;
+    // SI ATACAMOS A UNA TRAMPA MORIMOS TAMBIEN
+    if (piece?.type === PieceType.TRAP) {
+      console.log("el atacante esta muerto"); // cambiar por codigo para eliminar al atacante.
+      return true;
     } else {
-      return false;
+      if(piece) {
+      return true;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -261,32 +267,78 @@ export default class Referee {
       }
     }
 
-    // reglas de movimiento para Caballero
+    // Refactor Reglas Caballeros
     if (type === PieceType.KNIGHT) {
-      if (team === TeamType.OUR || team === TeamType.OPPONENT) {
-        //  Mueve 3 casillas recto o 2 en diagonal, las fichas no bloquean su movimiento.
-        if (
-          ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === 3) ||
-          ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === 3) ||
-          ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === -3) ||
-          ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === -3) ||
-          ((desiredPosition.x - initialPosition.x === 2) && desiredPosition.y - initialPosition.y === 2) ||
-          ((desiredPosition.y - initialPosition.y === 2) && desiredPosition.x - initialPosition.x === 2) ||
-          ((desiredPosition.x - initialPosition.x === -2) && desiredPosition.y - initialPosition.y === -2) ||
-          ((desiredPosition.y - initialPosition.y === -2) && desiredPosition.x - initialPosition.x === -2) ||
-          ((desiredPosition.x - initialPosition.x === -2) && desiredPosition.y - initialPosition.y === 2) ||
-          ((desiredPosition.y - initialPosition.y === -2) && desiredPosition.x - initialPosition.x === 2) ||
-          ((desiredPosition.x - initialPosition.x === 2) && desiredPosition.y - initialPosition.y === -2) ||
-          ((desiredPosition.y - initialPosition.y === 2) && desiredPosition.x - initialPosition.x === -2)
-          ) {
-          // Si la casilla esta ocupada no permite mover
-          if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) {
-            console.log("Valid Move!")
-            return true;
+      for (let i = -1; i < 2; i += 2) {
+        for (let j = -1; j < 2; j += 2) {
+          // MOVIMIENTO EN ELE
+          if (desiredPosition.y - initialPosition.y === 2 * i) {          
+            if(desiredPosition.x - initialPosition.x === 2 * j) {
+              console.log("bottom top movement");  
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
+            }
+          }
+          // STRAIGHT HORIZONTAL
+          if (desiredPosition.y - initialPosition.y === 0) {
+            if (desiredPosition.x - initialPosition.x === 3 * j) {
+              console.log("horizontal movement");  
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
+            }
+          }
+          // STRAIGHT VERTICAL
+          if (desiredPosition.x - initialPosition.x === 0) {
+            if (desiredPosition.y - initialPosition.y === 3 * j) {
+              console.log("vertical movement", j);  
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
+            }
           }
         }
-      } else {}
+      }
     }
+
+    // reglas de movimiento para Caballero clasica
+    // if (type === PieceType.KNIGHT) {
+    //   if (team === TeamType.OUR || team === TeamType.OPPONENT) {
+    //     //  Mueve 3 casillas recto o 2 en diagonal, las fichas no bloquean su movimiento.
+    //     if (
+    //       ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === 3) ||
+    //       ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === 3) ||
+    //       ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === -3) ||
+    //       ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === -3) ||
+    //       ((desiredPosition.x - initialPosition.x === 2) && desiredPosition.y - initialPosition.y === 2) ||
+    //       ((desiredPosition.y - initialPosition.y === 2) && desiredPosition.x - initialPosition.x === 2) ||
+    //       ((desiredPosition.x - initialPosition.x === -2) && desiredPosition.y - initialPosition.y === -2) ||
+    //       ((desiredPosition.y - initialPosition.y === -2) && desiredPosition.x - initialPosition.x === -2) ||
+    //       ((desiredPosition.x - initialPosition.x === -2) && desiredPosition.y - initialPosition.y === 2) ||
+    //       ((desiredPosition.y - initialPosition.y === -2) && desiredPosition.x - initialPosition.x === 2) ||
+    //       ((desiredPosition.x - initialPosition.x === 2) && desiredPosition.y - initialPosition.y === -2) ||
+    //       ((desiredPosition.y - initialPosition.y === 2) && desiredPosition.x - initialPosition.x === -2)
+    //       ) {
+    //       // Si la casilla esta ocupada no permite mover
+    //       if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+    //         return true;
+    //       } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+    //           console.log("Valid Move!")
+    //           return true;
+    //       }
+    //     }
+    //   } else {}
+    // }
 
     // reglas de movimiento para Trampa
     if (type === PieceType.TRAP) {
