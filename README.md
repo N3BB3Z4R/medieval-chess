@@ -1,6 +1,9 @@
-# MESS - Medieval Chess - React TS & Redux Project
+# MESS - Medieval Chess
 
-## ToDo Fixes ##
+### React Project (typescript, redux, ESLint, Babel)
+
+## ToDo Fixes
+
 * Pieces can be deatatched from the grid and shouldnt. 
 * Pieces cant go to hidden tiles and shouldnt
 * Change grid drawing px to % with grid template to allow zoom adaptation to parent cointainer

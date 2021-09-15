@@ -16,23 +16,6 @@ export default class Referee {
     } else {
       return false;
     }
-
-    // ATTACK LOGIC chapuzaca saltandonos tileIsOccupiedByOpponent function
-    // Ahora permite o que ambos equipos coman pero no hay restriccion de saltar piezas, o permite comer solo a blancas y funcionan las reglas (mal)
-    // if (piece) {      
-    //   if (piece.team === TeamType.OPPONENT) {
-    //     console.log("Hay un enemigo", piece.team); // hay enemigo, permitimos mover nuestra ficha.
-    //     return false; // deja ponerse ahi
-    //   } else if (piece.team === TeamType.OUR) {
-    //     console.log("Hay una pieza nuestra", piece.team); // hay enemigo, permitimos mover nuestra ficha.
-    //     return true; // no deja ponerse ahi
-    //   } else {
-    //   return true; // no deja ponerse ahi
-    //   }
-    // } else { // si no hay pieza
-    //   return false; // deja ponerse ahi
-    // }
-
 }
 
   // Funcion de chequeo de tiles para atacar, para la catapulta
@@ -148,46 +131,6 @@ export default class Referee {
         }
       } 
     }
-      //   // OLD ATTACK DIAGONAL LOGIC PAWN INTO FARMER
-      // else if (
-      //   desiredPosition.x - initialPosition.x === -1 &&
-      //   desiredPosition.y - initialPosition.y === farmerDirection
-      // ) {
-      //   //ATTACK DIAGONAL IN THE UPPER OR BOTTOM LEFT CORNER
-      //   console.log("upper / bottom left");
-      //   if (
-      //     this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)
-      //   ) {
-      //     return true;
-      //   }
-      // } else if (
-      //   desiredPosition.x - initialPosition.x === 1 &&
-      //   desiredPosition.y - initialPosition.y === farmerDirection
-      // ) {
-      //   //ATTACK DIAGONAL IN THE UPPER OR BOTTOM RIGHT CORNER
-      //   console.log("upper / bottom right");
-      //   if (
-      //     this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)
-      //   ) {
-      //     return true;
-      //   }
-
-
-      // (Old movement)  
-      // } else if (
-      //   //ATTACK IN ALL THE 4 STRAIGHT TILES
-      //   ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === 1) ||
-      //   ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === -1) ||
-      //   ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === 1) ||        
-      //   ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === -1)
-      // ) {
-      //   // Si la casilla esta libre, permite mover
-      //   if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) {
-      //     console.log("Valid Move!")
-      //     return true;
-      //   }
-    //   }
-    // }
 
 
     // reglas de movimiento para Templario
@@ -240,29 +183,82 @@ export default class Referee {
 
 
 
-    // reglas de movimiento para Ariete
+    // reglas de movimiento para Ariete / RAM
     if (type === PieceType.RAM) {
       if (team === TeamType.OUR || team === TeamType.OPPONENT) {
         // Mueve 1 o 2 casillas, si en su camino hay uno o dos enemigos los eliminara.
         if ( desiredPosition.x === initialPosition.x || desiredPosition.y === initialPosition.y) {
           if (
-            ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === 1) ||
-            ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === 1) ||
-            ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === -1) ||
-            ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === -1) ||
-            ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === 2) ||
-            ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === 2) ||
-            ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === -2) ||
-            ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === -2)
+              // ATTACK FRONTAL LOGIC RAM 1
+              (desiredPosition.x - initialPosition.x === -1 &&
+              desiredPosition.y - initialPosition.y === 0) ||
+              (desiredPosition.x - initialPosition.x === 1 &&
+                desiredPosition.y - initialPosition.y === 0) ||
+              (desiredPosition.x - initialPosition.x === 0 &&
+              desiredPosition.y - initialPosition.y === -1) ||
+              (desiredPosition.x - initialPosition.x === 0 &&
+              desiredPosition.y - initialPosition.y === 1)
             ) {
-            // Si la casilla esta ocupada no permite mover
-            if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) {
-              console.log("Valid Move!")
-              return true;
+              //ATTACK 1
+              if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                console.log("Valid Move!")
+                return true;
+              } else if (this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) {
+                console.log("Valid Move!")
+                if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) { // Checkea la casilla destino
+                  return true;
+                }
+              }
+            } else if ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === 2) { // mueve a la arriba, casilla 1 izquierda
+              //ATTACK 2 A
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
+            } else if ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === 2) { // mueve a derecha
+              //ATTACK 2 B
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
+            } else if ((desiredPosition.x === initialPosition.x) && desiredPosition.y - initialPosition.y === -2) { // mueve a abajo
+              //ATTACK 2 C
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
+            } else if ((desiredPosition.y === initialPosition.y) && desiredPosition.x - initialPosition.x === -2) { // mueve izquierda
+              //ATTACK 2 D
+              if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+                return true;
+              } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+                  console.log("Valid Move!")
+                  return true;
+              }
             }
-          }
+              
+              
+              
+          //   ) {
+          //   // Si la casilla esta ocupada no permite mover
+          //     //ATTACK 2
+          //     if (this.tileIsOccupiedByOpponent(desiredPosition.x, desiredPosition.y, boardState, team)) {
+          //       return true;
+          //     } else if (!this.tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) { // Checkea la casilla destino
+          //         console.log("Valid Move!")
+          //         return true;
+          //     }
+          // }
+        } else {
+          return false;
         }
-      } else {}
+      }
     }
 
     // reglas de movimiento para Caballero
