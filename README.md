@@ -1,5 +1,7 @@
 # MESS - Medieval Chess
 
+![MESS Medieval Chess Game screenshot](screenshot.png)
+
 ### React Project (typescript, redux, ESLint, Babel)
 
 ## ToDo Fixes

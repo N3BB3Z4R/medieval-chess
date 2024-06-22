@@ -1,0 +1,15 @@
+.board-clock {
+  background-color: rgb(50, 67, 61);
+  color: rgb(228, 255, 177);
+  border-left: 2px rgb(228, 255, 177) solid;
+  padding: 1.3rem 0.7rem 0.5rem 0.7rem;
+  margin-top: -1rem;
+  border-radius: 0 0 1rem 1rem;
+  font-weight: 300;
+  font-size: 1.5rem;
+  overflow: hidden;
+  width: 4rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}

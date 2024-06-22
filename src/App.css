@@ -1,6 +1,7 @@
 header {
   margin: 0 auto;
 }
+
 header h1 {
   font-size: 2rem;
   color: rgb(238, 243, 212);
@@ -18,7 +19,7 @@ header h1 {
 }
 
 #app a {
-  text-decoration:underline;
+  text-decoration: underline;
   color: inherit;
 }
 
@@ -30,83 +31,7 @@ footer {
   padding-bottom: 50px; */
 }
 
-/* tabla madera redonda bajo tablero */
-.boardDecoration {
-  border-radius: 20%;
-  padding: 6px;
-  border: rgb(141, 151, 130) solid 4px;
-  border-right: rgb(29, 36, 34) solid 4px ;
-  border-bottom: rgb(29, 36, 34) solid 9px ;
-  box-shadow: inset 0px 3px 6px 8px rgb(6, 0, 8), 0px 0 45px 10px rgb(6, 0, 8);
-  background: radial-gradient(ellipse at top, #b6c295, transparent),
-            radial-gradient(ellipse at bottom, #5a592a, transparent);
-}
-
-.boardDecoration div img {
-  width: 50px;
-  height: 50px;
-  image-rendering: crisp-edges;
-  object-fit: cover;
-  border-radius: 10px;
-  float: left;
-  margin-right: 10px;
-}
-
-.boardDecoration h4 {
-  font-size: 0.5em;
-  text-align: left;
-}
-
-.boardDecoration div div {
-  text-align: center;
-  font-weight: 500;
-}
-
-.profileOpponent, .profileOur {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 0.8rem;
-  background-color: #817761;
-  cursor: pointer;
-  /* display: grid; */
-  position: relative;
-  /* grid-column: 3; */
-  padding: 10px;
-  height: 80px;
-  width:120px;
-  border-radius: 20px;
-  color: rgb(228, 255, 177);
-  border-top:rgb(29, 36, 34) solid 2px;
-  border-bottom:rgb(128, 141, 111) solid 3px;
-  box-shadow: inset 0px 1px 60px 10px rgb(8, 8, 8), 0px 0 25px 10px rgb(43, 44, 41);
-  transition: 1.5s ease-in-out;
-  background-image: url("/src/components/Messboard/wood.jpg");
-  background-position: 0 40%;
-  background-size:200%;
-  transform: rotateX(-15deg);
-}
-
-.profileOpponent:hover, .profileOur:hover {
-  background-position: 0 32%;
-  border-bottom:rgb(29, 36, 34) solid 3px;
-  border-top:rgb(128, 141, 111) solid 2px;
-  transition: 0.3s ease-in-out;
-  transform: rotateX(20deg);
-}
-
-.profileOpponent {
-  margin-top:-110px;
-  left: 45px;
-  top:154px;
-}
-
- .profileOur {
-  float:right;
-  margin-bottom: -120px;
-  right: 45px;
-  bottom: 150px;
-}
-
-  /* background-image: url("/src/components/Messboard/wood.jpg");
+/* background-image: url("/src/components/Messboard/wood.jpg");
   background-position:11.5% 48%;
   background-repeat: repeat;
   background-size:41%; */
