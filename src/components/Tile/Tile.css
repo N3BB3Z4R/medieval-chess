@@ -137,13 +137,23 @@
 }
 
 /* TEMPLAR COUNTER-ATTACK INDICATOR */
-/* Rule: "si es atacado puede atacar primero y mueren ambas fichas" */
-.mess-piece[data-piece-type="TEMPLAR"] {
+/* TODO: Implement counter-attack detection system (see AdvancedRefactorPlan.prompt.md §1.5)
+ * Rule: "si es atacado puede atacar primero y mueren ambas fichas"
+ * Currently NOT implemented - removed visual indicator to avoid confusion
+ * 
+ * To implement:
+ * 1. Detect when opponent targets a TEMPLAR
+ * 2. Add .templar--under-attack class conditionally
+ * 3. Uncomment CSS below and change selector to .templar--under-attack
+ */
+
+/* 
+.mess-piece[data-piece-type="TEMPLAR"].templar--under-attack {
   position: relative;
   animation: templar-pulse 2s ease-in-out infinite;
 }
 
-.mess-piece[data-piece-type="TEMPLAR"]::after {
+.mess-piece[data-piece-type="TEMPLAR"].templar--under-attack::after {
   content: '';
   position: absolute;
   top: -2px;
@@ -175,3 +185,4 @@
     transform: scale(1.1);
   }
 }
+*/
