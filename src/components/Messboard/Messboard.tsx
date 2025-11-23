@@ -16,6 +16,10 @@ import {
 import { Position as PositionClass } from '../../domain/core/Position';
 import { screenToBoard, CoordinateOffsets } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
+import { useGame, useResetGame } from '../../context/GameContext';
+import { GameStatus, PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../domain/core/types';
+import { Move } from '../../domain/core/Move';
+import GameOverModal from '../GameOverModal/GameOverModal';
 
 export default function Messboard() {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
@@ -25,6 +29,31 @@ export default function Messboard() {
   const [captureMoves, setCaptureMoves] = useState<Position[]>([]);
   const messboardRef = useRef<HTMLDivElement>(null);
   const referee = useMemo(() => new Referee(), []);
+  const { gameState, dispatch } = useGame();
+  const resetGame = useResetGame();
+  const currentTurn = gameState.getCurrentTurn();
+  const gameStatus = gameState.getStatus();
+  
+  // Map legacy TeamType to domain TeamType
+  const mapTeamType = (legacyTeam: TeamType): DomainTeamType => {
+    return legacyTeam === TeamType.OUR ? DomainTeamType.OUR : DomainTeamType.OPPONENT;
+  };
+  
+  // Map legacy PieceType to domain PieceType
+  const mapPieceType = (legacyType: PieceType): DomainPieceType => {
+    const mapping: Record<number, string> = {
+      [PieceType.FARMER]: 'FARMER',
+      [PieceType.RAM]: 'RAM',
+      [PieceType.TRAP]: 'TRAP',
+      [PieceType.KNIGHT]: 'KNIGHT',
+      [PieceType.TEMPLAR]: 'TEMPLAR',
+      [PieceType.SCOUT]: 'SCOUT',
+      [PieceType.TREBUCHET]: 'TREBUCHET',
+      [PieceType.TREASURE]: 'TREASURE',
+      [PieceType.KING]: 'KING',
+    };
+    return mapping[legacyType] as DomainPieceType;
+  };
 
   function handleGrabPiece(e: React.MouseEvent) {
     const element = e.target as HTMLElement;
@@ -41,6 +70,12 @@ export default function Messboard() {
       const currentPiece = pieces.find((p) => samePosition(p.position, coords));
       
       if (currentPiece) {
+        // Validate turn: only allow grabbing pieces of current team
+        if (currentPiece.team !== currentTurn) {
+          console.warn(`Not your turn! Current turn: ${currentTurn}, Piece team: ${currentPiece.team}`);
+          return; // Cannot grab opponent's piece
+        }
+        
         // Calculate valid moves for visual indicators
         const { validMoves: validMovesArray, captureMoves: captureMovesArray } = calculateValidMoves(
           currentPiece,
@@ -122,6 +157,17 @@ export default function Messboard() {
       );
 
       if (currentPiece) {
+        // CRITICAL: Validate turn before processing move
+        const currentPieceTeam = mapTeamType(currentPiece.team);
+        if (currentPieceTeam !== currentTurn) {
+          console.warn('Turn validation failed - resetting piece');
+          activePiece.style.position = "relative";
+          activePiece.style.removeProperty("left");
+          activePiece.style.removeProperty("top");
+          setActivePiece(null);
+          return;
+        }
+        
         const validMove = referee.isValidMove(
           grabPosition,
           { x, y },
@@ -156,6 +202,16 @@ export default function Messboard() {
             return results;
           }, [] as Piece[]);
           setPieces(updatedPieces);
+          
+          // Dispatch move to GameContext for turn management
+          const move = new Move({
+            from: new PositionClass(grabPosition.x, grabPosition.y),
+            to: new PositionClass(x, y),
+            pieceType: mapPieceType(currentPiece.type),
+            team: currentPieceTeam,
+          });
+          dispatch({ type: 'MAKE_MOVE', payload: { move } });
+          
         } else if (validMove) {
           const updatedPieces = pieces.reduce((results, piece) => {
             if (samePosition(piece.position, grabPosition)) {
@@ -173,6 +229,15 @@ export default function Messboard() {
             return results;
           }, [] as Piece[]);
           setPieces(updatedPieces);
+          
+          // Dispatch move to GameContext for turn management
+          const move = new Move({
+            from: new PositionClass(grabPosition.x, grabPosition.y),
+            to: new PositionClass(x, y),
+            pieceType: mapPieceType(currentPiece.type),
+            team: currentPieceTeam,
+          });
+          dispatch({ type: 'MAKE_MOVE', payload: { move } });
         } else {
           activePiece.style.position = 'relative';
           activePiece.style.removeProperty('top');
@@ -222,17 +287,20 @@ export default function Messboard() {
   }
 
   return (
-    <div className="board-decoration">
-      <div
-        onMouseMove={handleMovePiece}
-        onMouseDown={handleGrabPiece}
-        onMouseUp={handleDropPiece}
-        id="messboard"
-        ref={messboardRef}
-      >
-        {generateBoard()}
+    <>
+      <GameOverModal gameStatus={gameStatus} onRestart={resetGame} />
+      <div className="board-decoration">
+        <div
+          onMouseMove={handleMovePiece}
+          onMouseDown={handleGrabPiece}
+          onMouseUp={handleDropPiece}
+          id="messboard"
+          ref={messboardRef}
+        >
+          {generateBoard()}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

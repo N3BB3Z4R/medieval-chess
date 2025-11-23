@@ -1,0 +1,146 @@
+/* Turn Indicator - Component Layer */
+
+.turn-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(255, 255, 255, 0.1) inset;
+  z-index: 1000;
+  animation: slideInRight 0.4s ease-out;
+}
+
+.turn-indicator--our {
+  border: 2px solid #4a9eff;
+}
+
+.turn-indicator--opponent {
+  border: 2px solid #ff6b6b;
+}
+
+.turn-indicator__icon {
+  font-size: 2rem;
+  animation: bounce 2s infinite;
+}
+
+.turn-indicator__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.turn-indicator__label {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.turn-indicator__team {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.turn-indicator--our .turn-indicator__team {
+  color: #4a9eff;
+}
+
+.turn-indicator--opponent .turn-indicator__team {
+  color: #ff6b6b;
+}
+
+.turn-indicator__pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.turn-indicator--our .turn-indicator__pulse {
+  animation: pulse-our 2s infinite;
+}
+
+.turn-indicator--opponent .turn-indicator__pulse {
+  animation: pulse-opponent 2s infinite;
+}
+
+/* Animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse-our {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 158, 255, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(74, 158, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 158, 255, 0);
+  }
+}
+
+@keyframes pulse-opponent {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .turn-indicator {
+    top: 10px;
+    right: 10px;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .turn-indicator__icon {
+    font-size: 1.5rem;
+  }
+
+  .turn-indicator__label {
+    font-size: 0.65rem;
+  }
+
+  .turn-indicator__team {
+    font-size: 0.95rem;
+  }
+}
