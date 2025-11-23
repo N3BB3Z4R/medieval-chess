@@ -30,3 +30,59 @@
   float: left;
   margin-right: 10px;
 }
+
+/* ===================================
+   REVIEW MODE / TIME TRAVEL STYLES
+   =================================== */
+
+.board-decoration {
+  position: relative; /* Required for overlay positioning */
+}
+
+.review-mode-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.15);
+  z-index: 500;
+  pointer-events: none; /* Allow clicks to pass through to board */
+  border-radius: 20%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.review-mode-indicator {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6);
+  animation: pulse-indicator 2s ease-in-out infinite;
+  pointer-events: all; /* Make indicator itself clickable if needed */
+}
+
+@keyframes pulse-indicator {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.messboard--review-mode {
+  cursor: not-allowed !important;
+}
+
+.messboard--review-mode .mess-piece {
+  cursor: not-allowed !important;
+  opacity: 0.9;
+}

@@ -1,0 +1,265 @@
+/* ==========================================================================
+   MOVE HISTORY - Chess.com style
+   ========================================================================== */
+
+.move-history {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 2px solid #475569;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 350px;
+  height: fit-content;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.move-history__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #334155;
+}
+
+.move-history__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.move-history__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: #1e293b;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* List */
+.move-history__list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  min-height: 200px;
+}
+
+/* Custom scrollbar */
+.move-history__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.move-history__list::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+.move-history__list::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.move-history__list::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Empty state */
+.move-history__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #64748b;
+  text-align: center;
+}
+
+.move-history__empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.move-history__empty p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Move rows */
+.move-history__row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  transition: background 0.2s ease;
+}
+
+.move-history__row:hover {
+  background: #293548;
+}
+
+.move-history__row:last-child {
+  background: #1e40af;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.move-history__number {
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.move-history__move {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.move-history__move:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.move-history__move--our {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.move-history__move--opponent {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+/* Footer */
+.move-history__footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid #334155;
+}
+
+.move-history__button {
+  width: 100%;
+  padding: 8px 12px;
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.move-history__button:hover {
+  background: #334155;
+  border-color: #64748b;
+  transform: translateY(-1px);
+}
+
+.move-history__button:active {
+  transform: translateY(0);
+}
+
+/* ===================================
+   REVIEW MODE / TIME TRAVEL STYLES
+   =================================== */
+
+.move-history__review-banner {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  animation: slideDown 0.3s ease;
+}
+
+.move-history__review-banner span {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.move-history__exit-review {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.move-history__exit-review:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-2px);
+}
+
+.move-history__move--reviewed {
+  background: #3b82f6 !important;
+  color: white !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  animation: pulse-reviewed 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-reviewed {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.8);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .move-history {
+    min-width: 240px;
+    max-width: 100%;
+  }
+  
+  .move-history__row {
+    grid-template-columns: 35px 1fr 1fr;
+  }
+  
+  .move-history__review-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .move-history__exit-review {
+    width: 100%;
+  }
+}

@@ -27,7 +27,7 @@ export default function Messboard() {
   const [captureMoves, setCaptureMoves] = useState<Position[]>([]);
   const messboardRef = useRef<HTMLDivElement>(null);
   const referee = useMemo(() => new Referee(), []);
-  const { gameState, dispatch } = useGame();
+  const { gameState, dispatch, reviewMode, reviewSnapshot, reviewMoveIndex } = useGame();
   const resetGame = useResetGame();
   const currentTurn = gameState.getCurrentTurn();
   const gameStatus = gameState.getStatus();
@@ -82,17 +82,27 @@ export default function Messboard() {
   };
   
   // Convert GameState pieces to legacy format for Referee
+  // If in review mode, use the snapshot instead of current game state
   const pieces: Piece[] = useMemo(() => {
-    return gameState.getAllPieces().map(gamePiece => ({
+    const sourcePieces = reviewMode && reviewSnapshot 
+      ? reviewSnapshot 
+      : gameState.getAllPieces();
+      
+    return sourcePieces.map(gamePiece => ({
       image: `assets/images/${mapPieceTypeToImage(gamePiece.type)}_${gamePiece.team === DomainTeamType.OUR ? 'w' : 'b'}.svg`,
       position: { x: gamePiece.position.x, y: gamePiece.position.y },
       type: mapDomainPieceTypeToLegacy(gamePiece.type),
       team: gamePiece.team === DomainTeamType.OUR ? TeamType.OUR : TeamType.OPPONENT,
-      enPassant: gamePiece.enPassant,
+      enPassant: false, // Snapshots don't store enPassant flag
     }));
-  }, [gameState]);
+  }, [gameState, reviewMode, reviewSnapshot]);
 
   function handleGrabPiece(e: React.MouseEvent) {
+    // Disable interaction during review mode
+    if (reviewMode) {
+      return;
+    }
+    
     const element = e.target as HTMLElement;
     const messboard = messboardRef.current;
     if (element.classList.contains("mess-piece") && messboard) {
@@ -154,6 +164,11 @@ export default function Messboard() {
   }
 
   function handleMovePiece(e: React.MouseEvent) {
+    // Disable interaction during review mode
+    if (reviewMode) {
+      return;
+    }
+    
     const messboard = messboardRef.current;
     if (ghostPiece && messboard) {
       const boardRect = messboard.getBoundingClientRect();
@@ -179,6 +194,11 @@ export default function Messboard() {
   }
 
   function handleDropPiece(e: React.MouseEvent) {
+    // Disable interaction during review mode
+    if (reviewMode) {
+      return;
+    }
+    
     const messboard = messboardRef.current;
     if (activePiece && messboard) {
       const boardRect = messboard.getBoundingClientRect();
@@ -338,12 +358,20 @@ export default function Messboard() {
     <>
       <GameOverModal gameStatus={gameStatus} onRestart={resetGame} />
       <div className="board-decoration">
+        {reviewMode && (
+          <div className="review-mode-overlay">
+            <div className="review-mode-indicator">
+              🔍 Revisando jugada #{(reviewMoveIndex ?? 0) + 1}
+            </div>
+          </div>
+        )}
         <div
           onMouseMove={handleMovePiece}
           onMouseDown={handleGrabPiece}
           onMouseUp={handleDropPiece}
           id="messboard"
           ref={messboardRef}
+          className={reviewMode ? 'messboard--review-mode' : ''}
         >
           {generateBoard()}
         </div>

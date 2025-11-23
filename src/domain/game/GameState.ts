@@ -141,6 +141,25 @@ export class GameState implements GameStateReader, GameStateWriter {
       throw new Error(`No piece found at position ${move.from.toString()}`);
     }
 
+    // Capture board snapshot BEFORE executing the move (for time travel)
+    const boardSnapshot = this._pieces.map(piece => ({
+      position: piece.position,
+      type: piece.type,
+      team: piece.team
+    }));
+
+    // Create move with snapshot
+    const moveWithSnapshot = new Move({
+      from: move.from,
+      to: move.to,
+      pieceType: move.pieceType,
+      team: move.team,
+      capturedPiece: move.capturedPiece,
+      isEnPassant: move.isEnPassant,
+      isSpecialAbility: move.isSpecialAbility,
+      boardSnapshot: boardSnapshot
+    });
+
     // Create new pieces array with move applied
     const newPieces = this._pieces
       .filter(piece => {
@@ -181,8 +200,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       ? [...this._capturedPieces, capturedPieceForHistory]
       : this._capturedPieces;
 
-    // Add move to history
-    const newMoveHistory = [...this._moveHistory, move];
+    // Add move with snapshot to history
+    const newMoveHistory = [...this._moveHistory, moveWithSnapshot];
 
     return new GameState({
       pieces: newPieces,

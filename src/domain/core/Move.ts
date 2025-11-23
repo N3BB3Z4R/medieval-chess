@@ -31,6 +31,11 @@ export class Move {
   };
   public readonly isEnPassant: boolean;
   public readonly isSpecialAbility: boolean;
+  public readonly boardSnapshot?: ReadonlyArray<{
+    readonly type: PieceType;
+    readonly team: TeamType;
+    readonly position: Position;
+  }>; // Board state BEFORE this move (for time travel)
 
   constructor(params: {
     from: Position;
@@ -43,6 +48,11 @@ export class Move {
     };
     isEnPassant?: boolean;
     isSpecialAbility?: boolean;
+    boardSnapshot?: ReadonlyArray<{
+      readonly type: PieceType;
+      readonly team: TeamType;
+      readonly position: Position;
+    }>;
   }) {
     this.from = params.from;
     this.to = params.to;
@@ -51,6 +61,7 @@ export class Move {
     this.capturedPiece = params.capturedPiece;
     this.isEnPassant = params.isEnPassant ?? false;
     this.isSpecialAbility = params.isSpecialAbility ?? false;
+    this.boardSnapshot = params.boardSnapshot;
   }
 
   /**

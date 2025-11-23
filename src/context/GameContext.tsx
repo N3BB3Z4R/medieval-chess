@@ -5,7 +5,7 @@ import { WinConditionChecker } from '../domain/game/WinConditionChecker';
 import { GameConfig, create2PlayerGame } from '../domain/game/GameConfig';
 import { Move } from '../domain/core/Move';
 import { Position } from '../domain/core/Position';
-import { GameStatus, TeamType as DomainTeamType } from '../domain/core/types';
+import { GameStatus, TeamType as DomainTeamType, PieceType } from '../domain/core/types';
 import { initialBoardState } from '../Constants';
 
 /**
@@ -16,6 +16,7 @@ import { initialBoardState } from '../Constants';
  * - TurnManager for turn validation
  * - WinConditionChecker for game-ending detection
  * - Dispatch function for state updates
+ * - Time Travel: Review mode for analyzing previous moves
  * 
  * @architecture Clean Architecture - Presentation Layer
  * @solid Dependency Inversion: React depends on domain abstractions
@@ -26,6 +27,15 @@ const turnManager = new TurnManager();
 const winConditionChecker = new WinConditionChecker();
 
 /**
+ * Snapshot of a piece for time travel.
+ */
+export interface GamePieceSnapshot {
+  readonly position: Position;
+  readonly type: PieceType;
+  readonly team: DomainTeamType;
+}
+
+/**
  * Context state shape.
  */
 interface GameContextState {
@@ -33,6 +43,10 @@ interface GameContextState {
   gameConfig: GameConfig;
   turnManager: TurnManager;
   winConditionChecker: WinConditionChecker;
+  // Time Travel state
+  reviewMode: boolean;
+  reviewMoveIndex: number | null;
+  reviewSnapshot: ReadonlyArray<GamePieceSnapshot> | null;
 }
 
 /**
@@ -42,7 +56,8 @@ type GameAction =
   | { type: 'MAKE_MOVE'; payload: { move: Move } }
   | { type: 'RESET_GAME' }
   | { type: 'SET_STATUS'; payload: { status: GameStatus } }
-  | { type: 'SET_CONFIG'; payload: GameConfig };
+  | { type: 'SET_CONFIG'; payload: GameConfig }
+  | { type: 'REVIEW_MOVE'; payload: { index: number | null } };
 
 /**
  * Context value with state + dispatch.
@@ -115,6 +130,34 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
       };
     }
     
+    case 'REVIEW_MOVE': {
+      const { index } = action.payload;
+      
+      // Exit review mode (back to current game)
+      if (index === null) {
+        return {
+          ...state,
+          reviewMode: false,
+          reviewMoveIndex: null,
+          reviewSnapshot: null,
+        };
+      }
+      
+      // Enter review mode
+      const move = state.gameState.getMoveHistory()[index];
+      if (!move || !move.boardSnapshot) {
+        console.warn('Cannot review move: no snapshot available');
+        return state;
+      }
+      
+      return {
+        ...state,
+        reviewMode: true,
+        reviewMoveIndex: index,
+        reviewSnapshot: move.boardSnapshot,
+      };
+    }
+    
     default:
       return state;
   }
@@ -138,6 +181,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     gameConfig: create2PlayerGame(), // Default: 2-player game
     turnManager,
     winConditionChecker,
+    // Time Travel initial state
+    reviewMode: false,
+    reviewMoveIndex: null,
+    reviewSnapshot: null,
   });  const value: GameContextValue = {
     ...state,
     dispatch,
