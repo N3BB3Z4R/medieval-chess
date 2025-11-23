@@ -6,7 +6,7 @@ import {
   createGameStateWithPenalty,
   createGamePiece,
   pos
-} from '../../../../__tests__/helpers/factories';
+} from '../../../../test-utils/factories';
 
 describe('FarmerMoveValidator', () => {
   let validator: FarmerMoveValidator;

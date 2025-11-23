@@ -1,6 +1,6 @@
 import { BaseMoveValidator, ValidationResult } from '../../../domain/rules/MoveValidator';
 import { PieceType, TeamType } from '../../../domain/core/types';
-import { createGameState, createGameStateWithPenalty } from '../../../__tests__/helpers/factories';
+import { createGameState, createGameStateWithPenalty } from '../../../test-utils/factories';
 
 /**
  * Test implementation of BaseMoveValidator for testing protected methods.

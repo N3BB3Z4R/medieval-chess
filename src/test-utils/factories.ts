@@ -1,8 +1,8 @@
-import { Piece, PieceType as LegacyPieceType, TeamType as LegacyTeamType, Position } from "../../Constants";
-import { Move } from "../../domain/core/Move";
-import { Position as DomainPosition } from "../../domain/core/Position";
-import { GameState, GamePiece } from "../../domain/game/GameState";
-import { PieceType, TeamType } from "../../domain/core/types";
+import { Piece, PieceType as LegacyPieceType, TeamType as LegacyTeamType, Position } from "../Constants";
+import { Move } from "../domain/core/Move";
+import { Position as DomainPosition } from "../domain/core/Position";
+import { GameState, GamePiece } from "../domain/game/GameState";
+import { PieceType, TeamType } from "../domain/core/types";
 
 /**
  * Test Factories - Helper functions for creating test data.

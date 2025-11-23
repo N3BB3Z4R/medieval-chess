@@ -2,6 +2,7 @@ import { PieceType, TeamType, Piece, Position } from "../Constants";
 import { Move } from "../domain/core/Move";
 import { Position as DomainPosition } from "../domain/core/Position";
 import { GameState } from "../domain/game/GameState";
+import { PieceType as DomainPieceType, TeamType as DomainTeamType } from "../domain/core/types";
 import { 
   RuleEngine,
   FarmerMoveValidator,
@@ -84,9 +85,34 @@ export default class Referee {
     return new Move({
       from: new DomainPosition(from.x, from.y),
       to: new DomainPosition(to.x, to.y),
-      pieceType,
-      team
+      pieceType: this.mapLegacyPieceTypeToDomain(pieceType),
+      team: this.mapLegacyTeamTypeToDomain(team)
     });
+  }
+
+  /**
+   * NEW: Converts legacy numeric PieceType to domain string PieceType.
+   */
+  private mapLegacyPieceTypeToDomain(legacyType: PieceType): DomainPieceType {
+    const mapping: Record<number, DomainPieceType> = {
+      [PieceType.FARMER]: DomainPieceType.FARMER,
+      [PieceType.RAM]: DomainPieceType.RAM,
+      [PieceType.TRAP]: DomainPieceType.TRAP,
+      [PieceType.KNIGHT]: DomainPieceType.KNIGHT,
+      [PieceType.TEMPLAR]: DomainPieceType.TEMPLAR,
+      [PieceType.SCOUT]: DomainPieceType.SCOUT,
+      [PieceType.TREBUCHET]: DomainPieceType.TREBUCHET,
+      [PieceType.TREASURE]: DomainPieceType.TREASURE,
+      [PieceType.KING]: DomainPieceType.KING
+    };
+    return mapping[legacyType];
+  }
+
+  /**
+   * NEW: Converts legacy TeamType to domain TeamType.
+   */
+  private mapLegacyTeamTypeToDomain(legacyTeam: TeamType): DomainTeamType {
+    return legacyTeam === TeamType.OUR ? DomainTeamType.OUR : DomainTeamType.OPPONENT;
   }
 
   /**
@@ -100,8 +126,8 @@ export default class Referee {
     currentTurn: TeamType
   ): GameState {
     const gamePieces = boardState.map(piece => ({
-      type: piece.type,
-      team: piece.team,
+      type: this.mapLegacyPieceTypeToDomain(piece.type),
+      team: this.mapLegacyTeamTypeToDomain(piece.team),
       position: new DomainPosition(piece.position.x, piece.position.y),
       enPassant: piece.enPassant
       // Note: hasMoved not tracked in legacy Piece type
@@ -109,7 +135,7 @@ export default class Referee {
 
     return new GameState({
       pieces: gamePieces,
-      currentTurn
+      currentTurn: this.mapLegacyTeamTypeToDomain(currentTurn)
     });
   }
   // funcion de chequear si tile esta ocupada, y ponernos si la pieza que hay es un enemigo

@@ -2,7 +2,7 @@ import { RuleEngine } from '../../../domain/rules/RuleEngine';
 import { MoveValidator, ValidationResult } from '../../../domain/rules/MoveValidator';
 import { PieceType, TeamType } from '../../../domain/core/types';
 import { Move } from '../../../domain/core/Move';
-import { createMove, createGameState, pos } from '../../../__tests__/helpers/factories';
+import { createMove, createGameState, pos } from '../../../test-utils/factories';
 import {
   FarmerMoveValidator,
   RamMoveValidator,
