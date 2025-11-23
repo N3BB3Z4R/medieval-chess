@@ -1,52 +1,56 @@
-// import './BoardClock.css'
-// import { useEffect, useState } from "react";
-
-// const BoardClock = (active: boolean) => {
-//   const matchTime = [4, 59]
-//   const [timeSecondsCounter, setTimeSecondsCounter] = useState(matchTime[1])
-//   const [timeMinutesCounter, setTimeMinutesCounter] = useState(matchTime[0])
-
-//   useEffect(() => {
-//     if (timeSecondsCounter === 0 && timeMinutesCounter === 0) console.log('time is over')
-//     if (timeSecondsCounter % 60 === 0) {
-//       setTimeMinutesCounter(timeMinutesCounter - 1)
-//       setTimeSecondsCounter(59)
-//     }
-//     setTimeout(() => {
-//       setTimeSecondsCounter(timeSecondsCounter - 1)
-//     }, 1000);
-//   }, [timeSecondsCounter])
-
-//   return (
-//     <>
-//       <div className="board-clock">{timeMinutesCounter}:{timeSecondsCounter < 10 ? '0' + timeSecondsCounter : timeSecondsCounter}</div>
-//     </>
-//   )
-// }
-// export default BoardClock
 import './BoardClock.css'
 import { useEffect, useState } from "react";
 
-const BoardClock = ({ active }: { active: boolean }) => {
-  const matchTime = [4, 59]
-  const [timeSecondsCounter, setTimeSecondsCounter] = useState(matchTime[1])
-  const [timeMinutesCounter, setTimeMinutesCounter] = useState(matchTime[0])
+interface BoardClockProps {
+  active: boolean;
+  initialTimeSeconds?: number; // Total time in seconds (e.g., 300 for 5 minutes)
+  incrementSeconds?: number; // Increment added after each turn
+  onTimeUp?: () => void; // Callback when time runs out
+}
 
+const BoardClock: React.FC<BoardClockProps> = ({ 
+  active, 
+  initialTimeSeconds = 300, // Default 5 minutes
+  incrementSeconds = 0,
+  onTimeUp 
+}) => {
+  const [totalSeconds, setTotalSeconds] = useState(initialTimeSeconds);
+  const [hasAddedIncrement, setHasAddedIncrement] = useState(false);
+
+  // Calculate minutes and seconds from total
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  // Reset when initialTimeSeconds changes (new game)
+  useEffect(() => {
+    setTotalSeconds(initialTimeSeconds);
+    setHasAddedIncrement(false);
+  }, [initialTimeSeconds]);
+
+  // Add increment when turn becomes active (only once per activation)
+  useEffect(() => {
+    if (active && incrementSeconds > 0 && !hasAddedIncrement) {
+      setTotalSeconds(prev => prev + incrementSeconds);
+      setHasAddedIncrement(true);
+    }
+    if (!active) {
+      setHasAddedIncrement(false); // Reset for next turn
+    }
+  }, [active, incrementSeconds, hasAddedIncrement]);
+
+  // Timer countdown
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
 
-    if (active) {
+    if (active && totalSeconds > 0) {
       timer = setTimeout(() => {
-        if (timeSecondsCounter === 0 && timeMinutesCounter === 0) {
-          console.log('time is over')
-        } else {
-          if (timeSecondsCounter === 0) {
-            setTimeMinutesCounter(timeMinutesCounter - 1)
-            setTimeSecondsCounter(59)
-          } else {
-            setTimeSecondsCounter(timeSecondsCounter - 1)
+        setTotalSeconds(prev => {
+          const newTime = prev - 1;
+          if (newTime === 0 && onTimeUp) {
+            onTimeUp();
           }
-        }
+          return newTime;
+        });
       }, 1000);
     }
 
@@ -55,14 +59,18 @@ const BoardClock = ({ active }: { active: boolean }) => {
         clearTimeout(timer);
       }
     };
-  }, [active, timeSecondsCounter, timeMinutesCounter]);
+  }, [active, totalSeconds, onTimeUp]);
+
+  // Warning state for low time
+  const isLowTime = totalSeconds <= 20;
+  const isCriticalTime = totalSeconds <= 10;
 
   return (
-    <>
-      <div className="board-clock">
-        {timeMinutesCounter}:{timeSecondsCounter < 10 ? '0' + timeSecondsCounter : timeSecondsCounter}
-      </div>
-    </>
+    <div 
+      className={`board-clock ${isLowTime ? 'board-clock--low' : ''} ${isCriticalTime ? 'board-clock--critical' : ''}`}
+    >
+      {minutes}:{seconds < 10 ? '0' + seconds : seconds}
+    </div>
   )
 }
 

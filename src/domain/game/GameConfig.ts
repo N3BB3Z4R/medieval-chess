@@ -19,6 +19,7 @@ export interface GameConfig {
   playerCount: 2 | 3 | 4;
   players: PlayerConfig[];
   timePerTurn?: number; // seconds, undefined = no timer
+  incrementPerTurn?: number; // seconds added after each turn (Chess.com style)
 }
 
 /**

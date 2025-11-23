@@ -8,17 +8,43 @@ interface GameSetupModalProps {
 }
 
 /**
+ * Time presets similar to Chess.com
+ */
+interface TimePreset {
+  name: string;
+  minutes: number;
+  incrementSeconds: number;
+  description: string;
+}
+
+const TIME_PRESETS: TimePreset[] = [
+  { name: 'Bullet', minutes: 1, incrementSeconds: 0, description: '1 min' },
+  { name: 'Bullet', minutes: 1, incrementSeconds: 1, description: '1 | 1' },
+  { name: 'Bullet', minutes: 2, incrementSeconds: 1, description: '2 | 1' },
+  { name: 'Blitz', minutes: 3, incrementSeconds: 0, description: '3 min' },
+  { name: 'Blitz', minutes: 3, incrementSeconds: 2, description: '3 | 2' },
+  { name: 'Blitz', minutes: 5, incrementSeconds: 0, description: '5 min' },
+  { name: 'Rapid', minutes: 10, incrementSeconds: 0, description: '10 min' },
+  { name: 'Rapid', minutes: 15, incrementSeconds: 10, description: '15 | 10' },
+  { name: 'Rapid', minutes: 30, incrementSeconds: 0, description: '30 min' },
+];
+
+/**
  * Modal for configuring a new game.
  * 
  * Features:
  * - Select 2, 3, or 4 players
- * - Configure AI opponents (future)
- * - Set turn timer (future)
+ * - Time control presets (Bullet, Blitz, Rapid)
+ * - Custom time configuration
+ * - Enable/disable timer
  */
 const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose }) => {
   const [playerCount, setPlayerCount] = useState<2 | 3 | 4>(2);
-  const [showTimer, setShowTimer] = useState(false);
-  const [timePerTurn, setTimePerTurn] = useState(60);
+  const [useTimer, setUseTimer] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
+  const [customMinutes, setCustomMinutes] = useState(5);
+  const [customIncrement, setCustomIncrement] = useState(0);
+  const [showCustom, setShowCustom] = useState(false);
 
   const handleStart = () => {
     let config: GameConfig;
@@ -30,11 +56,32 @@ const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose })
       config = create4PlayerGame(); // Falls back to 2-player
     }
     
-    if (showTimer) {
-      config.timePerTurn = timePerTurn;
+    // Apply time configuration
+    if (useTimer) {
+      if (selectedPreset !== null) {
+        const preset = TIME_PRESETS[selectedPreset];
+        config.timePerTurn = preset.minutes * 60; // Convert to seconds
+        config.incrementPerTurn = preset.incrementSeconds;
+      } else if (showCustom) {
+        config.timePerTurn = customMinutes * 60; // Convert to seconds
+        config.incrementPerTurn = customIncrement;
+      }
+    } else {
+      config.timePerTurn = undefined;
+      config.incrementPerTurn = undefined;
     }
     
     onStartGame(config);
+  };
+
+  const handlePresetSelect = (index: number) => {
+    setSelectedPreset(index);
+    setShowCustom(false);
+  };
+
+  const handleCustomClick = () => {
+    setSelectedPreset(null);
+    setShowCustom(true);
   };
 
   return (
@@ -74,28 +121,76 @@ const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose })
         </div>
 
         <div className="game-setup-modal__section">
-          <label className="game-setup-modal__checkbox">
-            <input
-              type="checkbox"
-              checked={showTimer}
-              onChange={(e) => setShowTimer(e.target.checked)}
-            />
-            <span>Activar Temporizador</span>
-          </label>
-          
-          {showTimer && (
-            <div className="game-setup-modal__timer">
-              <label>Tiempo por turno (segundos)</label>
+          <div className="game-setup-modal__timer-header">
+            <label className="game-setup-modal__label">Control de Tiempo</label>
+            <label className="game-setup-modal__checkbox">
               <input
-                type="range"
-                min="30"
-                max="300"
-                step="30"
-                value={timePerTurn}
-                onChange={(e) => setTimePerTurn(Number(e.target.value))}
+                type="checkbox"
+                checked={useTimer}
+                onChange={(e) => setUseTimer(e.target.checked)}
               />
-              <span className="game-setup-modal__timer-value">{timePerTurn}s</span>
-            </div>
+              <span>Activar Temporizador</span>
+            </label>
+          </div>
+          
+          {useTimer && (
+            <>
+              <div className="game-setup-modal__time-presets">
+                {TIME_PRESETS.map((preset, index) => (
+                  <button
+                    key={index}
+                    className={`game-setup-modal__time-preset ${selectedPreset === index ? 'active' : ''}`}
+                    onClick={() => handlePresetSelect(index)}
+                  >
+                    <span className="preset-category">{preset.name}</span>
+                    <span className="preset-time">{preset.description}</span>
+                  </button>
+                ))}
+                <button
+                  className={`game-setup-modal__time-preset custom ${showCustom ? 'active' : ''}`}
+                  onClick={handleCustomClick}
+                >
+                  <span className="preset-category">Custom</span>
+                  <span className="preset-time">⚙️</span>
+                </button>
+              </div>
+
+              {showCustom && (
+                <div className="game-setup-modal__custom-time">
+                  <div className="custom-time-control">
+                    <label>Minutos por jugador</label>
+                    <div className="input-group">
+                      <button onClick={() => setCustomMinutes(Math.max(1, customMinutes - 1))}>-</button>
+                      <input
+                        type="number"
+                        min="1"
+                        max="60"
+                        value={customMinutes}
+                        onChange={(e) => setCustomMinutes(Number(e.target.value))}
+                      />
+                      <button onClick={() => setCustomMinutes(Math.min(60, customMinutes + 1))}>+</button>
+                    </div>
+                  </div>
+                  <div className="custom-time-control">
+                    <label>Incremento (segundos)</label>
+                    <div className="input-group">
+                      <button onClick={() => setCustomIncrement(Math.max(0, customIncrement - 1))}>-</button>
+                      <input
+                        type="number"
+                        min="0"
+                        max="60"
+                        value={customIncrement}
+                        onChange={(e) => setCustomIncrement(Number(e.target.value))}
+                      />
+                      <button onClick={() => setCustomIncrement(Math.min(60, customIncrement + 1))}>+</button>
+                    </div>
+                  </div>
+                  <div className="custom-time-info">
+                    ⏱️ Cada jugador tendrá {customMinutes} minutos{customIncrement > 0 ? ` + ${customIncrement}s por turno` : ''}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

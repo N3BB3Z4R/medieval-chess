@@ -8,8 +8,22 @@ export interface PlayerType {
   playerElo: number;
 }
 
-const PlayerCounter = (props: { profile: PlayerType, selected: boolean }) => {
-  const { playerPosition, playerName, playerAvatar, playerRange, playerElo } = props.profile;
+interface PlayerCounterProps {
+  profile: PlayerType;
+  selected: boolean;
+  timePerTurn?: number; // seconds
+  incrementPerTurn?: number; // seconds
+  onTimeUp?: () => void;
+}
+
+const PlayerCounter: React.FC<PlayerCounterProps> = ({ 
+  profile, 
+  selected, 
+  timePerTurn, 
+  incrementPerTurn,
+  onTimeUp 
+}) => {
+  const { playerPosition, playerName, playerAvatar, playerRange, playerElo } = profile;
 
   const resolvePlayerPosition = () => {
     return `player-${playerPosition}`
@@ -43,7 +57,14 @@ const PlayerCounter = (props: { profile: PlayerType, selected: boolean }) => {
         </div>
         <h4 className="player-counter__range">{playerRange}</h4>
       </div>
-      <BoardClock active={props.selected} />
+      {timePerTurn && (
+        <BoardClock 
+          active={selected} 
+          initialTimeSeconds={timePerTurn}
+          incrementSeconds={incrementPerTurn}
+          onTimeUp={onTimeUp}
+        />
+      )}
     </div>
   )
 }

@@ -12,4 +12,41 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
+  transition: all 0.3s ease;
+}
+
+/* Low time warning (≤20 seconds) */
+.board-clock--low {
+  background-color: rgb(139, 92, 0);
+  color: rgb(255, 220, 120);
+  border-left-color: rgb(255, 220, 120);
+  animation: pulse-low 1s ease-in-out infinite;
+}
+
+/* Critical time warning (≤10 seconds) */
+.board-clock--critical {
+  background-color: rgb(153, 27, 27);
+  color: rgb(254, 202, 202);
+  border-left-color: rgb(254, 202, 202);
+  animation: pulse-critical 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse-low {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
 }
