@@ -149,7 +149,7 @@ describe('TreasureMoveValidator', () => {
     });
 
     it('TREASURE immunity works when both teams have penalty', () => {
-      const kingDeathPenalty = new Map<string, boolean>();
+      const kingDeathPenalty = new Map<TeamType, boolean>();
       kingDeathPenalty.set(TeamType.OUR, true);
       kingDeathPenalty.set(TeamType.OPPONENT, true);
       const gameState = createGameState({ kingDeathPenalty });
