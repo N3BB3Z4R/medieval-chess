@@ -109,6 +109,37 @@ export enum GameStatus {
 }
 
 /**
+ * Interface for reading game state.
+ * 
+ * UI components should depend on this interface instead of full GameState class.
+ * This follows Interface Segregation Principle - read-only consumers don't
+ * need write access.
+ */
+export interface GameStateReader {
+  getPieceAt(position: unknown): unknown | undefined;
+  getPiecesForTeam(team: TeamType): ReadonlyArray<unknown>;
+  getCurrentTurn(): TeamType;
+  getMoveHistory(): ReadonlyArray<unknown>;
+  getStatus(): GameStatus;
+  isPositionUnderAttack(position: unknown, team: TeamType): boolean;
+  getValidMovesFrom(position: unknown): ReadonlyArray<unknown>;
+}
+
+/**
+ * Interface for modifying game state.
+ * 
+ * Only game logic classes should depend on this interface.
+ * This follows Interface Segregation Principle - separates read from write.
+ */
+export interface GameStateWriter {
+  executeMove(move: unknown): unknown;
+  setCurrentTurn(team: TeamType): unknown;
+  setStatus(status: GameStatus): unknown;
+  removePiece(position: unknown): unknown;
+  addPiece(position: unknown, pieceType: PieceType, team: TeamType): unknown;
+}
+
+/**
  * Represents the result of checking special ability conditions.
  * 
  * Used for TRAP invisibility, TEMPLAR counter-attack, etc.

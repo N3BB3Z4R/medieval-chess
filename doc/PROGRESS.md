@@ -232,7 +232,7 @@ src/
 ### Objectives (30 hours)
 Establish clean architecture with SOLID-compliant domain layer
 
-### Progress: 40% Complete (Tasks 1-4 done, Task 5 pending)
+### Progress: 80% Complete (Tasks 1-4 done, Task 5 pending)
 
 ### Tasks
 
@@ -244,31 +244,45 @@ Establish clean architecture with SOLID-compliant domain layer
    - Type-safe with full JSDoc documentation
 
 2. ✅ **Extract core types** (COMPLETED - 1 hour)
-   - `src/domain/core/types.ts` (197 lines)
+   - `src/domain/core/types.ts` (230 lines)
    - Extracted `PieceType`, `TeamType` enums
    - Created: `ValidationResult`, `MoveResult`, `GameStatus`, `AbilityResult`, `PlayerConfig`, `DirectionVector`
+   - Added `GameStateReader` and `GameStateWriter` interfaces
    - Factory methods for result objects (immutable patterns)
    - Helper functions: `getDirectionForTeam()`, `isForwardMove()`
 
 3. ✅ **Create interfaces** (COMPLETED - 2 hours)
    - `src/domain/core/interfaces.ts` (350 lines)
    - Defined 9 core interfaces following Interface Segregation Principle:
-     * `MoveValidator` - Piece movement validation (Open/Closed compliance)
-     * `GameStateReader` - Read-only game state access
-     * `GameStateWriter` - State mutation operations
-     * `TurnManager` - Turn-based flow control
-     * `WinConditionChecker` - Game ending logic
-     * `SpecialAbility` - Plugin system for special moves
-     * `AIPlayer` - AI strategy interface
-     * `GameObserver` - Event logging/analytics
+     - `MoveValidator` - Piece movement validation (Open/Closed compliance)
+     - `GameStateReader` - Read-only game state access (moved to types.ts)
+     - `GameStateWriter` - State mutation operations (moved to types.ts)
+     - `TurnManager` - Turn-based flow control
+     - `WinConditionChecker` - Game ending logic
+     - `SpecialAbility` - Plugin system for special moves
+     - `AIPlayer` - AI strategy interface
+     - `GameObserver` - Event logging/analytics
    - All interfaces designed for dependency injection
    - Zero coupling to React or infrastructure
 
-4. ⏳ **Create GameState entity** (IN PROGRESS - 0/8 hours)
-   - `src/domain/game/GameState.ts` (pending)
-   - Immutable state with `movePiece()` returning new instance
-   - Implement `GameStateReader` and `GameStateWriter` interfaces
-   - Methods: `getPieceAt()`, `getCurrentTurn()`, `getHistory()`
+4. ✅ **Create GameState entity** (COMPLETED - 4 hours)
+   - `src/domain/game/GameState.ts` (360 lines)
+   - Immutable entity with all state changes returning new instances
+   - Implements both `GameStateReader` and `GameStateWriter` interfaces
+   - Core methods:
+     * `executeMove()` - Apply move and return new state
+     * `getPieceAt()`, `getPiecesForTeam()` - Query pieces
+     * `getCurrentTurn()`, `getMoveHistory()`, `getStatus()` - Game flow
+     * `setCurrentTurn()`, `setStatus()`, `removePiece()`, `addPiece()` - State mutations
+   - Utility methods:
+     * `getKing()`, `hasKing()` - King queries
+     * `getLastMove()`, `isFirstMove()`, `getMoveCount()` - History queries
+     * `clearEnPassantFlags()` - En passant management
+   - Factory methods:
+     * `createEmpty()` - Empty state for testing
+     * `createInitialState()` - Standard game setup (TODO)
+     * `fromLegacyPieces()` - Migration from Constants.ts
+   - Zero compilation errors, fully type-safe
 
 5. ⏳ **Write comprehensive tests** (PENDING - 0/10 hours)
    - Unit tests for Position, Move, GameState
@@ -278,7 +292,7 @@ Establish clean architecture with SOLID-compliant domain layer
 
 - ✅ Zero `any` types - All files use strict TypeScript
 - ✅ All domain logic independent of React - No React imports in domain/
-- ⏳ Immutable state updates - GameState pending
+- ✅ Immutable state updates - GameState returns new instances
 - ⏳ 90%+ test coverage on domain layer - Tests pending
 - ✅ Self-documenting code (zero inline comments) - All code uses JSDoc and descriptive names
 
@@ -291,16 +305,16 @@ Establish clean architecture with SOLID-compliant domain layer
 | **Phase 0: Quick Wins** | ✅ DONE | 6-8h | ~6h | 0h |
 | **Phase 0.5: ITCSS + Indicators** | ✅ DONE | 6h | ~6h | 0h |
 | **Phase 0.6: Integration** | ✅ DONE | 0.5h | ~0.5h | 0h |
-| **Phase 1: Domain Foundation** | 🔄 IN PROGRESS | 30h | ~4h | ~26h |
+| **Phase 1: Domain Foundation** | 🔄 IN PROGRESS | 30h | ~8h | ~22h |
 | **Phase 2: Turn System** | 🔲 TODO | 24h | 0h | 24h |
 | **Phase 3: Rule Engine** | 🔲 TODO | 40h | 0h | 40h |
 | **Phase 4: Special Abilities** | 🔲 TODO | 60h | 0h | 60h |
 | **Phase 5: Canvas Rendering** | 🔲 TODO | 40h | 0h | 40h |
 | **Phase 6: AI Player** | 🔲 TODO | 50h | 0h | 50h |
 | **Phase 7: 4-Player Support** | 🔲 TODO | 60h | 0h | 60h |
-| **TOTAL** | | **316.5h** | **16.5h** | **300h** |
+| **TOTAL** | | **316.5h** | **20.5h** | **296h** |
 
-**Progress: 5.2% Complete** (16.5h / 316.5h)
+**Progress: 6.5% Complete** (20.5h / 316.5h)
 
 ---
 

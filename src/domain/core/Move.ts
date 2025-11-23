@@ -1,5 +1,5 @@
 import { Position } from './Position';
-import { PieceType, TeamType } from '../../Constants';
+import { PieceType, TeamType } from './types';
 
 /**
  * Immutable value object representing a chess move.
