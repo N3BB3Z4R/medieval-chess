@@ -176,7 +176,7 @@ describe('BaseMoveValidator', () => {
       });
 
       it('affects both teams when both have penalties', () => {
-        const kingDeathPenalty = new Map<string, boolean>();
+        const kingDeathPenalty = new Map<TeamType, boolean>();
         kingDeathPenalty.set(TeamType.OUR, true);
         kingDeathPenalty.set(TeamType.OPPONENT, true);
         const gameState = createGameState({ kingDeathPenalty });
