@@ -1,0 +1,91 @@
+/**
+ * ITCSS Layer 1: SETTINGS
+ * Design tokens, CSS custom properties, configuration values
+ * No CSS selectors here, only CSS variables
+ */
+
+:root {
+  /* ============================================
+     BOARD DIMENSIONS
+     ============================================ */
+  --board-size: 16;
+  --tile-size: 50px;
+  --board-total-size: calc(var(--tile-size) * var(--board-size)); /* 800px */
+  --piece-size: 42px;
+  
+  /* ============================================
+     COLORS - Board Theme
+     ============================================ */
+  --color-tile-dark: hsl(159, 25%, 24%);
+  --color-tile-dark-hover: hsl(159, 20%, 35%);
+  --color-tile-light: hsl(86, 85%, 88%);
+  --color-tile-light-hover: hsl(86, 75%, 78%);
+  
+  /* Border & Shadows */
+  --color-tile-border: hsl(159, 12%, 27%);
+  --color-tile-shadow-dark: hsl(160, 10%, 11%);
+  --color-tile-glow: hsl(86, 22%, 39%);
+  --color-tile-glow-hover: hsl(86, 60%, 65%);
+  
+  /* ============================================
+     COLORS - Move Indicators
+     ============================================ */
+  --color-selected: hsl(200, 100%, 50%);
+  --color-selected-glow: hsl(200, 100%, 70%);
+  
+  --color-valid-move: hsl(120, 60%, 50%);
+  --color-valid-move-glow: hsl(120, 80%, 70%);
+  
+  --color-capture-move: hsl(0, 80%, 55%);
+  --color-capture-move-glow: hsl(0, 100%, 70%);
+  
+  --color-attack-indicator: hsl(30, 100%, 50%);
+  --color-attack-indicator-glow: hsl(30, 100%, 70%);
+  
+  /* ============================================
+     COLORS - Board Decoration
+     ============================================ */
+  --color-board-border-light: rgb(141, 151, 130);
+  --color-board-border-dark: rgb(29, 36, 34);
+  --color-board-shadow: rgb(6, 0, 8);
+  
+  /* ============================================
+     SPACING & SIZING
+     ============================================ */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  
+  --border-radius-tile: 10%;
+  --border-radius-board: 20%;
+  --border-radius-piece: 10px;
+  
+  /* ============================================
+     ANIMATIONS & TRANSITIONS
+     ============================================ */
+  --transition-fast: 0.1s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 1s ease-in-out;
+  
+  --animation-pulse: pulse 1.5s ease-in-out infinite;
+  --animation-glow: glow 2s ease-in-out infinite;
+  
+  /* ============================================
+     Z-INDEX LAYERS
+     ============================================ */
+  --z-index-board: 1;
+  --z-index-tile: 2;
+  --z-index-piece: 3;
+  --z-index-indicator: 1;
+  --z-index-dragging: 100;
+  
+  /* ============================================
+     EFFECTS - Opacity
+     ============================================ */
+  --opacity-piece-normal: 0.9;
+  --opacity-piece-hover: 1;
+  --opacity-piece-dragging: 0.4;
+  --opacity-indicator: 0.6;
+  --opacity-forbidden: 0.3;
+}

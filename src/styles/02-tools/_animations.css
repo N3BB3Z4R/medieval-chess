@@ -1,0 +1,67 @@
+/**
+ * ITCSS Layer 2: TOOLS
+ * Mixins and functions (using CSS @property for custom properties with types)
+ * Modern CSS features: @layer, @container, @scope
+ */
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: var(--opacity-indicator);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--color-valid-move-glow);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--color-valid-move-glow);
+  }
+}
+
+@keyframes captureGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--color-capture-move-glow);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--color-capture-move-glow);
+  }
+}
+
+@keyframes attackWarning {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--color-attack-indicator-glow);
+    border-color: var(--color-attack-indicator);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--color-attack-indicator-glow);
+    border-color: var(--color-attack-indicator-glow);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   LAYER DEFINITIONS
+   Using modern @layer for better cascade control
+   ============================================ */
+
+@layer base, components, utilities, states;

@@ -1,4 +1,5 @@
 import './App.css';
+import './styles/main.css';
 import Footer from './components/Footer/Footer';
 import Messboard from './components/Messboard/Messboard';
 import BoardCounter from './components/BoardCounter/BoardCounter';

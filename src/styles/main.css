@@ -1,0 +1,78 @@
+/**
+ * MEDIEVAL CHESS - MAIN STYLESHEET
+ * Architecture: ITCSS (Inverted Triangle CSS)
+ * Methodology: BEM (Block Element Modifier)
+ * Features: Native CSS Nesting, Custom Properties, @layer
+ * 
+ * ITCSS Layer Order (specificity increases downward):
+ * 1. Settings    - Variables, config
+ * 2. Tools       - Mixins, functions, animations
+ * 3. Generic     - Normalize, resets
+ * 4. Elements    - Base element styles
+ * 5. Objects     - Layout patterns
+ * 6. Components  - UI components
+ * 7. Utilities   - Helper classes
+ */
+
+/* ============================================
+   1. SETTINGS - Design Tokens
+   ============================================ */
+@import './01-settings/_variables.css';
+
+/* ============================================
+   2. TOOLS - Animations & Functions
+   ============================================ */
+@import './02-tools/_animations.css';
+
+/* ============================================
+   3. GENERIC - Resets & Normalize
+   ============================================ */
+@import './03-generic/_reset.css';
+
+/* ============================================
+   4. ELEMENTS - Base HTML Elements
+   Currently using default browser styles
+   ============================================ */
+/* No element overrides needed yet */
+
+/* ============================================
+   5. OBJECTS - Layout Patterns
+   Currently handled by components
+   ============================================ */
+/* No object patterns needed yet */
+
+/* ============================================
+   6. COMPONENTS - UI Components
+   ============================================ */
+@import './06-components/_board.css';
+@import './06-components/_move-indicators.css';
+
+/* ============================================
+   7. UTILITIES - Helper Classes
+   ============================================ */
+@import './07-utilities/_helpers.css';
+
+/* ============================================
+   BROWSER COMPATIBILITY NOTES
+   ============================================ */
+
+/**
+ * CSS Nesting Support:
+ * - Chrome 112+ ✅
+ * - Edge 112+ ✅
+ * - Safari 16.5+ ✅
+ * - Firefox 117+ ✅
+ * 
+ * @layer Support:
+ * - Chrome 99+ ✅
+ * - Edge 99+ ✅
+ * - Safari 15.4+ ✅
+ * - Firefox 97+ ✅
+ * 
+ * Custom Properties (CSS Variables):
+ * - All modern browsers ✅
+ * 
+ * If you need to support older browsers, consider:
+ * - PostCSS with postcss-nesting plugin
+ * - Lightning CSS for compilation
+ */

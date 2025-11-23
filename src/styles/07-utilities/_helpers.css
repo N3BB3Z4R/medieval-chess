@@ -1,0 +1,78 @@
+/**
+ * ITCSS Layer 7: UTILITIES
+ * Helper classes and utility modifiers
+ * Highest specificity, very specific use cases
+ */
+
+@layer utilities {
+  /* ============================================
+     VISIBILITY UTILITIES
+     ============================================ */
+  .u-hidden {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  
+  .u-invisible {
+    opacity: 0 !important;
+  }
+  
+  .u-visible {
+    visibility: visible !important;
+  }
+  
+  /* ============================================
+     INTERACTION UTILITIES
+     ============================================ */
+  .u-no-pointer-events {
+    pointer-events: none !important;
+  }
+  
+  .u-cursor-grab {
+    cursor: grab !important;
+  }
+  
+  .u-cursor-grabbing {
+    cursor: grabbing !important;
+  }
+  
+  .u-cursor-not-allowed {
+    cursor: not-allowed !important;
+  }
+  
+  /* ============================================
+     Z-INDEX UTILITIES
+     ============================================ */
+  .u-z-dragging {
+    z-index: var(--z-index-dragging) !important;
+  }
+  
+  /* ============================================
+     ANIMATION UTILITIES
+     ============================================ */
+  .u-no-transition {
+    transition: none !important;
+  }
+  
+  .u-animate-pulse {
+    animation: pulse 1.5s ease-in-out infinite !important;
+  }
+  
+  .u-animate-glow {
+    animation: glow 2s ease-in-out infinite !important;
+  }
+  
+  /* ============================================
+     DEBUG UTILITIES (development only)
+     ============================================ */
+  .u-debug-outline {
+    outline: 2px dashed red !important;
+    outline-offset: 2px !important;
+  }
+  
+  .u-debug-grid {
+    background-image: 
+      repeating-linear-gradient(0deg, rgba(255,0,0,0.1) 0px, rgba(255,0,0,0.1) 1px, transparent 1px, transparent 50px),
+      repeating-linear-gradient(90deg, rgba(255,0,0,0.1) 0px, rgba(255,0,0,0.1) 1px, transparent 1px, transparent 50px) !important;
+  }
+}

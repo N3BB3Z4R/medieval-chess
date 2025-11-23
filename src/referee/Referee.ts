@@ -1,7 +1,7 @@
 import { PieceType, TeamType, Piece, Position } from "../Constants";
 import { isValidFarmerMove } from "./PiecesRules/FarmerRules";
 import { isValidKingMove } from "./PiecesRules/KingRules";
-import { isValidKnightMove } from "./PiecesRules/KnightRules";
+import { isValidRegularKnightMove } from "./PiecesRules/RegularKnightRules";
 import { isValidRamMove } from "./PiecesRules/RamRules";
 import { isValidScoutMove } from "./PiecesRules/ScoutRules";
 import { isValidTemplarMove } from "./PiecesRules/TemplarRules";
@@ -105,7 +105,7 @@ export default class Referee {
 
     // Refactor Reglas Caballeros
     if (
-      isValidKnightMove(
+      isValidRegularKnightMove(
         initialPosition,
         desiredPosition,
         type,

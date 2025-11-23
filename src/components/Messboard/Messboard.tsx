@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import './Messboard.css';
 import Tile from '../Tile/Tile';
 import Referee from "../../referee/Referee";
@@ -13,21 +13,44 @@ import {
   Position,
   samePosition,
 } from '../../Constants';
+import { Position as PositionClass } from '../../domain/core/Position';
+import { screenToBoard, CoordinateOffsets } from '../../domain/core/boardConfig';
+import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 
 export default function Messboard() {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [grabPosition, setGrabPosition] = useState<Position>({ x: -1, y: -1 });
   const [pieces, setPieces] = useState<Piece[]>(initialBoardState);
+  const [validMoves, setValidMoves] = useState<Position[]>([]);
+  const [captureMoves, setCaptureMoves] = useState<Position[]>([]);
   const messboardRef = useRef<HTMLDivElement>(null);
-  const referee = new Referee();
+  const referee = useMemo(() => new Referee(), []);
 
   function handleGrabPiece(e: React.MouseEvent) {
     const element = e.target as HTMLElement;
     const messboard = messboardRef.current;
     if (element.classList.contains("mess-piece") && messboard) {
-      const grabX = Math.floor((e.clientX - messboard.offsetLeft) / GRID_SIZE);
-      const grabY = Math.abs(Math.ceil((e.clientY - messboard.offsetTop - 800) / GRID_SIZE));
-      setGrabPosition({ x: grabX, y: grabY });
+      const boardRect = messboard.getBoundingClientRect();
+      const coords = screenToBoard(e.clientX, e.clientY, boardRect);
+      
+      if (!coords) return;
+      
+      setGrabPosition({ x: coords.x, y: coords.y });
+
+      // Find the grabbed piece
+      const currentPiece = pieces.find((p) => samePosition(p.position, coords));
+      
+      if (currentPiece) {
+        // Calculate valid moves for visual indicators
+        const { validMoves: validMovesArray, captureMoves: captureMovesArray } = calculateValidMoves(
+          currentPiece,
+          pieces,
+          referee
+        );
+        
+        setValidMoves(validMovesArray);
+        setCaptureMoves(captureMovesArray);
+      }
 
       const x = e.clientX - GRID_SIZE / 2;
       const y = e.clientY - GRID_SIZE / 2;
@@ -41,12 +64,12 @@ export default function Messboard() {
   function handleMovePiece(e: React.MouseEvent) {
     const messboard = messboardRef.current;
     if (activePiece && messboard) {
-      const minX = messboard.offsetLeft - 5;
-      const minY = messboard.offsetTop - 5;
-      const maxX = messboard.offsetLeft + messboard.clientWidth - 45;
-      const maxY = messboard.offsetLeft + messboard.clientHeight + 170;
-      const x = e.clientX - 25;
-      const y = e.clientY - 25;
+      const minX = messboard.offsetLeft - CoordinateOffsets.DRAG_MIN_BUFFER;
+      const minY = messboard.offsetTop - CoordinateOffsets.DRAG_MIN_BUFFER;
+      const maxX = messboard.offsetLeft + messboard.clientWidth - CoordinateOffsets.MAX_DRAG_BUFFER;
+      const maxY = messboard.offsetTop + messboard.clientHeight - CoordinateOffsets.PIECE_OFFSET;
+      const x = e.clientX - CoordinateOffsets.PIECE_OFFSET;
+      const y = e.clientY - CoordinateOffsets.PIECE_OFFSET;
       activePiece.style.position = "absolute";
 
       if (x < minX) {
@@ -70,8 +93,29 @@ export default function Messboard() {
   function handleDropPiece(e: React.MouseEvent) {
     const messboard = messboardRef.current;
     if (activePiece && messboard) {
-      const x = Math.floor((e.clientX - messboard.offsetLeft) / GRID_SIZE);
-      const y = Math.abs(Math.ceil((e.clientY - messboard.offsetTop - 800) / GRID_SIZE));
+      const boardRect = messboard.getBoundingClientRect();
+      const coords = screenToBoard(e.clientX, e.clientY, boardRect);
+      
+      if (!coords) {
+        // Invalid drop position - reset piece
+        activePiece.style.position = "relative";
+        activePiece.style.removeProperty("left");
+        activePiece.style.removeProperty("top");
+        setActivePiece(null);
+        return;
+      }
+      
+      const { x, y } = coords;
+      
+      // Check if drop position is in forbidden zone
+      if (PositionClass.isInForbiddenZone({ x, y })) {
+        // Cannot drop in forbidden zone - reset piece
+        activePiece.style.position = "relative";
+        activePiece.style.removeProperty("left");
+        activePiece.style.removeProperty("top");
+        setActivePiece(null);
+        return;
+      }
 
       const currentPiece = pieces.find((p) =>
         samePosition(p.position, grabPosition)
@@ -135,6 +179,10 @@ export default function Messboard() {
           activePiece.style.removeProperty('left');
         }
       }
+      
+      // Clear valid moves indicators
+      setValidMoves([]);
+      setCaptureMoves([]);
       setActivePiece(null);
     }
   }
@@ -146,7 +194,28 @@ export default function Messboard() {
         const number = j + i + 2;
         const piece = pieces.find((p) => samePosition(p.position, { x: i, y: j }));
         let image = piece ? piece.image : undefined;
-        board.push(<Tile key={`${j},${i}`} image={image} number={number} />);
+        
+        // Check if this tile is selected
+        const isSelected = samePosition(grabPosition, { x: i, y: j });
+        
+        // Check if this tile is a valid move
+        const isValidMove = validMoves.some((pos) => samePosition(pos, { x: i, y: j }));
+        
+        // Check if this tile is a capture move
+        const isCaptureMove = captureMoves.some((pos) => samePosition(pos, { x: i, y: j }));
+        
+        board.push(
+          <Tile 
+            key={`${j},${i}`} 
+            image={image} 
+            number={number}
+            x={i}
+            y={j}
+            isSelected={isSelected}
+            isValidMove={isValidMove}
+            isCaptureMove={isCaptureMove}
+          />
+        );
       }
     }
     return board;

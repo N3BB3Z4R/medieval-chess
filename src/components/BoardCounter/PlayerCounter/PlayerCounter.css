@@ -55,16 +55,16 @@
 .player-counter__wrapper {
   display: flex;
   flex-direction: row;
-  justify-content: start;
-  align-items: start;
+  justify-content: flex-start;
+  align-items: flex-start;
   height: 40px;
 }
 
 .player-counter__text-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: start;
-  align-items: start;
+  justify-content: flex-start;
+  align-items: flex-start;
   height: 100%;
 }
 

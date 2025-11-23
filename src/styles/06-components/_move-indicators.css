@@ -1,0 +1,217 @@
+/**
+ * ITCSS Layer 6: COMPONENTS - Move Indicators
+ * Visual feedback for valid moves, captures, and attacks
+ * Using modern CSS nesting and custom properties
+ */
+
+@layer components {
+  /* ============================================
+     TILE STATES - Interactive Indicators
+     ============================================ */
+  
+  /* Selected tile (where piece was grabbed from) */
+  .tile--selected {
+    background-color: var(--color-selected) !important;
+    box-shadow: 
+      0 0 20px 5px var(--color-selected-glow),
+      inset 0 0 30px 0 var(--color-selected-glow);
+    animation: pulse 1.5s ease-in-out infinite;
+    z-index: calc(var(--z-index-tile) + 1);
+    
+    /* Maintain hover state */
+    &:hover {
+      box-shadow: 
+        0 0 30px 8px var(--color-selected-glow),
+        inset 0 0 40px 0 var(--color-selected-glow);
+    }
+  }
+  
+  /* Valid move indicator (empty squares) */
+  .tile--valid-move {
+    position: relative;
+    
+    /* Create dot indicator in center */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background-color: var(--color-valid-move);
+      border-radius: 50%;
+      opacity: var(--opacity-indicator);
+      box-shadow: 0 0 10px var(--color-valid-move-glow);
+      animation: pulse 1.5s ease-in-out infinite;
+      pointer-events: none;
+      z-index: var(--z-index-indicator);
+    }
+    
+    /* Hover state */
+    &:hover {
+      background-color: var(--color-valid-move) !important;
+      box-shadow: 
+        0 0 20px 5px var(--color-valid-move-glow),
+        inset 0 0 20px 0 var(--color-valid-move-glow);
+      
+      &::before {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+        transition: all var(--transition-fast);
+      }
+    }
+    
+    /* Focus state for keyboard navigation */
+    &:focus {
+      outline: 2px solid var(--color-valid-move);
+      outline-offset: -2px;
+    }
+  }
+  
+  /* Capture move indicator (tile with opponent piece) */
+  .tile--capture-move {
+    position: relative;
+    
+    /* Create border indicator */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border: 3px solid var(--color-capture-move);
+      border-radius: var(--border-radius-tile);
+      opacity: var(--opacity-indicator);
+      animation: captureGlow 1s ease-in-out infinite;
+      pointer-events: none;
+      z-index: var(--z-index-indicator);
+    }
+    
+    /* Corner indicators */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-capture-move);
+      border-radius: 50%;
+      box-shadow: 
+        0 0 8px var(--color-capture-move-glow),
+        -36px 0 0 0 var(--color-capture-move),
+        0 36px 0 0 var(--color-capture-move),
+        -36px 36px 0 0 var(--color-capture-move);
+      animation: pulse 1.2s ease-in-out infinite;
+      pointer-events: none;
+      z-index: var(--z-index-indicator);
+    }
+    
+    /* Hover state */
+    &:hover {
+      background-color: var(--color-capture-move) !important;
+      box-shadow: 
+        0 0 25px 8px var(--color-capture-move-glow),
+        inset 0 0 30px 0 var(--color-capture-move-glow);
+      
+      &::after {
+        opacity: 0;
+        border-width: 5px;
+        transition: all var(--transition-fast);
+      }
+      
+      &::before {
+        opacity: 0;
+      }
+    }
+    
+    /* Focus state */
+    &:focus {
+      outline: 2px solid var(--color-capture-move);
+      outline-offset: -2px;
+    }
+  }
+  
+  /* Attack indicator (piece under attack / TEMPLAR counter-attack) */
+  .tile--under-attack {
+    animation: attackWarning 1s ease-in-out infinite;
+    
+    /* Warning overlay */
+    &::before {
+      content: '⚔️';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      font-size: 16px;
+      filter: drop-shadow(0 0 4px var(--color-attack-indicator-glow));
+      animation: pulse 1s ease-in-out infinite;
+      pointer-events: none;
+      z-index: calc(var(--z-index-indicator) + 1);
+    }
+  }
+  
+  /* Special ability indicator (TRAP, TREBUCHET range, etc.) */
+  .tile--special-ability {
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 5px,
+          var(--color-attack-indicator) 5px,
+          var(--color-attack-indicator) 10px
+        );
+      opacity: 0.2;
+      border-radius: var(--border-radius-tile);
+      animation: slideIn var(--transition-normal);
+      pointer-events: none;
+      z-index: var(--z-index-indicator);
+    }
+  }
+  
+  /* ============================================
+     COMBINATION STATES
+     ============================================ */
+  
+  /* Valid move + capture (piece can move or capture) 
+     Note: Capture styling takes visual precedence
+     Both classes applied allows for semantic clarity in logic */
+  
+  /* Invalid move feedback (piece cannot move there) */
+  .tile--invalid {
+    animation: shake 0.3s ease-in-out;
+    
+    &::before {
+      content: '✕';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      color: var(--color-capture-move);
+      opacity: 0.8;
+      animation: fadeOut 0.5s ease-out forwards;
+      pointer-events: none;
+      z-index: calc(var(--z-index-indicator) + 1);
+    }
+  }
+  
+  /* ============================================
+     ADDITIONAL ANIMATIONS
+     ============================================ */
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 0.8; }
+    to { opacity: 0; }
+  }
+}

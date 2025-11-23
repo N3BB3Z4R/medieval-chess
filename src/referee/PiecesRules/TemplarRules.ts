@@ -1,4 +1,4 @@
-import { Piece, Position, TeamType, PieceType } from "../../Constants";
+import { Piece, Position, PieceType } from "../../Constants";
 
 export function isValidTemplarMove(
   initialPosition: Position,
