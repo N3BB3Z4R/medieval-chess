@@ -14,7 +14,7 @@ import {
   samePosition,
 } from '../../Constants';
 import { Position as PositionClass } from '../../domain/core/Position';
-import { screenToBoard, CoordinateOffsets } from '../../domain/core/boardConfig';
+import { screenToBoard, CoordinateOffsets, BoardConfig } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 import { useGame, useResetGame } from '../../context/GameContext';
 import { PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../domain/core/types';
@@ -23,6 +23,7 @@ import GameOverModal from '../GameOverModal/GameOverModal';
 
 export default function Messboard() {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
+  const [ghostPiece, setGhostPiece] = useState<HTMLElement | null>(null);
   const [grabPosition, setGrabPosition] = useState<Position>({ x: -1, y: -1 });
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [captureMoves, setCaptureMoves] = useState<Position[]>([]);
@@ -127,41 +128,55 @@ export default function Messboard() {
         setCaptureMoves(captureMovesArray);
       }
 
-      const x = e.clientX - GRID_SIZE / 2;
-      const y = e.clientY - GRID_SIZE / 2;
-      element.style.position = "absolute";
-      element.style.left = `${x}px`;
-      element.style.top = `${y}px`;
+      // Create ghost piece (clone of original)
+      const ghost = element.cloneNode(true) as HTMLElement;
+      ghost.classList.add('mess-piece--ghost');
+      ghost.style.position = 'absolute';
+      ghost.style.zIndex = '1000';
+      ghost.style.opacity = '0.8';
+      ghost.style.pointerEvents = 'none';
+      
+      // Position ghost at cursor (centered)
+      // Reuse boardRect already declared above
+      const pieceHalfSize = BoardConfig.PIECE_SIZE_PX / 2;
+      const relativeX = e.clientX - boardRect.left - pieceHalfSize;
+      const relativeY = e.clientY - boardRect.top - pieceHalfSize;
+      ghost.style.left = `${relativeX}px`;
+      ghost.style.top = `${relativeY}px`;
+      
+      // Append ghost to messboard
+      messboard.appendChild(ghost);
+      setGhostPiece(ghost);
+      
+      // Fade original piece to show it's being dragged
+      element.style.opacity = '0.3';
+      
       setActivePiece(element);
     }
   }
 
   function handleMovePiece(e: React.MouseEvent) {
     const messboard = messboardRef.current;
-    if (activePiece && messboard) {
-      const minX = messboard.offsetLeft - CoordinateOffsets.DRAG_MIN_BUFFER;
-      const minY = messboard.offsetTop - CoordinateOffsets.DRAG_MIN_BUFFER;
-      const maxX = messboard.offsetLeft + messboard.clientWidth - CoordinateOffsets.MAX_DRAG_BUFFER;
-      const maxY = messboard.offsetTop + messboard.clientHeight - CoordinateOffsets.PIECE_OFFSET;
-      const x = e.clientX - CoordinateOffsets.PIECE_OFFSET;
-      const y = e.clientY - CoordinateOffsets.PIECE_OFFSET;
-      activePiece.style.position = "absolute";
-
-      if (x < minX) {
-        activePiece.style.left = `${minX}px`;
-      } else if (x > maxX) {
-        activePiece.style.left = `${maxX}px`;
-      } else {
-        activePiece.style.left = `${x}px`;
-      }
-
-      if (y < minY) {
-        activePiece.style.top = `${minY}px`;
-      } else if (y > maxY) {
-        activePiece.style.top = `${maxY}px`;
-      } else {
-        activePiece.style.top = `${y}px`;
-      }
+    if (ghostPiece && messboard) {
+      const boardRect = messboard.getBoundingClientRect();
+      
+      // Calculate ghost piece position relative to board
+      // Center the ghost on the cursor by subtracting half the piece size
+      const pieceHalfSize = BoardConfig.PIECE_SIZE_PX / 2;
+      const relativeX = e.clientX - boardRect.left - pieceHalfSize;
+      const relativeY = e.clientY - boardRect.top - pieceHalfSize;
+      
+      // Apply bounds (keep ghost within visible board area with small buffer)
+      const minPos = -pieceHalfSize;
+      const maxX = boardRect.width - pieceHalfSize;
+      const maxY = boardRect.height - pieceHalfSize;
+      
+      const clampedX = Math.max(minPos, Math.min(maxX, relativeX));
+      const clampedY = Math.max(minPos, Math.min(maxY, relativeY));
+      
+      // Move only the ghost piece
+      ghostPiece.style.left = `${clampedX}px`;
+      ghostPiece.style.top = `${clampedY}px`;
     }
   }
 
@@ -171,12 +186,20 @@ export default function Messboard() {
       const boardRect = messboard.getBoundingClientRect();
       const coords = screenToBoard(e.clientX, e.clientY, boardRect);
       
+      // Clean up ghost piece
+      if (ghostPiece) {
+        messboard.removeChild(ghostPiece);
+        setGhostPiece(null);
+      }
+      
+      // Restore original piece opacity
+      activePiece.style.opacity = '';
+      
       if (!coords) {
-        // Invalid drop position - reset piece
-        activePiece.style.position = "relative";
-        activePiece.style.removeProperty("left");
-        activePiece.style.removeProperty("top");
+        // Invalid drop position - piece stays in original position
         setActivePiece(null);
+        setValidMoves([]);
+        setCaptureMoves([]);
         return;
       }
       
@@ -188,7 +211,10 @@ export default function Messboard() {
         activePiece.style.position = "relative";
         activePiece.style.removeProperty("left");
         activePiece.style.removeProperty("top");
+        activePiece.style.opacity = ''; // Restore opacity
         setActivePiece(null);
+        setValidMoves([]);
+        setCaptureMoves([]);
         return;
       }
 
@@ -204,7 +230,10 @@ export default function Messboard() {
           activePiece.style.position = "relative";
           activePiece.style.removeProperty("left");
           activePiece.style.removeProperty("top");
+          activePiece.style.opacity = ''; // Restore opacity
           setActivePiece(null);
+          setValidMoves([]);
+          setCaptureMoves([]);
           return;
         }
         
@@ -264,14 +293,11 @@ export default function Messboard() {
             capturedPiece: capturedPieceInfo
           });
           dispatch({ type: 'MAKE_MOVE', payload: { move } });
-        } else {
-          activePiece.style.position = 'relative';
-          activePiece.style.removeProperty('top');
-          activePiece.style.removeProperty('left');
         }
+        // Note: No need to reset activePiece position since it never moved
       }
       
-      // Clear valid moves indicators
+      // Clear valid moves indicators and active piece
       setValidMoves([]);
       setCaptureMoves([]);
       setActivePiece(null);

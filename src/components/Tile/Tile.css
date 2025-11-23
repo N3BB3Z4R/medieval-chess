@@ -127,3 +127,11 @@
   cursor: grabbing;
   opacity: 0.4;  
 }
+
+/* Piece being dragged (with position: absolute) */
+.mess-piece[style*="position: absolute"] {
+  z-index: 1000;
+  opacity: 0.9;
+  cursor: grabbing;
+  pointer-events: none; /* Allow mouse events to pass through to tiles below */
+}

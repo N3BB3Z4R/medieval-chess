@@ -6,7 +6,7 @@
   grid-template-rows: repeat(16, 50px);
   width: 800px;
   height: 800px;
-
+  position: relative; /* Required for absolute positioning of dragged pieces */
 }
 
 /* tabla madera redonda bajo tablero */
