@@ -10,12 +10,15 @@ export function isValidFarmerMove(
   const specialRow = team === TeamType.OUR ? 2 : 13;
   const farmerDirection = team === TeamType.OUR ? 1 : -1;
 
+  // FIXED: Farmer can only move FORWARD (not backward/sideways)
+  // Rule: "Mueve 1 casilla" - forward only, like chess pawns
+  
   if (
-    // Si mueve 2 en vertical en dirección de ataque, desde la specialRow...
+    // Two squares forward from starting position (first move only)
     initialPosition.x === desiredPosition.x &&
     initialPosition.y === specialRow &&
     desiredPosition.y - initialPosition.y === 2 * farmerDirection &&
-    // Comprobamos si no están ocupadas las celdas
+    // Check both tiles are empty
     !tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState) &&
     !tileIsOccupied(
       desiredPosition.x,
@@ -25,16 +28,11 @@ export function isValidFarmerMove(
   ) {
     return true;
   } else if (
-    // Si no mueve dos, mueve una casilla en cualquier dirección
-    (desiredPosition.x === initialPosition.x &&
-      desiredPosition.y - initialPosition.y === 1) || // derecha
-    (desiredPosition.x === initialPosition.x &&
-      desiredPosition.y - initialPosition.y === -1) || // izquierda
-    (desiredPosition.y === initialPosition.y &&
-      desiredPosition.x - initialPosition.x === 1) || // abajo
-    (desiredPosition.y === initialPosition.y &&
-      desiredPosition.x - initialPosition.x === -1) // arriba
+    // One square forward only (not backward or sideways)
+    initialPosition.x === desiredPosition.x &&
+    desiredPosition.y - initialPosition.y === farmerDirection
   ) {
+    // Destination must be empty (can't capture moving forward)
     if (!tileIsOccupied(desiredPosition.x, desiredPosition.y, boardState)) {
       return true;
     }

@@ -11,36 +11,37 @@ export function isValidTrebuchetMove(
     return false;
   }
 
-  const dx = Math.abs(desiredPosition.x - initialPosition.x);
-  const dy = Math.abs(desiredPosition.y - initialPosition.y);
+  const dx = desiredPosition.x - initialPosition.x;
+  const dy = desiredPosition.y - initialPosition.y;
 
-  const validDeltas = [
-    { dx: 0, dy: 1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 2 },
-    { dx: 0, dy: -2 },
-    { dx: 2, dy: 0 },
-    { dx: -2, dy: 0 },
-  ];
+  // TREBUCHET moves 1-2 squares orthogonally
+  // FIXED: Added path blocking - cannot jump over pieces
+  const isOrthogonal = (dx === 0 && dy !== 0) || (dy === 0 && dx !== 0);
+  
+  if (!isOrthogonal) {
+    return false;
+  }
 
-  for (const delta of validDeltas) {
-    if (dx === delta.dx && dy === delta.dy) {
-      return checkMove(desiredPosition, boardState);
+  const distance = Math.abs(dx + dy);
+  
+  if (distance < 1 || distance > 2) {
+    return false; // Must move exactly 1 or 2 squares
+  }
+
+  // Check path blocking for 2-square moves
+  if (distance === 2) {
+    const dirX = dx === 0 ? 0 : (dx > 0 ? 1 : -1);
+    const dirY = dy === 0 ? 0 : (dy > 0 ? 1 : -1);
+    const middleX = initialPosition.x + dirX;
+    const middleY = initialPosition.y + dirY;
+    
+    if (tileIsOccupied({ x: middleX, y: middleY }, boardState)) {
+      return false; // Path blocked
     }
   }
 
-  return false;
-}
-
-function checkMove(desiredPosition: Position, boardState: Piece[]): boolean {
-  if (!tileIsOccupied(desiredPosition, boardState)) {
-    console.log("Valid Move!");
-    return true;
-  }
-
-  return false;
+  // Destination must be empty
+  return !tileIsOccupied(desiredPosition, boardState);
 }
 
 function tileIsOccupied(position: Position, boardState: Piece[]): boolean {

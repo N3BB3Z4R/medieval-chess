@@ -17,6 +17,7 @@ import {
   GameStateReader,
   GameStateWriter 
 } from '../core/types';
+import { isInForbiddenZone, isValidPosition } from '../core/boardConfig';
 
 /**
  * Represents a piece on the board.
@@ -139,6 +140,16 @@ export class GameState implements GameStateReader, GameStateWriter {
     
     if (!movingPiece) {
       throw new Error(`No piece found at position ${move.from.toString()}`);
+    }
+    
+    // CRITICAL: Validate forbidden zones (4x4 corners)
+    if (isInForbiddenZone(move.to.x, move.to.y)) {
+      throw new Error(`Cannot move to forbidden zone at ${move.to.toString()}`);
+    }
+    
+    // Validate board bounds
+    if (!isValidPosition(move.to.x, move.to.y)) {
+      throw new Error(`Position out of bounds: ${move.to.toString()}`);
     }
 
     // Capture board snapshot BEFORE executing the move (for time travel)

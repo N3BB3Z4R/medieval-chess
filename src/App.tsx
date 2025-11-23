@@ -7,6 +7,7 @@ import BoardCounter from './components/BoardCounter/BoardCounter';
 import TurnIndicator from './components/TurnIndicator/TurnIndicator';
 import GameSetupModal from './components/GameSetupModal/GameSetupModal';
 import MoveHistory from './components/MoveHistory/MoveHistory';
+import PieceLegend from './components/PieceLegend/PieceLegend';
 import { GameProvider, useGame } from './context/GameContext';
 import { GameConfig } from './domain/game/GameConfig';
 import { GameStatus } from './domain/core/types';
@@ -69,6 +70,8 @@ function AppContent() {
         <MoveHistory moves={moveHistory} />
       </div>
       <Footer />
+      
+      <PieceLegend />
       
       {showSetup && (
         <GameSetupModal
