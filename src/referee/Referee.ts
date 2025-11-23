@@ -1,15 +1,117 @@
 import { PieceType, TeamType, Piece, Position } from "../Constants";
-import { isValidFarmerMove } from "./PiecesRules/FarmerRules";
-import { isValidKingMove } from "./PiecesRules/KingRules";
-import { isValidRegularKnightMove } from "./PiecesRules/RegularKnightRules";
-import { isValidRamMove } from "./PiecesRules/RamRules";
-import { isValidScoutMove } from "./PiecesRules/ScoutRules";
-import { isValidTemplarMove } from "./PiecesRules/TemplarRules";
-import { isValidTrapMove } from "./PiecesRules/TrapRules";
-import { isValidTreasureMove } from "./PiecesRules/TreasureRules";
-import { isValidTrebuchetMove } from "./PiecesRules/TrebuchetRules";
+import { Move } from "../domain/core/Move";
+import { Position as DomainPosition } from "../domain/core/Position";
+import { GameState } from "../domain/game/GameState";
+import { 
+  RuleEngine,
+  FarmerMoveValidator,
+  RamMoveValidator,
+  TrapMoveValidator,
+  KnightMoveValidator,
+  TemplarMoveValidator,
+  ScoutMoveValidator,
+  TrebuchetMoveValidator,
+  TreasureMoveValidator,
+  KingMoveValidator
+} from "../domain/rules";
 
+/**
+ * Referee - Game rule validator and move orchestrator.
+ * 
+ * This class uses the new RuleEngine system for move validation.
+ * All piece-specific rules are handled by dedicated validator classes.
+ */
 export default class Referee {
+  private readonly ruleEngine: RuleEngine;
+
+  constructor() {
+    // Initialize RuleEngine with all validators
+    this.ruleEngine = new RuleEngine();
+    
+    // Register all piece validators
+    this.ruleEngine.registerValidator(new FarmerMoveValidator());
+    this.ruleEngine.registerValidator(new RamMoveValidator());
+    this.ruleEngine.registerValidator(new TrapMoveValidator());
+    this.ruleEngine.registerValidator(new KnightMoveValidator());
+    this.ruleEngine.registerValidator(new TemplarMoveValidator());
+    this.ruleEngine.registerValidator(new ScoutMoveValidator());
+    this.ruleEngine.registerValidator(new TrebuchetMoveValidator());
+    this.ruleEngine.registerValidator(new TreasureMoveValidator());
+    this.ruleEngine.registerValidator(new KingMoveValidator());
+  }
+
+  /**
+   * NEW: Validates move using RuleEngine with full GameState.
+   * 
+   * This method should be used for all new code. It provides:
+   * - Access to KING death penalty state
+   * - Access to TREBUCHET ready state
+   * - Better error messages
+   * - Consistent validation across all pieces
+   * 
+   * @param move - The move to validate
+   * @param gameState - Current game state
+   * @returns Validation result with detailed feedback
+   */
+  public isValidMoveWithGameState(move: Move, gameState: GameState): { 
+    isValid: boolean; 
+    reason?: string;
+  } {
+    try {
+      const result = this.ruleEngine.validate(move, gameState);
+      return result;
+    } catch (error) {
+      console.error('Validation error:', error);
+      return {
+        isValid: false,
+        reason: error instanceof Error ? error.message : 'Unknown validation error'
+      };
+    }
+  }
+
+  /**
+   * NEW: Creates a Move object from legacy parameters.
+   * 
+   * Helper method to convert from old Position/PieceType/TeamType parameters
+   * to new Move object.
+   */
+  private createMoveFromLegacyParams(
+    from: Position,
+    to: Position,
+    pieceType: PieceType,
+    team: TeamType
+  ): Move {
+    return new Move({
+      from: new DomainPosition(from.x, from.y),
+      to: new DomainPosition(to.x, to.y),
+      pieceType,
+      team
+    });
+  }
+
+  /**
+   * NEW: Converts legacy Piece[] array to GameState.
+   * 
+   * Temporary adapter for backwards compatibility.
+   * In future, GameState should be passed directly.
+   */
+  private convertLegacyBoardToGameState(
+    boardState: Piece[],
+    currentTurn: TeamType
+  ): GameState {
+    const gamePieces = boardState.map(piece => ({
+      type: piece.type,
+      team: piece.team,
+      position: new DomainPosition(piece.position.x, piece.position.y),
+      enPassant: piece.enPassant
+      // Note: hasMoved not tracked in legacy Piece type
+    }));
+
+    return new GameState({
+      pieces: gamePieces,
+      currentTurn
+    });
+  }
   // funcion de chequear si tile esta ocupada, y ponernos si la pieza que hay es un enemigo
   tileIsOccupied(x: number, y: number, boardState: Piece[]): boolean {
     const piece = boardState.find(
@@ -66,119 +168,44 @@ export default class Referee {
     return false;
   }
 
+  /**
+   * LEGACY: Validates move using old function-based system.
+   * 
+   * This method maintains backwards compatibility with existing code.
+   * Internally, it now uses the new RuleEngine for validation.
+   * 
+   * @deprecated Use isValidMoveWithGameState() for new code
+   */
   isValidMove(
     initialPosition: Position,
     desiredPosition: Position,
     type: PieceType,
     team: TeamType,
     boardState: Piece[]
-  ) {
-    // reglas de movimiento para Campesino / Samurai
-    if (
-      isValidFarmerMove(
+  ): boolean {
+    // NEW: Use RuleEngine internally for consistent validation
+    try {
+      const move = this.createMoveFromLegacyParams(
         initialPosition,
         desiredPosition,
         type,
-        team,
-        boardState
-      )
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // reglas de movimiento para Templario
-    if (
-      isValidTemplarMove(initialPosition, desiredPosition, type, boardState)
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // reglas de movimiento para Ariete / RAM
-    if (
-      isValidRamMove(initialPosition, desiredPosition, type, team, boardState)
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // Refactor Reglas Caballeros
-    if (
-      isValidRegularKnightMove(
-        initialPosition,
-        desiredPosition,
-        type,
-        team,
-        boardState
-      )
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // reglas de movimiento para Trampa
-    if (
-      isValidTrapMove(initialPosition, desiredPosition, type, team, boardState)
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // reglas de movimiento para Explorador / Cazador / Nobles?
-    if (
-      isValidScoutMove(initialPosition, desiredPosition, type, team, boardState)
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // reglas de movimiento para Catapulta
-    if (
-      isValidTrebuchetMove(
-        initialPosition,
-        desiredPosition,
-        type,
-        team,
-        boardState
-      )
-    ) {
-      console.log("Valid Move!");
-      return true;
-    }
-
-    // reglas de movimiento para Tesoro
-    if (type === PieceType.TREASURE) {
-      if (
-        isValidTreasureMove(
-          initialPosition,
-          desiredPosition,
-          type,
-          team,
-          boardState
-        )
-      ) {
+        team
+      );
+      
+      const gameState = this.convertLegacyBoardToGameState(boardState, team);
+      
+      const result = this.ruleEngine.validate(move, gameState);
+      
+      if (result.isValid) {
         console.log("Valid Move!");
-        return true;
+      } else if (result.reason) {
+        console.log(`Invalid move: ${result.reason}`);
       }
+      
+      return result.isValid;
+    } catch (error) {
+      console.error('Move validation error:', error);
+      return false;
     }
-
-    // reglas de movimiento para Rey
-    if (type === PieceType.KING) {
-      if (
-        isValidKingMove(
-          initialPosition,
-          desiredPosition,
-          type,
-          team,
-          boardState
-        )
-      ) {
-        console.log("Valid Move!");
-        return true;
-      }
-    }
-
-    return false;
   }
 }
