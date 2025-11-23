@@ -110,6 +110,28 @@ export enum GameStatus {
 }
 
 /**
+ * Type of action a piece can take.
+ * 
+ * MOVE: Standard move or capture
+ * SKIP_TURN: TREBUCHET skips turn to prepare ranged attack
+ * RANGED_ATTACK: TREBUCHET attacks without moving (1-2 squares)
+ */
+export enum ActionType {
+  MOVE = 'MOVE',
+  SKIP_TURN = 'SKIP_TURN',
+  RANGED_ATTACK = 'RANGED_ATTACK',
+}
+
+/**
+ * State of special actions for pieces.
+ * 
+ * Tracks which pieces have skipped turn (TREBUCHET ready for ranged attack).
+ */
+export interface SpecialActionState {
+  readonly trebuchetReadyToAttack: ReadonlyMap<string, boolean>; // position key -> ready state
+}
+
+/**
  * Interface for reading game state.
  * 
  * UI components should depend on this interface instead of full GameState class.

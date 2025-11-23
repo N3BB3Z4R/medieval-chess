@@ -50,6 +50,8 @@ export class GameState implements GameStateReader, GameStateWriter {
   private readonly _moveHistory: ReadonlyArray<Move>;
   private readonly _status: GameStatus;
   private readonly _capturedPieces: ReadonlyArray<GamePiece>;
+  private readonly _trebuchetReadyPositions: ReadonlySet<string>; // Set of "x,y" positions
+  private readonly _kingDeathPenalty: ReadonlyMap<TeamType, boolean>; // team -> has penalty
 
   constructor(params: {
     pieces: ReadonlyArray<GamePiece>;
@@ -57,12 +59,16 @@ export class GameState implements GameStateReader, GameStateWriter {
     moveHistory?: ReadonlyArray<Move>;
     status?: GameStatus;
     capturedPieces?: ReadonlyArray<GamePiece>;
+    trebuchetReadyPositions?: ReadonlySet<string>;
+    kingDeathPenalty?: ReadonlyMap<TeamType, boolean>;
   }) {
     this._pieces = params.pieces;
     this._currentTurn = params.currentTurn;
     this._moveHistory = params.moveHistory ?? [];
     this._status = params.status ?? GameStatus.IN_PROGRESS;
     this._capturedPieces = params.capturedPieces ?? [];
+    this._trebuchetReadyPositions = params.trebuchetReadyPositions ?? new Set();
+    this._kingDeathPenalty = params.kingDeathPenalty ?? new Map();
   }
 
   // ==================== GameStateReader Implementation ====================
@@ -127,6 +133,36 @@ export class GameState implements GameStateReader, GameStateWriter {
     return [];
   }
 
+  /**
+   * Checks if TREBUCHET at position is ready for ranged attack.
+   * TREBUCHET becomes ready after skipping a turn.
+   */
+  public isTrebuchetReady(position: Position): boolean {
+    const posKey = `${position.x},${position.y}`;
+    return this._trebuchetReadyPositions.has(posKey);
+  }
+
+  /**
+   * Checks if team has KING death penalty (movement -1).
+   */
+  public hasKingDeathPenalty(team: TeamType): boolean {
+    return this._kingDeathPenalty.get(team) === true;
+  }
+
+  /**
+   * Gets KING for specified team.
+   */
+  public getKing(team: TeamType): GamePiece | undefined {
+    return this._pieces.find(p => p.type === PieceType.KING && p.team === team);
+  }
+
+  /**
+   * Checks if team still has their KING alive.
+   */
+  public hasKing(team: TeamType): boolean {
+    return this.getKing(team) !== undefined;
+  }
+
   // ==================== GameStateWriter Implementation ====================
 
   /**
@@ -159,6 +195,18 @@ export class GameState implements GameStateReader, GameStateWriter {
       team: piece.team
     }));
 
+    // TEMPLAR COUNTER-ATTACK CHECK
+    // Rule: "si es atacado puede atacar primero y mueren ambas fichas"
+    // Check if destination has enemy TEMPLAR - triggers mutual destruction
+    const targetPiece = this.getPieceAt(move.to);
+    let templarCounterAttack = false;
+    
+    if (targetPiece && 
+        targetPiece.type === PieceType.TEMPLAR && 
+        targetPiece.team !== movingPiece.team) {
+      templarCounterAttack = true;
+    }
+
     // Create move with snapshot
     const moveWithSnapshot = new Move({
       from: move.from,
@@ -172,27 +220,84 @@ export class GameState implements GameStateReader, GameStateWriter {
     });
 
     // Create new pieces array with move applied
-    const newPieces = this._pieces
-      .filter(piece => {
-        // Remove piece at destination (capture) - either explicit or by position
-        if (move.capturedPiece && Position.equals(piece.position, move.capturedPiece.position)) {
-          return false; // Explicit capture (en passant, special abilities)
+    let newPieces: GamePiece[];
+    
+    // TEMPLAR COUNTER-ATTACK: Mutual destruction
+    if (templarCounterAttack) {
+      // Both pieces die - remove attacker and TEMPLAR, don't move attacker
+      newPieces = this._pieces.filter(piece => {
+        // Remove TEMPLAR at destination
+        if (Position.equals(piece.position, move.to)) {
+          return false;
         }
-        if (Position.equals(piece.position, move.to) && piece.team !== movingPiece.team) {
-          return false; // Normal capture - enemy at destination
-        }
-        // Remove moving piece from old position
+        // Remove attacking piece (stays at origin, but dies)
         if (Position.equals(piece.position, move.from)) {
           return false;
         }
         return true;
-      })
-      .concat([{
-        ...movingPiece,
-        position: move.to,
-        enPassant: move.isEnPassant,
-        hasMoved: true
-      }]);
+      });
+      // Don't add moving piece back - it died in counter-attack
+    } else {
+      // Normal move logic (no counter-attack)
+      newPieces = this._pieces
+        .filter(piece => {
+          // Remove piece at destination (capture) - either explicit or by position
+          if (move.capturedPiece && Position.equals(piece.position, move.capturedPiece.position)) {
+            return false; // Explicit capture (en passant, special abilities)
+          }
+          if (Position.equals(piece.position, move.to) && piece.team !== movingPiece.team) {
+            return false; // Normal capture - enemy at destination
+          }
+          // Remove moving piece from old position
+          if (Position.equals(piece.position, move.from)) {
+            return false;
+          }
+          return true;
+        })
+        .concat([{
+          ...movingPiece,
+          position: move.to,
+          enPassant: move.isEnPassant,
+          hasMoved: true
+        }]);
+    }
+
+    // TRAP SPECIAL ABILITIES
+    // Rule: "al usarse desaparece" (disappears after use)
+    // Only apply if not in TEMPLAR counter-attack (piece already removed)
+    if (!templarCounterAttack && movingPiece.type === PieceType.TRAP) {
+      // Remove TRAP after it moves/captures
+      newPieces = newPieces.filter(piece => 
+        !Position.equals(piece.position, move.to) || piece.team !== movingPiece.team
+      );
+    }
+
+    // SCOUT/KING TRAP DEACTIVATION
+    // Rule: "los cazadores y el rey desactivan la trampa"
+    // Only apply if not in TEMPLAR counter-attack
+    if (!templarCounterAttack && 
+        (movingPiece.type === PieceType.SCOUT || movingPiece.type === PieceType.KING)) {
+      // Check all 8 adjacent tiles for enemy TRAPs
+      const adjacentOffsets = [
+        {dx: -1, dy: -1}, {dx: 0, dy: -1}, {dx: 1, dy: -1},
+        {dx: -1, dy: 0},                   {dx: 1, dy: 0},
+        {dx: -1, dy: 1},  {dx: 0, dy: 1},  {dx: 1, dy: 1}
+      ];
+      
+      for (const offset of adjacentOffsets) {
+        const checkPos = new Position(move.to.x + offset.dx, move.to.y + offset.dy);
+        const adjacentPiece = newPieces.find(p => Position.equals(p.position, checkPos));
+        
+        // If adjacent piece is enemy TRAP, remove it (deactivate)
+        if (adjacentPiece && 
+            adjacentPiece.type === PieceType.TRAP && 
+            adjacentPiece.team !== movingPiece.team) {
+          newPieces = newPieces.filter(piece => 
+            !Position.equals(piece.position, checkPos)
+          );
+        }
+      }
+    }
 
     // Get captured piece for history
     let capturedPieceForHistory: GamePiece | undefined = undefined;
@@ -211,6 +316,14 @@ export class GameState implements GameStateReader, GameStateWriter {
       ? [...this._capturedPieces, capturedPieceForHistory]
       : this._capturedPieces;
 
+    // KING DEATH PENALTY
+    // Rule: "Si le matan todas nuestras piezas pueden mover una casilla menos excepto el tesoro"
+    // Check if a KING was captured - apply movement penalty to that team
+    const newKingDeathPenalty = new Map(this._kingDeathPenalty);
+    if (capturedPieceForHistory && capturedPieceForHistory.type === PieceType.KING) {
+      newKingDeathPenalty.set(capturedPieceForHistory.team, true);
+    }
+
     // Add move with snapshot to history
     const newMoveHistory = [...this._moveHistory, moveWithSnapshot];
 
@@ -219,7 +332,9 @@ export class GameState implements GameStateReader, GameStateWriter {
       currentTurn: this._currentTurn, // Will be changed by setCurrentTurn
       moveHistory: newMoveHistory,
       status: this._status,
-      capturedPieces: newCapturedPieces
+      capturedPieces: newCapturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: newKingDeathPenalty
     });
   }
 
@@ -232,7 +347,9 @@ export class GameState implements GameStateReader, GameStateWriter {
       currentTurn: team,
       moveHistory: this._moveHistory,
       status: this._status,
-      capturedPieces: this._capturedPieces
+      capturedPieces: this._capturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: this._kingDeathPenalty
     });
   }
 
@@ -245,7 +362,9 @@ export class GameState implements GameStateReader, GameStateWriter {
       currentTurn: this._currentTurn,
       moveHistory: this._moveHistory,
       status: status,
-      capturedPieces: this._capturedPieces
+      capturedPieces: this._capturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: this._kingDeathPenalty
     });
   }
 
@@ -267,7 +386,9 @@ export class GameState implements GameStateReader, GameStateWriter {
       currentTurn: this._currentTurn,
       moveHistory: this._moveHistory,
       status: this._status,
-      capturedPieces: newCapturedPieces
+      capturedPieces: newCapturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: this._kingDeathPenalty
     });
   }
 
@@ -307,22 +428,6 @@ export class GameState implements GameStateReader, GameStateWriter {
    */
   public getCapturedPieces(): ReadonlyArray<GamePiece> {
     return this._capturedPieces;
-  }
-
-  /**
-   * Gets the king for a specific team.
-   */
-  public getKing(team: TeamType): GamePiece | undefined {
-    return this._pieces.find(piece => 
-      piece.type === PieceType.KING && piece.team === team
-    );
-  }
-
-  /**
-   * Checks if a team's king is still on the board.
-   */
-  public hasKing(team: TeamType): boolean {
-    return this.getKing(team) !== undefined;
   }
 
   /**

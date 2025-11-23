@@ -328,6 +328,11 @@ export default function Messboard() {
         const piece = pieces.find((p) => samePosition(p.position, { x: i, y: j }));
         let image = piece ? piece.image : undefined;
         
+        // Get piece info from gameState for TRAP invisibility
+        const gamePiece = reviewMode && reviewSnapshot
+          ? reviewSnapshot.find(p => p.position.x === i && p.position.y === j)
+          : gameState.getAllPieces().find(p => p.position.x === i && p.position.y === j);
+        
         // Check if this tile is selected
         const isSelected = samePosition(grabPosition, { x: i, y: j });
         
@@ -347,6 +352,9 @@ export default function Messboard() {
             isSelected={isSelected}
             isValidMove={isValidMove}
             isCaptureMove={isCaptureMove}
+            currentTurn={currentTurn}
+            pieceType={gamePiece?.type}
+            pieceTeam={gamePiece?.team}
           />
         );
       }
