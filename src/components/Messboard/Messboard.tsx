@@ -226,26 +226,42 @@ export default function Messboard() {
 
         const pawnDirection = currentPiece.team === TeamType.OUR ? 1 : -1;
 
+        // CRITICAL: Detect if there's a piece at the destination (capture)
+        const capturedPiece = pieces.find((p) => samePosition(p.position, { x, y }));
+        const capturedPieceInfo = capturedPiece ? {
+          type: mapPieceType(capturedPiece.type),
+          position: new PositionClass(capturedPiece.position.x, capturedPiece.position.y)
+        } : undefined;
+
         if (isEnPassantMove) {
           // Dispatch en passant move to GameContext
-          // GameContext will handle state update, we just need to trigger the move
+          // En passant captures the pawn that just moved 2 squares (behind the destination)
+          const enPassantCaptureY = currentPiece.team === TeamType.OUR ? y - 1 : y + 1;
+          const enPassantCapturedPiece = pieces.find((p) => 
+            p.position.x === x && p.position.y === enPassantCaptureY
+          );
+          
           const move = new Move({
             from: new PositionClass(grabPosition.x, grabPosition.y),
             to: new PositionClass(x, y),
             pieceType: mapPieceType(currentPiece.type),
             team: currentPieceTeam,
             isEnPassant: true,
+            capturedPiece: enPassantCapturedPiece ? {
+              type: mapPieceType(enPassantCapturedPiece.type),
+              position: new PositionClass(enPassantCapturedPiece.position.x, enPassantCapturedPiece.position.y)
+            } : undefined
           });
           dispatch({ type: 'MAKE_MOVE', payload: { move } });
           
         } else if (validMove) {
-          // Dispatch regular move to GameContext
-          // GameContext will handle state update
+          // Dispatch regular move to GameContext (with capture info if applicable)
           const move = new Move({
             from: new PositionClass(grabPosition.x, grabPosition.y),
             to: new PositionClass(x, y),
             pieceType: mapPieceType(currentPiece.type),
             team: currentPieceTeam,
+            capturedPiece: capturedPieceInfo
           });
           dispatch({ type: 'MAKE_MOVE', payload: { move } });
         } else {

@@ -144,9 +144,12 @@ export class GameState implements GameStateReader, GameStateWriter {
     // Create new pieces array with move applied
     const newPieces = this._pieces
       .filter(piece => {
-        // Remove captured piece if any
+        // Remove piece at destination (capture) - either explicit or by position
         if (move.capturedPiece && Position.equals(piece.position, move.capturedPiece.position)) {
-          return false;
+          return false; // Explicit capture (en passant, special abilities)
+        }
+        if (Position.equals(piece.position, move.to) && piece.team !== movingPiece.team) {
+          return false; // Normal capture - enemy at destination
         }
         // Remove moving piece from old position
         if (Position.equals(piece.position, move.from)) {
@@ -161,14 +164,21 @@ export class GameState implements GameStateReader, GameStateWriter {
         hasMoved: true
       }]);
 
+    // Get captured piece for history
+    let capturedPieceForHistory: GamePiece | undefined = undefined;
+    if (move.capturedPiece) {
+      capturedPieceForHistory = this.getPieceAt(move.capturedPiece.position);
+    } else {
+      // Check if there's an enemy at destination
+      const pieceAtDestination = this.getPieceAt(move.to);
+      if (pieceAtDestination && pieceAtDestination.team !== movingPiece.team) {
+        capturedPieceForHistory = pieceAtDestination;
+      }
+    }
+
     // Update captured pieces list
-    const newCapturedPieces = move.isCapture() && move.capturedPiece
-      ? [...this._capturedPieces, {
-          type: move.capturedPiece.type,
-          team: this.getPieceAt(move.capturedPiece.position)?.team ?? TeamType.OPPONENT,
-          position: move.capturedPiece.position,
-          hasMoved: true
-        } as GamePiece]
+    const newCapturedPieces = capturedPieceForHistory
+      ? [...this._capturedPieces, capturedPieceForHistory]
       : this._capturedPieces;
 
     // Add move to history
