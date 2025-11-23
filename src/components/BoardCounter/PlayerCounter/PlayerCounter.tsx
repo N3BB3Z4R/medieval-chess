@@ -17,14 +17,14 @@ const PlayerCounter = (props: { profile: PlayerType, selected: boolean }) => {
 
   const resolvePlayerNumber = () => {
     switch (playerPosition) {
-      case 'top':
-        return 1
-      case 'right':
-        return 2
       case 'bottom':
-        return 3
+        return 1  // Player 1 (OUR team)
+      case 'top':
+        return 2  // Player 2 (OPPONENT team)
       case 'left':
-        return 4
+        return 3  // Player 3 (future 4-player)
+      case 'right':
+        return 4  // Player 4 (future 4-player)
       default:
         return 0
     }

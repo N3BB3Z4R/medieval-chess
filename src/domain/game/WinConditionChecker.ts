@@ -36,16 +36,19 @@ export class WinConditionChecker implements IWinConditionChecker {
       return kingStatus;
     }
     
-    // Check for checkmate
-    const checkmateStatus = this.checkForCheckmate(state);
-    if (checkmateStatus !== null) {
-      return checkmateStatus;
-    }
+    // TODO Phase 3: Enable checkmate/stalemate detection once getValidMovesFrom() is implemented
+    // Currently getValidMovesFrom() is a placeholder that returns [], causing false stalemate detection
     
-    // Check for stalemate
-    if (this.isStalemate(state)) {
-      return GameStatus.STALEMATE;
-    }
+    // Check for checkmate (DISABLED - requires working move validator)
+    // const checkmateStatus = this.checkForCheckmate(state);
+    // if (checkmateStatus !== null) {
+    //   return checkmateStatus;
+    // }
+    
+    // Check for stalemate (DISABLED - requires working move validator)
+    // if (this.isStalemate(state)) {
+    //   return GameStatus.STALEMATE;
+    // }
     
     // Game still in progress
     return null;

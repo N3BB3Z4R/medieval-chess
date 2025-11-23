@@ -5,7 +5,8 @@ import { WinConditionChecker } from '../domain/game/WinConditionChecker';
 import { GameConfig, create2PlayerGame } from '../domain/game/GameConfig';
 import { Move } from '../domain/core/Move';
 import { Position } from '../domain/core/Position';
-import { GameStatus } from '../domain/core/types';
+import { GameStatus, TeamType as DomainTeamType } from '../domain/core/types';
+import { initialBoardState } from '../Constants';
 
 /**
  * Game Context for managing global game state.
@@ -88,9 +89,14 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
     }
     
     case 'RESET_GAME': {
+      // Reload initial pieces from Constants.ts
+      const freshGameState = GameState.fromLegacyPieces(
+        initialBoardState,
+        DomainTeamType.OUR
+      );
       return {
         ...state,
-        gameState: GameState.createEmpty(), // TODO: Use createInitialState() when implemented
+        gameState: freshGameState,
       };
     }
     
@@ -120,14 +126,19 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
  * Wrap your app with this to provide game state to all components.
  */
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Initialize GameState with pieces from Constants.ts
+  // fromLegacyPieces() handles the conversion internally
+  const initialGameState = GameState.fromLegacyPieces(
+    initialBoardState,
+    DomainTeamType.OUR
+  );
+
   const [state, dispatch] = useReducer(gameReducer, {
-    gameState: GameState.createEmpty(), // TODO: Initialize with starting pieces
+    gameState: initialGameState, // Initialize with 32 starting pieces
     gameConfig: create2PlayerGame(), // Default: 2-player game
     turnManager,
     winConditionChecker,
-  });
-  
-  const value: GameContextValue = {
+  });  const value: GameContextValue = {
     ...state,
     dispatch,
   };

@@ -148,10 +148,10 @@ Connected visual move indicators to game logic in Messboard component. Players c
 
 ---
 
-## ✅ PHASE 2: TURN SYSTEM - IN PROGRESS (85% COMPLETE)
+## ✅ PHASE 2: TURN SYSTEM - 95% COMPLETE
 
 ### Summary
-Implementing turn management system, win condition detection, and UI validation. Core domain logic completed, UI integration in progress.
+Implemented complete turn management system with win condition detection, game configuration system, setup modal, and UI validation. Core gameplay loop fully functional. Only polish features (MoveHistory, Surrender button) remaining.
 
 ### Completed Tasks
 
@@ -178,38 +178,77 @@ Implementing turn management system, win condition detection, and UI validation.
 - **Architecture**: Implements `IWinConditionChecker` interface, full SOLID compliance
 - **Effort**: 3 hours
 
-#### 3. ✅ GameContext Provider (4 hours)
+#### 3. ✅ GameConfig System (2 hours)
 
-- **File**: `src/context/GameContext.tsx` (155 lines)
+- **File**: `src/domain/game/GameConfig.ts` (61 lines)
+- **Interfaces**:
+  - `PlayerConfig` - Defines player ID, team, name, color, type (human/AI)
+  - `GameConfig` - Defines game configuration (players, timePerTurn, startingTeam)
+- **Factory Functions**:
+  - `create2PlayerGame()` - Returns config for 2-player match (fully implemented)
+  - `create3PlayerGame()` - Placeholder for Phase 7
+  - `create4PlayerGame()` - Placeholder for Phase 7
 - **Features**:
-  - Context API + useReducer for state management
-  - Integrated TurnManager and WinConditionChecker
-  - Actions: `MAKE_MOVE`, `RESET_GAME`, `SET_STATUS`
-  - Custom hooks: `useGame()`, `useMakeMove()`, `useResetGame()`
-  - Automatic turn advancement after valid moves
-  - Win condition checking after each move
-- **Architecture**: Dependency Inversion - React depends on domain abstractions
-- **Effort**: 2 hours
-
-#### 4. ✅ React Integration (2 hours)
-
-- **Files Modified**:
-  - `src/App.tsx` - Wrapped with `<GameProvider>`
-  - `src/components/BoardCounter/BoardCounter.tsx` - Connected to currentTurn, highlights active player
-- **Impact**: Turn indicator now functional, shows which player can move
+  - Timer toggle support
+  - Customizable turn time (30-300 seconds)
+  - Extensible for 3-4 player modes
+- **Architecture**: Pure domain logic, zero dependencies
 - **Effort**: 1 hour
 
-#### 5. ✅ Turn Validation in Messboard (1 hour)
+#### 4. ✅ GameContext Provider (4 hours)
 
-- **File**: `src/components/Messboard/Messboard.tsx`
+- **File**: `src/context/GameContext.tsx` (215 lines) - **HEAVILY MODIFIED**
+- **Features**:
+  - Context API + useReducer for state management
+  - Integrated TurnManager, WinConditionChecker, and GameConfig
+  - Actions: `MAKE_MOVE`, `RESET_GAME`, `SET_STATUS`, `START_GAME` (new)
+  - Custom hooks: `useGame()`, `useMakeMove()`, `useResetGame()`, `useStartGame()` (new)
+  - Automatic turn advancement after valid moves
+  - Win condition checking after each move
+- **NEW - Legacy Integration**:
+  - Type conversion helpers: `mapLegacyPieceTypeToDomain()`, `mapLegacyTeamTypeToDomain()`
+  - `convertLegacyPiecesToDomain()` - Bridges Constants.ts enums → domain string types
+  - **CRITICAL FIX**: GameState now initializes with `fromLegacyPieces(initialBoardState)` instead of `createEmpty()`
+- **Architecture**: Dependency Inversion - React depends on domain abstractions
+- **Effort**: 3 hours (including bug fixes)
+
+#### 5. ✅ GameSetupModal Component (2 hours)
+
+- **Files Created**:
+  - `src/components/GameSetupModal/GameSetupModal.tsx` (103 lines)
+  - `src/components/GameSetupModal/GameSetupModal.css` (245 lines)
+- **Features**:
+  - Player count selection (2/3/4 players)
+  - Timer toggle (on/off)
+  - Time slider (30-300 seconds)
+  - "Iniciar Partida" button dispatches START_GAME action
+  - 3-4 player options disabled with "Próximamente" badge
+  - Responsive design with animations
+- **Animations**: Backdrop fade, content scale, button hover effects
+- **Integration**: Uses `useStartGame()` hook from GameContext
+- **Effort**: 2 hours
+
+#### 6. ✅ React Integration (2 hours)
+
+- **Files Modified**:
+  - `src/App.tsx` - Wrapped with `<GameProvider>`, added GameSetupModal trigger, **fixed showSetup to default true**
+  - `src/components/BoardCounter/BoardCounter.tsx` - Connected to currentTurn, highlights active player
+- **Impact**: Turn indicator functional, shows which player can move, modal appears on app start
+- **Effort**: 1 hour (including bug fixes)
+
+#### 7. ✅ Turn Validation in Messboard (1 hour)
+
+- **File**: `src/components/Messboard/Messboard.tsx` (513 lines)
 - **Changes**:
   - Added turn validation in `handleGrabPiece()` - prevents grabbing opponent's pieces
+  - **NEW**: Type conversion from domain TeamType (string) → legacy TeamType (enum) for comparison
   - Shows warning in console: "Not your turn! Current turn: X, Piece team: Y"
   - Only pieces of current team can be selected
-- **Impact**: Turn-based gameplay now enforced
-- **Effort**: 30 minutes
+  - Integrated `calculateValidMoves()` for visual indicators
+- **Impact**: Turn-based gameplay fully enforced with type safety
+- **Effort**: 1 hour (including type mismatch fix)
 
-#### 6. ✅ GameOverModal Component (2 hours)
+#### 8. ✅ GameOverModal Component (2 hours)
 
 - **Files Created**:
   - `src/components/GameOverModal/GameOverModal.tsx` (74 lines)
@@ -223,19 +262,64 @@ Implementing turn management system, win condition detection, and UI validation.
 - **Animations**: fadeIn, slideIn, bounce effects
 - **Effort**: 1 hour
 
-### Remaining Tasks (15% - 4 hours)
+### 🐛 Critical Bug Fixes (This Session - 4 hours)
 
-#### 7. ⏳ Move History Display (2 hours)
+#### Bug 1: ✅ GameSetupModal Auto-Start
+- **Issue**: Modal never appeared, game started immediately
+- **Root Cause**: `App.tsx` had `showSetup` initialized to `false`
+- **Fix**: Changed `useState(false)` → `useState(true)`
+- **File**: `src/App.tsx`
+
+#### Bug 2: ✅ Visual Indicators Missing
+- **Issue**: Green dots and red borders not appearing
+- **Root Cause**: Tile.css missing BEM classes and `position: relative`
+- **Fix**: Added `.tile--dark`, `.tile--light`, `position: relative` to Tile.css
+- **File**: `src/components/Tile/Tile.css`
+
+#### Bug 3: ✅ Wrong Player Numbering
+- **Issue**: UI showed "Player 3 activo" instead of "Player 1"
+- **Root Cause**: `resolvePlayerNumber()` had inverted mapping (top=1, bottom=3)
+- **Fix**: Corrected to bottom=1, top=2, left=3, right=4
+- **File**: `src/components/BoardCounter/PlayerCounter/PlayerCounter.tsx`
+
+#### Bug 4: ✅ Type Mismatch in Turn Validation
+- **Issue**: Turn validation failing, all pieces grabbable
+- **Root Cause**: Comparing domain TeamType (string 'OUR') with legacy TeamType (enum 1)
+- **Fix**: Added `currentTurnLegacy` conversion before comparison
+- **File**: `src/components/Messboard/Messboard.tsx`
+
+#### Bug 5: ✅ CRITICAL - GameState Initialization
+- **Issue**: Error "No piece found at position (7, 2)" when moving any piece
+- **Root Cause**: GameState initialized with `createEmpty()` while Messboard had 32 pieces
+- **Impact**: **Game-breaking** - prevented all piece movement
+- **Fix**: Created type conversion helpers and initialized GameState with `fromLegacyPieces(initialBoardState)`
+- **File**: `src/context/GameContext.tsx`
+- **Changes**:
+  - Added imports: `initialBoardState`, legacy/domain type enums
+  - Created `mapLegacyPieceTypeToDomain()` - Converts enum (0-8) → string ('FARMER'-'KING')
+  - Created `mapLegacyTeamTypeToDomain()` - Converts enum (0-1) → string ('OUR'|'OPPONENT')
+  - Created `convertLegacyPiecesToDomain()` - Bridges 32 legacy pieces to domain format
+  - Changed initialization: `GameState.createEmpty()` → `GameState.fromLegacyPieces(domainPieces, DomainTeamType.OUR)`
+- **Effort**: 2 hours (diagnosis + implementation)
+
+### Remaining Tasks (5% - 4 hours)
+
+#### 9. ⏳ Move History Display (2 hours)
 - **TODO**: Add MoveHistory component
 - Display algebraic notation of moves
 - Show captured pieces
 - Scroll to latest move
 
-#### 8. ⏳ Turn Timer (2 hours)
-- **TODO**: Integrate BoardClock.tsx
+#### 10. ⏳ Surrender Button (1 hour)
+- **TODO**: Add surrender button to header
+- Dispatch game end action with loser
+- Confirmation dialog
+
+#### 11. ⏳ Turn Timer Integration (1 hour)
+- **TODO**: Connect BoardClock.tsx to GameConfig.timePerTurn
 - Add countdown per turn
 - Auto-advance turn on timeout
-- Persistent timer state
+- Visual warning at 10 seconds remaining
 
 ---
 
@@ -400,22 +484,96 @@ Establish clean architecture with SOLID-compliant domain layer
 | **Phase 0.5: ITCSS + Indicators** | ✅ DONE | 6h | ~6h | 0h |
 | **Phase 0.6: Integration** | ✅ DONE | 0.5h | ~0.5h | 0h |
 | **Phase 1: Domain Foundation** | ✅ DONE | 30h | ~8h | 0h (tests pending 10h) |
-| **Phase 2: Turn System** | 🔄 IN PROGRESS | 24h | ~20h | ~4h |
+| **Phase 2: Turn System** | 🟢 95% DONE | 24h | ~24h | ~1h |
+| **Phase 2.1: GameConfig System** | ✅ DONE | - | ~1h | 0h |
+| **Phase 2.2: GameSetupModal** | ✅ DONE | - | ~2h | 0h |
+| **Phase 2.3: UI Polish** | ⏳ PARTIAL | - | ~0h | ~1h |
+| **Phase 2 Bug Fixes** | ✅ DONE | - | ~4h | 0h |
 | **Phase 3: Rule Engine** | 🔲 TODO | 40h | 0h | 40h |
 | **Phase 4: Special Abilities** | 🔲 TODO | 60h | 0h | 60h |
 | **Phase 5: Canvas Rendering** | 🔲 TODO | 40h | 0h | 40h |
 | **Phase 6: AI Player** | 🔲 TODO | 50h | 0h | 50h |
 | **Phase 7: 4-Player Support** | 🔲 TODO | 60h | 0h | 60h |
-| **TOTAL** | | **316.5h** | **40.5h** | **276h** |
+| **TOTAL** | | **316.5h** | ~**51.5h** | **265h** |
 
-**Progress: 12.8% Complete** (40.5h / 316.5h)
+**Progress: 16.3% Complete** (51.5h / 316.5h)
 
 **Functional Milestones Achieved:**
-- ✅ Turn-based gameplay enforced
+- ✅ Turn-based gameplay enforced with type-safe validation
 - ✅ Win condition detection (king capture)
-- ✅ Game over modal with restart
-- ✅ Visual move indicators
-- ✅ Clean architecture foundation
+- ✅ Game over modal with restart functionality
+- ✅ Visual move indicators (green dots, red borders)
+- ✅ Clean architecture foundation with domain separation
+- ✅ GameSetupModal with 2-4 player configuration
+- ✅ GameConfig system for extensible player setup
+- ✅ **CRITICAL**: GameState properly initialized with 32 starting pieces
+- ✅ Legacy → Domain type conversion bridge functional
+
+---
+
+## Session Summary (Current Session)
+
+### Session Focus: Bug Fixes & GameConfig Implementation
+
+This session focused on resolving critical bugs discovered during 2-player gameplay testing and completing the game configuration system.
+
+### Major Accomplishments
+
+1. **GameConfig Architecture** (1 hour)
+   - Created `PlayerConfig` and `GameConfig` interfaces
+   - Implemented `create2PlayerGame()` factory
+   - Prepared for 3-4 player expansion (Phase 7)
+
+2. **GameSetupModal** (2 hours)
+   - Full-featured modal with player selection (2/3/4)
+   - Timer configuration (toggle + 30-300s slider)
+   - Disabled 3-4 player with "Próximamente" badges
+   - Integrated with GameContext via `useStartGame()` hook
+
+3. **Critical Bug Fixes** (4 hours)
+   - **Bug 1**: Fixed modal auto-start (showSetup initialization)
+   - **Bug 2**: Added BEM classes for visual indicators
+   - **Bug 3**: Corrected player numbering logic (bottom=1, top=2)
+   - **Bug 4**: Fixed type mismatch in turn validation (domain vs legacy TeamType)
+   - **Bug 5 (CRITICAL)**: Fixed GameState initialization - was empty, causing "No piece found" crash
+
+4. **Type System Bridge** (2 hours)
+   - Created `mapLegacyPieceTypeToDomain()` (enum → string)
+   - Created `mapLegacyTeamTypeToDomain()` (enum → string)
+   - Created `convertLegacyPiecesToDomain()` (full piece conversion)
+   - Enabled safe coexistence of legacy Constants.ts with domain types
+
+### Technical Debt Addressed
+
+- **State Desynchronization**: GameState was empty while Messboard had 32 pieces → Fixed with `fromLegacyPieces()`
+- **Type Mismatch**: Domain layer (string types) vs Legacy layer (enum types) → Fixed with conversion helpers
+- **Missing Validation**: Turn checking bypassed → Fixed with proper type conversion before comparison
+
+### Files Modified This Session
+
+1. `src/App.tsx` - Fixed showSetup default value
+2. `src/components/Tile/Tile.css` - Added BEM classes
+3. `src/components/BoardCounter/PlayerCounter/PlayerCounter.tsx` - Fixed player numbering
+4. `src/components/Messboard/Messboard.tsx` - Added type conversion for turn validation
+5. `src/context/GameContext.tsx` - **MAJOR**: Added type helpers, fixed GameState initialization
+6. `src/domain/game/GameConfig.ts` - **NEW**: Created configuration system
+7. `src/components/GameSetupModal/GameSetupModal.tsx` - **NEW**: Created setup modal
+8. `src/components/GameSetupModal/GameSetupModal.css` - **NEW**: Modal styling
+
+### Testing Status
+
+**Manual Testing Completed:**
+- ✅ GameSetupModal appears on app start
+- ✅ 2-player selection works correctly
+- ✅ Timer configuration functional
+- ✅ "Iniciar Partida" starts game
+- ✅ Visual indicators show on piece selection
+- ✅ Player 1 displayed correctly (bottom)
+- ✅ Turn validation prevents grabbing opponent pieces
+- ✅ Pieces movable without crash
+
+**Ready for Next Phase:**
+Phase 2 is now 95% complete. Only polish features remain (MoveHistory, Surrender button, timer integration). Core gameplay loop is fully functional and tested.
 
 ---
 

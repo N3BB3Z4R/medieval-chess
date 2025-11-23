@@ -76,14 +76,27 @@
   border-bottom: 4px solid hsl(159, 12%, 27%);
   box-shadow: 0 4px 10px 3px hsl(160, 10%, 11%), inset 0 0 20px 0px hsl(86, 22%, 39%), 0 0 20px 0px hsl(155, 84%, 83%, 0%);;
   transition: 1s ease-in-out;
+  position: relative; /* For ::before and ::after indicators */
 }
 
 .tile:hover {
   transition: 0.1s ease-in-out;
-  /* size: 120%; */
   box-shadow: 0 4px 10px 3px hsl(160, 10%, 11%, 0%), inset 0 0 10px 0px rgb(174, 212, 129), 0 0 25px 0px rgb(222, 255, 131);
 }
 
+/* BEM modifiers for colors */
+.tile--dark {
+  background-color: rgb(60, 87, 71);
+}
+.tile--dark:hover {
+  background-color: rgb(86, 117, 77);
+}
+
+.tile--light {
+  background-color: rgb(226, 255, 198);
+}
+
+/* Legacy support - keep old classes for now */
 .black-tile {
   background-color: rgb(60, 87, 71);
 }

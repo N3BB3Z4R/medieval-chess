@@ -366,12 +366,36 @@ export class GameState implements GameStateReader, GameStateWriter {
 
   /**
    * Creates game state from existing pieces (for migration from legacy code).
+   * 
+   * NOTE: Legacy code uses numeric enums (0,1,2...) while domain uses string enums.
+   * This method handles the conversion.
    */
   public static fromLegacyPieces(pieces: any[], currentTurn: TeamType = TeamType.OUR): GameState {
+    // Helper to convert legacy numeric PieceType enum to domain string enum
+    const convertPieceType = (legacyType: number): PieceType => {
+      const mapping: Record<number, PieceType> = {
+        0: PieceType.FARMER,
+        1: PieceType.RAM,
+        2: PieceType.TRAP,
+        3: PieceType.KNIGHT,
+        4: PieceType.TEMPLAR,
+        5: PieceType.SCOUT,
+        6: PieceType.TREBUCHET,
+        7: PieceType.TREASURE,
+        8: PieceType.KING,
+      };
+      return mapping[legacyType] || PieceType.FARMER;
+    };
+
+    // Helper to convert legacy numeric TeamType enum to domain string enum
+    const convertTeamType = (legacyTeam: number): TeamType => {
+      return legacyTeam === 1 ? TeamType.OUR : TeamType.OPPONENT;
+    };
+
     // Convert legacy pieces to GamePiece format
     const gamePieces: GamePiece[] = pieces.map(piece => ({
-      type: piece.type,
-      team: piece.team,
+      type: convertPieceType(piece.type),
+      team: convertTeamType(piece.team),
       position: new Position(piece.position.x, piece.position.y),
       enPassant: piece.enPassant,
       hasMoved: piece.hasMoved

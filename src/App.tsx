@@ -11,7 +11,7 @@ import { GameConfig } from './domain/game/GameConfig';
 
 function AppContent() {
   const { gameState, dispatch } = useGame();
-  const [showSetup, setShowSetup] = useState(false);
+  const [showSetup, setShowSetup] = useState(true); // Show setup modal on start
   const currentTurn = gameState.getCurrentTurn();
   const gameStatus = gameState.getStatus();
 

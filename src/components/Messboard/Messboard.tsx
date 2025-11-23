@@ -24,7 +24,6 @@ import GameOverModal from '../GameOverModal/GameOverModal';
 export default function Messboard() {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [grabPosition, setGrabPosition] = useState<Position>({ x: -1, y: -1 });
-  const [pieces, setPieces] = useState<Piece[]>(initialBoardState);
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [captureMoves, setCaptureMoves] = useState<Position[]>([]);
   const messboardRef = useRef<HTMLDivElement>(null);
@@ -33,6 +32,8 @@ export default function Messboard() {
   const resetGame = useResetGame();
   const currentTurn = gameState.getCurrentTurn();
   const gameStatus = gameState.getStatus();
+  
+  // Helper functions for type conversion (defined before useMemo to avoid hoisting issues)
   
   // Map legacy TeamType to domain TeamType
   const mapTeamType = (legacyTeam: TeamType): DomainTeamType => {
@@ -54,6 +55,43 @@ export default function Messboard() {
     };
     return mapping[legacyType] as DomainPieceType;
   };
+  
+  // Map domain PieceType back to legacy (for Referee compatibility)
+  const mapDomainPieceTypeToLegacy = (domainType: DomainPieceType): PieceType => {
+    const mapping: Record<string, PieceType> = {
+      'FARMER': PieceType.FARMER,
+      'RAM': PieceType.RAM,
+      'TRAP': PieceType.TRAP,
+      'KNIGHT': PieceType.KNIGHT,
+      'TEMPLAR': PieceType.TEMPLAR,
+      'SCOUT': PieceType.SCOUT,
+      'TREBUCHET': PieceType.TREBUCHET,
+      'TREASURE': PieceType.TREASURE,
+      'KING': PieceType.KING,
+    };
+    return mapping[domainType];
+  };
+  
+  // Map piece type to image filename
+  const mapPieceTypeToImage = (domainType: DomainPieceType): string => {
+    // Special cases where domain name differs from asset filename
+    const specialMapping: Record<string, string> = {
+      'SCOUT': 'hunter',      // hunter_w.svg, hunter_b.svg
+      'TREBUCHET': 'catapult'  // catapult_w.svg, catapult_b.svg
+    };
+    return specialMapping[domainType] || domainType.toLowerCase();
+  };
+  
+  // Convert GameState pieces to legacy format for Referee
+  const pieces: Piece[] = useMemo(() => {
+    return gameState.getAllPieces().map(gamePiece => ({
+      image: `assets/images/${mapPieceTypeToImage(gamePiece.type)}_${gamePiece.team === DomainTeamType.OUR ? 'w' : 'b'}.svg`,
+      position: { x: gamePiece.position.x, y: gamePiece.position.y },
+      type: mapDomainPieceTypeToLegacy(gamePiece.type),
+      team: gamePiece.team === DomainTeamType.OUR ? TeamType.OUR : TeamType.OPPONENT,
+      enPassant: gamePiece.enPassant,
+    }));
+  }, [gameState]);
 
   function handleGrabPiece(e: React.MouseEvent) {
     const element = e.target as HTMLElement;
@@ -71,7 +109,9 @@ export default function Messboard() {
       
       if (currentPiece) {
         // Validate turn: only allow grabbing pieces of current team
-        if (currentPiece.team !== currentTurn) {
+        // Convert domain TeamType to legacy TeamType for comparison
+        const currentTurnLegacy = currentTurn === DomainTeamType.OUR ? TeamType.OUR : TeamType.OPPONENT;
+        if (currentPiece.team !== currentTurnLegacy) {
           console.warn(`Not your turn! Current turn: ${currentTurn}, Piece team: ${currentPiece.team}`);
           return; // Cannot grab opponent's piece
         }
@@ -187,50 +227,20 @@ export default function Messboard() {
         const pawnDirection = currentPiece.team === TeamType.OUR ? 1 : -1;
 
         if (isEnPassantMove) {
-          const updatedPieces = pieces.reduce((results, piece) => {
-            if (samePosition(piece.position, grabPosition)) {
-              piece.enPassant = false;
-              piece.position.x = x;
-              piece.position.y = y;
-              results.push(piece);
-            } else if (!samePosition(piece.position, { x, y: y - pawnDirection })) {
-              if (piece.type === PieceType.FARMER || piece.type === PieceType.KING) {
-                piece.enPassant = false;
-              }
-              results.push(piece);
-            }
-            return results;
-          }, [] as Piece[]);
-          setPieces(updatedPieces);
-          
-          // Dispatch move to GameContext for turn management
+          // Dispatch en passant move to GameContext
+          // GameContext will handle state update, we just need to trigger the move
           const move = new Move({
             from: new PositionClass(grabPosition.x, grabPosition.y),
             to: new PositionClass(x, y),
             pieceType: mapPieceType(currentPiece.type),
             team: currentPieceTeam,
+            isEnPassant: true,
           });
           dispatch({ type: 'MAKE_MOVE', payload: { move } });
           
         } else if (validMove) {
-          const updatedPieces = pieces.reduce((results, piece) => {
-            if (samePosition(piece.position, grabPosition)) {
-              piece.enPassant = Math.abs(grabPosition.y - y) === 2 &&
-                (piece.type === PieceType.FARMER || piece.type === PieceType.KING);
-              piece.position.x = x;
-              piece.position.y = y;
-              results.push(piece);
-            } else if (!samePosition(piece.position, { x, y })) {
-              if (piece.type === PieceType.FARMER || piece.type === PieceType.KING) {
-                piece.enPassant = false;
-              }
-              results.push(piece);
-            }
-            return results;
-          }, [] as Piece[]);
-          setPieces(updatedPieces);
-          
-          // Dispatch move to GameContext for turn management
+          // Dispatch regular move to GameContext
+          // GameContext will handle state update
           const move = new Move({
             from: new PositionClass(grabPosition.x, grabPosition.y),
             to: new PositionClass(x, y),
