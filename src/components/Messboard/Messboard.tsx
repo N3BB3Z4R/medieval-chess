@@ -5,16 +5,14 @@ import Referee from "../../referee/Referee";
 import {
   VERTICAL_AXIS,
   HORIZONTAL_AXIS,
-  GRID_SIZE,
   Piece,
   PieceType,
   TeamType,
-  initialBoardState,
   Position,
   samePosition,
 } from '../../Constants';
 import { Position as PositionClass } from '../../domain/core/Position';
-import { screenToBoard, CoordinateOffsets, BoardConfig } from '../../domain/core/boardConfig';
+import { screenToBoard, BoardConfig } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 import { useGame, useResetGame } from '../../context/GameContext';
 import { PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../domain/core/types';
@@ -252,8 +250,6 @@ export default function Messboard() {
           currentPiece.team,
           pieces
         );
-
-        const pawnDirection = currentPiece.team === TeamType.OUR ? 1 : -1;
 
         // CRITICAL: Detect if there's a piece at the destination (capture)
         const capturedPiece = pieces.find((p) => samePosition(p.position, { x, y }));
