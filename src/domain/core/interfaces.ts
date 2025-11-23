@@ -113,6 +113,22 @@ export interface GameStateReader {
    * @returns Array of valid destination positions
    */
   getValidMovesFrom(position: Position): ReadonlyArray<Position>;
+
+  /**
+   * Gets king piece for specified team.
+   * 
+   * @param team - Team whose king to retrieve
+   * @returns King piece or undefined if not found
+   */
+  getKing(team: TeamType): unknown | undefined;
+
+  /**
+   * Checks if a team has a king on the board.
+   * 
+   * @param team - Team to check
+   * @returns true if team has a king
+   */
+  hasKing(team: TeamType): boolean;
 }
 
 /**
@@ -197,10 +213,10 @@ export interface TurnManager {
   /**
    * Advances to next turn.
    * 
-   * @param currentState - Current game state
+   * @param currentState - Current game state (needs both read and write access)
    * @returns New game state with next team's turn
    */
-  advanceTurn(currentState: GameStateWriter): unknown;
+  advanceTurn(currentState: GameStateReader & GameStateWriter): unknown;
 }
 
 /**

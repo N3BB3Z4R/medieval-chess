@@ -65,6 +65,7 @@ export interface ValidationResult {
 /**
  * Factory methods for ValidationResult.
  */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ValidationResult = {
   valid(): ValidationResult {
     return { isValid: true };
@@ -123,6 +124,8 @@ export interface GameStateReader {
   getStatus(): GameStatus;
   isPositionUnderAttack(position: unknown, team: TeamType): boolean;
   getValidMovesFrom(position: unknown): ReadonlyArray<unknown>;
+  getKing(team: TeamType): unknown | undefined;
+  hasKing(team: TeamType): boolean;
 }
 
 /**
@@ -153,6 +156,7 @@ export interface AbilityResult {
 /**
  * Factory methods for AbilityResult.
  */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AbilityResult = {
   noEffect(): AbilityResult {
     return { triggered: false };
