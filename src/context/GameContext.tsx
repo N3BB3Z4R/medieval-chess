@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { GameState } from '../domain/game/GameState';
 import { TurnManager } from '../domain/game/TurnManager';
 import { WinConditionChecker } from '../domain/game/WinConditionChecker';
+import { GameConfig, create2PlayerGame } from '../domain/game/GameConfig';
 import { Move } from '../domain/core/Move';
 import { Position } from '../domain/core/Position';
 import { GameStatus } from '../domain/core/types';
@@ -28,6 +29,7 @@ const winConditionChecker = new WinConditionChecker();
  */
 interface GameContextState {
   gameState: GameState;
+  gameConfig: GameConfig;
   turnManager: TurnManager;
   winConditionChecker: WinConditionChecker;
 }
@@ -38,7 +40,8 @@ interface GameContextState {
 type GameAction =
   | { type: 'MAKE_MOVE'; payload: { move: Move } }
   | { type: 'RESET_GAME' }
-  | { type: 'SET_STATUS'; payload: { status: GameStatus } };
+  | { type: 'SET_STATUS'; payload: { status: GameStatus } }
+  | { type: 'SET_CONFIG'; payload: GameConfig };
 
 /**
  * Context value with state + dispatch.
@@ -99,6 +102,13 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
       };
     }
     
+    case 'SET_CONFIG': {
+      return {
+        ...state,
+        gameConfig: action.payload,
+      };
+    }
+    
     default:
       return state;
   }
@@ -112,6 +122,7 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, {
     gameState: GameState.createEmpty(), // TODO: Initialize with starting pieces
+    gameConfig: create2PlayerGame(), // Default: 2-player game
     turnManager,
     winConditionChecker,
   });

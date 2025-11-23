@@ -17,7 +17,7 @@ import { Position as PositionClass } from '../../domain/core/Position';
 import { screenToBoard, CoordinateOffsets } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 import { useGame, useResetGame } from '../../context/GameContext';
-import { GameStatus, PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../domain/core/types';
+import { PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../domain/core/types';
 import { Move } from '../../domain/core/Move';
 import GameOverModal from '../GameOverModal/GameOverModal';
 

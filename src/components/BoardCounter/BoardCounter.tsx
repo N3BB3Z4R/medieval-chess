@@ -1,30 +1,37 @@
 import PlayerCounter, { PlayerType } from "./PlayerCounter/PlayerCounter"
 import './PlayerCounter/PlayerCounter.css'
-import { Players } from '../../constants/playersMockup';
 import { useGame } from '../../context/GameContext';
-import { TeamType } from '../../domain/core/types';
 
 const BoardCounter = () => {
-  const { gameState } = useGame();
+  const { gameState, gameConfig } = useGame();
   const currentTurn = gameState.getCurrentTurn();
 
-  // Map TeamType to player position string
-  const currentPlayerPosition = currentTurn === TeamType.OUR ? 'bottom' : 'top';
+  // Only show active players (based on game configuration)
+  const activePlayers = gameConfig.players.filter(p => p.isActive);
 
   return (
     <div className="board-counters">
-      {Players.map((player: PlayerType) => {
-        const isActive = player.playerPosition === currentPlayerPosition;
+      {activePlayers.map((player) => {
+        const isActive = player.team === currentTurn;
+        
+        // Convert to legacy PlayerType format for compatibility
+        const legacyPlayer: PlayerType = {
+          playerPosition: player.position,
+          playerName: player.name,
+          playerAvatar: player.avatar,
+          playerRange: player.isAI ? 'AI Player' : 'Human',
+          playerElo: 1200, // Default ELO
+        };
+        
         return (
           <button 
             type="button" 
             className={`board-counter ${isActive ? ' board-counter__selected' : ''}`} 
-            key={player.playerPosition}
+            key={player.position}
             disabled={true}
           >
             <PlayerCounter 
-              key={player.playerPosition} 
-              profile={player} 
+              profile={legacyPlayer} 
               selected={isActive} 
             />
           </button>
