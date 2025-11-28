@@ -95,24 +95,50 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       >
         {isActive && <div className="player-card__turn-pulse" />}
         
-        <div className="player-card__compact-content">
+        {/* Header: Avatar + Name + Score */}
+        <div className="player-card__compact-header">
           <img src={playerAvatar} alt={playerName} className="player-card__avatar-compact" />
           <div className="player-card__compact-info">
-            <div className="player-card__name-compact">{playerName}</div>
+            <div className="player-card__name-compact">
+              {playerName}
+              <span className="player-card__player-type">{playerRange === 'Human' ? '👤' : '🤖'}</span>
+            </div>
             <div className="player-card__meta-compact">
               {getStatusIcon()} <span>{piecesRemaining} piezas</span>
             </div>
           </div>
-          {materialAdvantage !== 0 && (
-            <div className={`player-card__advantage-compact ${materialAdvantage > 0 ? 'positive' : 'negative'}`}>
-              {materialAdvantage > 0 ? '+' : ''}{materialAdvantage}
+          <div className="player-card__score-compact">
+            <span className="player-card__score-value">{score}</span>
+            {materialAdvantage !== 0 && (
+              <span className={`player-card__score-diff ${materialAdvantage > 0 ? 'positive' : 'negative'}`}>
+                ({materialAdvantage > 0 ? '+' : ''}{materialAdvantage})
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {/* Stats Row: Turno + Tiempo */}
+        <div className="player-card__compact-stats">
+          <div className="player-card__compact-stat">
+            <span className="player-card__stat-icon">🎯</span>
+            <span className="player-card__stat-text">Turno {movesPlayed}</span>
+          </div>
+          {timePerTurn && (
+            <div className="player-card__compact-stat">
+              <BoardClock
+                active={isActive}
+                initialTimeSeconds={timePerTurn}
+                incrementSeconds={incrementPerTurn}
+                onTimeUp={onTimeUp}
+              />
             </div>
           )}
         </div>
         
+        {/* Captured Pieces (sin materialAdvantage duplicado) */}
         {capturedPieces.length > 0 && (
           <div className="player-card__captured-compact">
-            <CapturedPieces pieces={capturedPieces} materialAdvantage={materialAdvantage} compact />
+            <CapturedPieces pieces={capturedPieces} compact hideAdvantage />
           </div>
         )}
       </div>

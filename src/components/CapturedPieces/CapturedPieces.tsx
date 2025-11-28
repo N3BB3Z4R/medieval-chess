@@ -11,6 +11,7 @@ interface CapturedPiecesProps {
   pieces: CapturedPiece[];
   materialAdvantage?: number; // Positive = ahead, negative = behind
   compact?: boolean; // For mobile/thin cards
+  hideAdvantage?: boolean; // Hide advantage badge (for compact cards)
 }
 
 /**
@@ -20,7 +21,8 @@ interface CapturedPiecesProps {
 const CapturedPieces: React.FC<CapturedPiecesProps> = ({ 
   pieces, 
   materialAdvantage = 0,
-  compact = false 
+  compact = false,
+  hideAdvantage = false
 }) => {
   // Group pieces by type for compact display
   const groupedPieces = pieces.reduce((acc, piece) => {
@@ -40,7 +42,7 @@ const CapturedPieces: React.FC<CapturedPiecesProps> = ({
       <div className="captured-pieces__header">
         <span className="captured-pieces__icon">⚔️</span>
         <span className="captured-pieces__title">Capturadas</span>
-        {showAdvantage && (
+        {!hideAdvantage && showAdvantage && (
           <span 
             className={`captured-pieces__advantage ${
               hasAdvantage ? 'captured-pieces__advantage--positive' : 'captured-pieces__advantage--negative'
