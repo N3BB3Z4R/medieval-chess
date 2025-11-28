@@ -39,7 +39,7 @@ interface PlayerCardProps {
   timePerTurn?: number;
   incrementPerTurn?: number;
   onTimeUp?: () => void;
-  variant?: 'desktop' | 'mobile'; // Layout variant
+  variant?: 'desktop' | 'mobile' | 'compact'; // Layout variant
 }
 
 /**
@@ -58,6 +58,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 }) => {
   const { playerName, playerAvatar, playerElo, playerRange, team } = profile;
   const { capturedPieces, materialAdvantage, score, piecesRemaining, movesPlayed, lastMovedPiece } = stats;
+  
+  const isCompact = variant === 'compact';
 
   const resolvePlayerNumber = () => {
     switch (profile.playerPosition) {
@@ -84,6 +86,40 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     return `player-card--${status.state}`;
   };
 
+  // Compact version for sidebar
+  if (isCompact) {
+    return (
+      <div 
+        className={`player-card player-card--compact ${isActive ? 'player-card--active' : ''}`}
+        data-team={team}
+      >
+        {isActive && <div className="player-card__turn-pulse" />}
+        
+        <div className="player-card__compact-content">
+          <img src={playerAvatar} alt={playerName} className="player-card__avatar-compact" />
+          <div className="player-card__compact-info">
+            <div className="player-card__name-compact">{playerName}</div>
+            <div className="player-card__meta-compact">
+              {getStatusIcon()} <span>{piecesRemaining} piezas</span>
+            </div>
+          </div>
+          {materialAdvantage !== 0 && (
+            <div className={`player-card__advantage-compact ${materialAdvantage > 0 ? 'positive' : 'negative'}`}>
+              {materialAdvantage > 0 ? '+' : ''}{materialAdvantage}
+            </div>
+          )}
+        </div>
+        
+        {capturedPieces.length > 0 && (
+          <div className="player-card__captured-compact">
+            <CapturedPieces pieces={capturedPieces} materialAdvantage={materialAdvantage} compact />
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // Full version for mobile/other layouts
   return (
     <div 
       className={`player-card ${isActive ? 'player-card--active' : ''} ${getStatusClass()} player-card--${variant}`}

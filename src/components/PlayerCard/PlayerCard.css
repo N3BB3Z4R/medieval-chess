@@ -36,6 +36,23 @@
   max-width: 100%;
 }
 
+/* Compact variant (for sidebar) */
+.player-card--compact {
+  padding: 10px 12px;
+  min-width: 260px;
+  max-width: 280px;
+  background-color: #817761;
+  background-image: url("/src/components/Messboard/wood.jpg");
+  background-position: 0 40%;
+  background-size: 200%;
+}
+
+.player-card--compact .player-card__compact-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .player-card--mobile .player-card__content {
   display: flex;
   flex-wrap: wrap;
@@ -269,52 +286,64 @@
   transform: scale(1.03) translateY(-2px);
 }
 
-/* Mobile Specific Adjustments */
+/* Mobile Specific Adjustments - Ultra compact */
+.player-card--mobile {
+  padding: 8px;
+}
+
 .player-card--mobile .player-card__avatar {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 .player-card--mobile .player-card__name {
-  font-size: 13px;
-}
-
-.player-card--mobile .player-card__header {
-  padding-bottom: 8px;
-}
-
-.player-card--mobile .player-card__stats {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-
-.player-card--mobile .player-card__stat {
-  padding: 4px;
-}
-
-.player-card--mobile .player-card__stat-label {
-  font-size: 9px;
-}
-
-.player-card--mobile .player-card__stat-value {
-  font-size: 14px;
-}
-
-.player-card--mobile .player-card__last-move {
-  padding: 6px;
   font-size: 11px;
 }
 
-.player-card--mobile .player-card__content {
+.player-card--mobile .player-card__header {
+  padding-bottom: 6px;
   gap: 8px;
 }
 
+.player-card--mobile .player-card__stats {
+  display: none; /* Hide full stats */
+}
+
+.player-card--mobile .player-card__last-move {
+  display: none; /* Hide last move */
+}
+
+.player-card--mobile .player-card__content {
+  gap: 6px;
+}
+
 .player-card--mobile .player-card__number {
-  width: 28px;
-  height: 28px;
-  font-size: 0.95rem;
-  top: -10px;
-  right: 12px;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  top: -8px;
+  right: 8px;
+}
+
+.player-card--mobile .player-card__meta {
+  font-size: 9px;
+  gap: 4px;
+}
+
+.player-card--mobile .player-card__elo {
+  display: none;
+}
+
+.player-card--mobile .player-card__type {
+  font-size: 9px;
+}
+
+.player-card--mobile .player-card__status-text {
+  display: none;
+}
+
+.player-card--mobile .player-card__clock {
+  display: none;
 }
 
 /* Responsive */
@@ -340,4 +369,70 @@
 .player-card[data-team="OPPONENT"] .player-card__number {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   border-color: #b91c1c;
+}
+
+/* Compact variant styles */
+.player-card__avatar-compact {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(186, 194, 141, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.player-card__compact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-card__name-compact {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgb(228, 255, 177);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-card__meta-compact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(228, 255, 177, 0.7);
+  margin-top: 2px;
+}
+
+.player-card__advantage-compact {
+  font-size: 14px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.player-card__advantage-compact.positive {
+  background: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.player-card__advantage-compact.negative {
+  background: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.player-card__captured-compact {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(186, 194, 141, 0.2);
+}
+
+.player-card--compact .player-card__turn-pulse {
+  border-radius: 12px;
 }

@@ -19,6 +19,16 @@
   width: 100%;
 }
 
+/* Compact Layout (for desktop left panel) */
+.game-sidebar--compact {
+  width: 100%;
+}
+
+.game-sidebar__players--compact {
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* Players Section */
 .game-sidebar__players {
   display: flex;

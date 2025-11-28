@@ -73,9 +73,29 @@ header h1 {
   margin: 0 auto;
 }
 
-/* Desktop Layout: Messboard left + Sidebar right */
+/* Desktop Layout: 3 Columns (Left Panel | Board | Right Panel) */
 .game-container--desktop {
   flex-direction: row;
+  max-width: 1500px;
+}
+
+.desktop-left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.desktop-players-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.desktop-right-panel {
+  width: 350px;
+  flex-shrink: 0;
 }
 
 /* Mobile Layout: Sidebar top + Messboard center + History bottom */

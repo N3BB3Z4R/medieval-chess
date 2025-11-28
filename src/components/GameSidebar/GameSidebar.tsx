@@ -15,7 +15,7 @@ interface GameSidebarProps {
     onTimeUp?: () => void;
   }>;
   moveHistory: readonly Move[];
-  variant?: 'desktop' | 'mobile';
+  variant?: 'desktop' | 'mobile' | 'compact';
   boardHeight?: number; // To match Messboard height
 }
 
@@ -29,10 +29,12 @@ const GameSidebar: React.FC<GameSidebarProps> = ({
   variant = 'desktop',
   boardHeight = 800
 }) => {
+  const isCompact = variant === 'compact';
+  
   return (
     <div 
       className={`game-sidebar game-sidebar--${variant}`}
-      style={variant === 'desktop' ? { height: `${boardHeight + 12}px` } : undefined}
+      style={variant === 'desktop' && !isCompact ? { height: `${boardHeight + 12}px` } : undefined}
     >
       {/* Players Section */}
       <div className={`game-sidebar__players game-sidebar__players--${variant}`}>
@@ -51,10 +53,12 @@ const GameSidebar: React.FC<GameSidebarProps> = ({
         ))}
       </div>
 
-      {/* Move History Section */}
-      <div className="game-sidebar__history">
-        <MoveHistory moves={moveHistory} />
-      </div>
+      {/* Move History Section (only if not compact) */}
+      {!isCompact && (
+        <div className="game-sidebar__history">
+          <MoveHistory moves={moveHistory} />
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,8 @@ import React, { useState, useMemo } from 'react';
 import Footer from './components/Footer/Footer';
 import Messboard from './components/Messboard/Messboard';
 import GameSidebar from './components/GameSidebar/GameSidebar';
+import GameControlPanel from './components/GameControlPanel/GameControlPanel';
+import MoveHistory from './components/MoveHistory/MoveHistory';
 import GameSetupModal from './components/GameSetupModal/GameSetupModal';
 import PieceLegend from './components/PieceLegend/PieceLegend';
 import { GameProvider, useGame } from './context/GameContext';
@@ -160,7 +162,7 @@ function AppContent() {
         },
       };
     });
-  }, [gameConfig, currentTurn, moveHistory, dispatch]);
+  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, pieceValues]);
 
   // Get player names for board labels (Chess.com style)
   const ourPlayer = playersData.find(p => p.profile.team === 'OUR');
@@ -208,18 +210,36 @@ function AppContent() {
             </div>
           </>
         ) : (
-          // Desktop Layout: Board (left) → Sidebar (right)
+          // Desktop Layout: Left Panel | Board | Right Panel
           <>
+            {/* Left Panel: Controls + Players */}
+            <div className="desktop-left-panel">
+              <GameControlPanel 
+                gameStatus={gameStatus}
+                onNewGame={() => setShowSetup(true)}
+                onSurrender={handleSurrender}
+                matchType={`${playersData.length} Jugadores`}
+                timeControl={gameConfig.timePerTurn ? `${gameConfig.timePerTurn/60}min` : 'Sin límite'}
+              />
+              <div className="desktop-players-compact">
+                <GameSidebar 
+                  players={playersData}
+                  moveHistory={[]} 
+                  variant="compact"
+                />
+              </div>
+            </div>
+            
+            {/* Center: Board */}
             <Messboard 
               topPlayerName={opponentPlayer?.profile.playerName}
               bottomPlayerName={ourPlayer?.profile.playerName}
             />
-            <GameSidebar 
-              players={playersData}
-              moveHistory={moveHistory}
-              variant="desktop"
-              boardHeight={800}
-            />
+            
+            {/* Right Panel: Move History */}
+            <div className="desktop-right-panel">
+              <MoveHistory moves={moveHistory} />
+            </div>
           </>
         )}
       </div>

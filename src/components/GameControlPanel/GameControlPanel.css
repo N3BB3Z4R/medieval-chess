@@ -1,0 +1,144 @@
+/* ==========================================================================
+   GAME CONTROL PANEL - Left sidebar with controls and info
+   ========================================================================== */
+
+.game-control-panel {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 2px solid #475569;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  height: fit-content;
+  max-height: 812px; /* Match board height + padding */
+}
+
+/* Header */
+.game-control-panel__header {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #334155;
+}
+
+.game-control-panel__title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f1f5f9;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 2px;
+}
+
+.game-control-panel__subtitle {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+  font-weight: 600;
+}
+
+/* Actions */
+.game-control-panel__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.game-control-panel__button {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.game-control-panel__button--primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #047857;
+  color: white;
+}
+
+.game-control-panel__button--primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.game-control-panel__button--danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #b91c1c;
+  color: white;
+}
+
+.game-control-panel__button--danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Match Info */
+.game-control-panel__info {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.game-control-panel__info-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.game-control-panel__info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.game-control-panel__info-item:last-child {
+  border-bottom: none;
+}
+
+.game-control-panel__info-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.game-control-panel__info-value {
+  font-size: 13px;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.game-control-panel__status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.game-control-panel__status--active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.game-control-panel__status--ended {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
