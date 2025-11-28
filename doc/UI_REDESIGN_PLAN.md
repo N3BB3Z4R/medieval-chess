@@ -133,29 +133,14 @@ Reorganizar la interfaz para resolver problemas de superposición y aprovechar m
 ### ⚠️ Componente con Problema
 
 #### 6. `MoveHistory.css`
-**Estado**: ⚠️ ERROR DE COMPILACIÓN
-**Problema**: 
-- Webpack reporta "Unclosed block" en líneas 39, 122, 152
-- El archivo está sintácticamente **correcto** al inspeccionarlo
-- El caché de webpack está corrupto y persiste el error incluso después de:
-  - ✅ Restaurar archivo original desde git
-  - ✅ Limpiar `node_modules/.cache`
-  - ✅ Reiniciar servidor de desarrollo
-  
-**Causa**: Caché de webpack en memoria del proceso Node.js
-
-**Solución Pendiente**:
-1. Forzar cierre completo de Node.js (`pkill -9 node`)
-2. Limpiar caché completo
-3. Reiniciar servidor
-4. Si persiste: Recrear el archivo desde cero (copy/paste manual)
-
-**Contenido Original**:
-- 265 líneas de CSS
+**Estado**: ✅ SIN PROBLEMAS
+**Contenido**:
+- 265 líneas de CSS correctamente compiladas
 - Estilo Chess.com: Fondo slate (#1e293b), movimientos en tabla
-- Colores: Azul (#3b82f6) para "our" team, Rojo (#ef4444) para opponent
-- Scrollbar custom morado
-- Hover effects y transitions
+- Colores: Verde (#10b981) para "our" team, Gris (#334155) para opponent
+- Scrollbar custom con hover effects
+- Modo review con banner azul y animaciones
+- Responsive con breakpoint en 768px
 
 ---
 
@@ -218,12 +203,13 @@ Reorganizar la interfaz para resolver problemas de superposición y aprovechar m
 - [x] Calcular playersData en useMemo
 - [x] Pasar props correctamente a GameSidebar
 
-### Fase 3: Resolución de Errores ⚠️ EN PROGRESO
+### Fase 3: Resolución de Errores ✅ COMPLETADA
 - [x] Intentar restaurar MoveHistory.css desde git
 - [x] Limpiar caché de webpack
 - [x] Reiniciar servidor
-- [ ] **BLOQUEADO**: Error de webpack persiste (caché en memoria)
-- [ ] Solución pendiente: Kill completo de Node.js
+- [x] **RESUELTO**: Error de TypeScript con `.at()` (ES5 incompatible)
+- [x] Solución aplicada: Reemplazado `moveHistory.at(-1)` por `moveHistory[moveHistory.length - 1]`
+- [x] Compilación exitosa confirmada
 
 ### Fase 4: Datos Reales (PENDIENTE)
 - [ ] Conectar piezas capturadas desde GameState
@@ -250,12 +236,13 @@ Reorganizar la interfaz para resolver problemas de superposición y aprovechar m
 
 ## 🐛 Problemas Conocidos
 
-### CRÍTICO
-1. **Webpack CSS Error**: 
-   - Archivo: `MoveHistory.css`
-   - Error: "Unclosed block" en líneas 39, 122, 152
-   - Impacto: Compilación bloqueada, no se puede visualizar la aplicación
-   - Solución: Requiere restart completo de Node.js
+### ✅ RESUELTO
+1. **Error de TypeScript**: 
+   - Archivo: `App.tsx`
+   - Error: "Property 'at' does not exist on type 'readonly Move[]'" (línea 72)
+   - Causa: El método `.at()` es ES2022+, pero tsconfig.json tiene `target: "es5"`
+   - Solución aplicada: Reemplazado por acceso tradicional al array
+   - Estado: ✅ COMPILACIÓN EXITOSA
 
 ### MEDIO
 2. **Placeholder Data**: 
@@ -290,25 +277,13 @@ npm start
 
 **Si el error persiste**:
 - Opción A: Recrear MoveHistory.css copiando el contenido manualmente
-- Opción B: Temporalmente comentar el import en MoveHistory.tsx para verificar el resto
-- Opción C: Usar CSS inline temporalmente
+### 1️⃣ ✅ Error Resuelto
+El error de TypeScript fue corregido exitosamente:
+- **Problema**: Uso de `.at()` (ES2022+) con target ES5
+- **Solución**: `moveHistory[moveHistory.length - 1]`
+- **Resultado**: Compilación exitosa, servidor corriendo en http://localhost:3000
 
-### 2️⃣ Verificación Visual
-Una vez compilado:
-- [ ] Abrir http://localhost:3000
-- [ ] Verificar layout desktop (board izquierda, sidebar derecha)
-- [ ] Verificar PlayerCard se renderiza correctamente
-- [ ] Verificar MoveHistory no se superpone
-- [ ] Resize ventana para probar responsive
-
-### 3️⃣ Conectar Datos Reales
-```typescript
-// En App.tsx, reemplazar placeholders:
-const piecesRemaining = gameState.getAllPieces()
-  .filter(p => p.team === player.team).length;
-
-const capturedPieces = gameState.getCapturedPieces()
-  .filter(p => p.team !== player.team)
+### 2️⃣ Verificación Visual (SIGUIENTE PASO)layer.team)
   .map(p => ({
     type: p.type,
     image: `assets/images/${mapPieceTypeToImage(p.type)}_${p.team === 'OUR' ? 'w' : 'b'}.svg`
@@ -421,3 +396,6 @@ Si se decide adaptar al tema medieval:
 **Última actualización**: 28 noviembre 2025  
 **Estado general**: 🟡 EN PROGRESO (Bloqueado por error webpack)  
 **Próxima acción**: Resolver error de compilación en MoveHistory.css
+**Última actualización**: 28 noviembre 2025  
+**Estado general**: 🟢 COMPILANDO CORRECTAMENTE  
+**Próxima acción**: Verificar layout visual y conectar datos reales desde GameState

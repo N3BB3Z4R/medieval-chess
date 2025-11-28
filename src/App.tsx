@@ -16,6 +16,28 @@ function AppContent() {
   const [showSetup, setShowSetup] = useState(true);
   const [isMobile, setIsMobile] = useState(globalThis.innerWidth <= 768);
   
+  // Piece values for material advantage calculation
+  const pieceValues: Record<PieceType, number> = {
+    [PieceType.FARMER]: 1,
+    [PieceType.RAM]: 3,
+    [PieceType.TRAP]: 2,
+    [PieceType.KNIGHT]: 4,
+    [PieceType.TEMPLAR]: 5,
+    [PieceType.SCOUT]: 3,
+    [PieceType.TREBUCHET]: 4,
+    [PieceType.TREASURE]: 0,
+    [PieceType.KING]: 0, // King is invaluable
+  };
+  
+  // Helper to map piece type to image filename
+  const mapPieceTypeToImage = (type: PieceType): string => {
+    const specialMapping: Record<string, string> = {
+      'SCOUT': 'hunter',
+      'TREBUCHET': 'catapult'
+    };
+    return specialMapping[type] || type.toLowerCase();
+  };
+  
   const currentTurn = gameState.getCurrentTurn();
   const gameStatus = gameState.getStatus();
   const moveHistory = gameState.getMoveHistory();
@@ -59,17 +81,30 @@ function AppContent() {
       const isActive = player.team === currentTurn;
       
       // Get player pieces from game state
-      const piecesRemaining = 16; // Placeholder - will be calculated from GameState
+      const activePieces = gameState.getPiecesForTeam(player.team);
+      const piecesRemaining = activePieces.length;
       
-      // Calculate captured pieces (will implement tracking)
-      const capturedPieces: Array<{ type: PieceType; image: string }> = [];
+      // Get captured pieces (pieces captured BY this player = opponent's lost pieces)
+      const allCaptured = gameState.getCapturedPieces();
+      const capturedByPlayer = allCaptured.filter(p => p.team !== player.team);
+      
+      const capturedPieces: Array<{ type: PieceType; image: string }> = capturedByPlayer.map(p => ({
+        type: p.type,
+        image: `assets/images/${mapPieceTypeToImage(p.type)}_${p.team === 'OUR' ? 'w' : 'b'}.svg`
+      }));
+      
+      // Calculate material advantage (positive = ahead, negative = behind)
+      const capturedValue = capturedByPlayer.reduce((sum, p) => sum + pieceValues[p.type], 0);
+      const lostPieces = allCaptured.filter(p => p.team === player.team);
+      const lostValue = lostPieces.reduce((sum, p) => sum + pieceValues[p.type], 0);
+      const materialAdvantage = capturedValue - lostValue;
       
       // Calculate stats
       const movesPlayed = Math.floor(moveHistory.length / activePlayers.length);
-      const score = 0; // Placeholder
+      const score = capturedValue; // Score = material captured
       
-      // Get last move
-      const lastMove = moveHistory.at(-1) ?? null;
+      // Get last move (ES5-compatible way)
+      const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
       const lastMovedPiece = lastMove ? {
         type: lastMove.pieceType,
         from: `${String.fromCodePoint(97 + lastMove.from.x)}${lastMove.from.y + 1}`,
@@ -103,7 +138,7 @@ function AppContent() {
       
       const stats: PlayerStats = {
         capturedPieces,
-        materialAdvantage: 0, // Will calculate based on opponent's captured pieces
+        materialAdvantage,
         score,
         piecesRemaining,
         movesPlayed,
@@ -126,6 +161,10 @@ function AppContent() {
       };
     });
   }, [gameConfig, currentTurn, moveHistory, dispatch]);
+
+  // Get player names for board labels (Chess.com style)
+  const ourPlayer = playersData.find(p => p.profile.team === 'OUR');
+  const opponentPlayer = playersData.find(p => p.profile.team === 'OPPONENT');
 
   return (
     <div id="app">
@@ -151,23 +190,37 @@ function AppContent() {
       </header>
       
       <div className={`game-container game-container--${isMobile ? 'mobile' : 'desktop'}`}>
-        {isMobile && (
-          <GameSidebar 
-            players={playersData}
-            moveHistory={moveHistory}
-            variant="mobile"
-          />
-        )}
-        
-        <Messboard />
-        
-        {!isMobile && (
-          <GameSidebar 
-            players={playersData}
-            moveHistory={moveHistory}
-            variant="desktop"
-            boardHeight={800}
-          />
+        {isMobile ? (
+          // Mobile Layout: Players (top) → Board (center) → History (bottom)
+          <>
+            <div className="mobile-players-section">
+              <GameSidebar 
+                players={playersData}
+                moveHistory={moveHistory}
+                variant="mobile"
+              />
+            </div>
+            <div className="mobile-board-section">
+              <Messboard 
+                topPlayerName={opponentPlayer?.profile.playerName}
+                bottomPlayerName={ourPlayer?.profile.playerName}
+              />
+            </div>
+          </>
+        ) : (
+          // Desktop Layout: Board (left) → Sidebar (right)
+          <>
+            <Messboard 
+              topPlayerName={opponentPlayer?.profile.playerName}
+              bottomPlayerName={ourPlayer?.profile.playerName}
+            />
+            <GameSidebar 
+              players={playersData}
+              moveHistory={moveHistory}
+              variant="desktop"
+              boardHeight={800}
+            />
+          </>
         )}
       </div>
       

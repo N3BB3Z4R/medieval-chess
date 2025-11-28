@@ -1,0 +1,39 @@
+/* Responsive adjustments for player labels */
+@media (max-width: 850px) {
+  .messboard-player-label {
+    width: 720px; /* Match scaled board */
+  }
+}
+
+@media (max-width: 750px) {
+  .messboard-player-label {
+    width: 600px;
+    padding: 6px 12px;
+  }
+  
+  .messboard-player-name {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .messboard-player-label {
+    width: 480px;
+    padding: 5px 10px;
+  }
+  
+  .messboard-player-name {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 500px) {
+  .messboard-player-label {
+    width: 400px;
+    padding: 4px 8px;
+  }
+  
+  .messboard-player-name {
+    font-size: 11px;
+  }
+}

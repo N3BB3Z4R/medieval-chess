@@ -64,7 +64,15 @@
     gap: 12px;
   }
   
+  .game-sidebar--mobile {
+    max-width: 100%;
+  }
+  
   .game-sidebar__players--mobile {
     gap: 8px;
+  }
+  
+  .game-sidebar__history {
+    width: 100%;
   }
 }

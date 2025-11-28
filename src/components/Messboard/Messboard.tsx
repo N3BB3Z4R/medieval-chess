@@ -1,5 +1,6 @@
 import React, { useRef, useState, useMemo } from 'react';
 import './Messboard.css';
+import './messboard-responsive.css';
 import Tile from '../Tile/Tile';
 import Referee from "../../referee/Referee";
 import {
@@ -19,7 +20,12 @@ import { PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../
 import { Move } from '../../domain/core/Move';
 import GameOverModal from '../GameOverModal/GameOverModal';
 
-export default function Messboard() {
+interface MessboardProps {
+  topPlayerName?: string;
+  bottomPlayerName?: string;
+}
+
+export default function Messboard({ topPlayerName, bottomPlayerName }: MessboardProps = {}) {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [ghostPiece, setGhostPiece] = useState<HTMLElement | null>(null);
   const [grabPosition, setGrabPosition] = useState<Position>({ x: -1, y: -1 });
@@ -365,24 +371,40 @@ export default function Messboard() {
   return (
     <>
       <GameOverModal gameStatus={gameStatus} onRestart={resetGame} />
-      <div className="board-decoration">
-        {reviewMode && (
-          <div className="review-mode-overlay">
-            <div className="review-mode-indicator">
-              🔍 Revisando jugada #{(reviewMoveIndex ?? 0) + 1}
-            </div>
+      <div className="messboard-container">
+        {/* Top player name (Opponent) */}
+        {topPlayerName && (
+          <div className="messboard-player-label messboard-player-label--top">
+            <span className="messboard-player-name">{topPlayerName}</span>
           </div>
         )}
-        <div
-          onMouseMove={handleMovePiece}
-          onMouseDown={handleGrabPiece}
-          onMouseUp={handleDropPiece}
-          id="messboard"
-          ref={messboardRef}
-          className={reviewMode ? 'messboard--review-mode' : ''}
-        >
-          {generateBoard()}
+        
+        <div className="board-decoration">
+          {reviewMode && (
+            <div className="review-mode-overlay">
+              <div className="review-mode-indicator">
+                🔍 Revisando jugada #{(reviewMoveIndex ?? 0) + 1}
+              </div>
+            </div>
+          )}
+          <div
+            onMouseMove={handleMovePiece}
+            onMouseDown={handleGrabPiece}
+            onMouseUp={handleDropPiece}
+            id="messboard"
+            ref={messboardRef}
+            className={reviewMode ? 'messboard--review-mode' : ''}
+          >
+            {generateBoard()}
+          </div>
         </div>
+        
+        {/* Bottom player name (Our team) */}
+        {bottomPlayerName && (
+          <div className="messboard-player-label messboard-player-label--bottom">
+            <span className="messboard-player-name">{bottomPlayerName}</span>
+          </div>
+        )}
       </div>
     </>
   );

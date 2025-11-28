@@ -83,6 +83,45 @@ header h1 {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  width: 100%;
+}
+
+.mobile-players-section {
+  width: 100%;
+  max-width: 600px;
+}
+
+.mobile-board-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* Scale messboard on smaller screens */
+@media (max-width: 850px) {
+  .mobile-board-section .board-decoration {
+    transform: scale(0.9);
+    transform-origin: center;
+  }
+}
+
+@media (max-width: 750px) {
+  .mobile-board-section .board-decoration {
+    transform: scale(0.75);
+  }
+}
+
+@media (max-width: 600px) {
+  .mobile-board-section .board-decoration {
+    transform: scale(0.6);
+  }
+}
+
+@media (max-width: 500px) {
+  .mobile-board-section .board-decoration {
+    transform: scale(0.5);
+  }
 }
 
 #app {

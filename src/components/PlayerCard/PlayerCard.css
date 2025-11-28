@@ -30,9 +30,10 @@
 /* Mobile variant (horizontal/thin layout) */
 .player-card--mobile {
   display: flex;
-  flex-direction: row;
-  padding: 12px;
+  flex-direction: column;
+  padding: 10px;
   min-width: auto;
+  max-width: 100%;
 }
 
 .player-card--mobile .player-card__content {
@@ -270,29 +271,50 @@
 
 /* Mobile Specific Adjustments */
 .player-card--mobile .player-card__avatar {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
 }
 
 .player-card--mobile .player-card__name {
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.player-card--mobile .player-card__header {
+  padding-bottom: 8px;
 }
 
 .player-card--mobile .player-card__stats {
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 4px;
 }
 
 .player-card--mobile .player-card__stat {
-  padding: 6px;
+  padding: 4px;
+}
+
+.player-card--mobile .player-card__stat-label {
+  font-size: 9px;
 }
 
 .player-card--mobile .player-card__stat-value {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .player-card--mobile .player-card__last-move {
-  flex: 1 1 100%;
+  padding: 6px;
+  font-size: 11px;
+}
+
+.player-card--mobile .player-card__content {
+  gap: 8px;
+}
+
+.player-card--mobile .player-card__number {
+  width: 28px;
+  height: 28px;
+  font-size: 0.95rem;
+  top: -10px;
+  right: 12px;
 }
 
 /* Responsive */
