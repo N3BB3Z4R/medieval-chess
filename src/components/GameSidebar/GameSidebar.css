@@ -1,0 +1,70 @@
+/* ==========================================================================
+   GAME SIDEBAR - Players + Move History Container
+   ========================================================================== */
+
+.game-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Desktop Layout */
+.game-sidebar--desktop {
+  width: 340px;
+  overflow: hidden;
+}
+
+/* Mobile Layout */
+.game-sidebar--mobile {
+  width: 100%;
+}
+
+/* Players Section */
+.game-sidebar__players {
+  display: flex;
+  gap: 12px;
+}
+
+.game-sidebar__players--desktop {
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.game-sidebar__players--mobile {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Move History Section */
+.game-sidebar__history {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-sidebar--desktop .game-sidebar__history {
+  min-height: 0; /* Allow flexbox to shrink */
+}
+
+.game-sidebar--mobile .game-sidebar__history {
+  max-height: 400px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .game-sidebar--desktop {
+    width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-sidebar {
+    gap: 12px;
+  }
+  
+  .game-sidebar__players--mobile {
+    gap: 8px;
+  }
+}

@@ -1,0 +1,321 @@
+/* ==========================================================================
+   PLAYER CARD - Enhanced with Medieval Board Styling
+   ========================================================================== */
+
+.player-card {
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #817761;
+  background-image: url("/src/components/Messboard/wood.jpg");
+  background-position: 0 40%;
+  background-size: 200%;
+  border-radius: 16px;
+  padding: 16px;
+  color: rgb(245, 255, 220);
+  border-top: rgb(29, 36, 34) solid 2px;
+  border-bottom: rgb(128, 141, 111) solid 3px;
+  box-shadow: 
+    inset 0px 1px 60px 10px rgb(8, 8, 8), 
+    0px 0 25px 10px rgb(43, 44, 41);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Desktop variant (vertical layout) */
+.player-card--desktop {
+  min-width: 280px;
+  max-width: 320px;
+}
+
+/* Mobile variant (horizontal/thin layout) */
+.player-card--mobile {
+  display: flex;
+  flex-direction: row;
+  padding: 12px;
+  min-width: auto;
+}
+
+.player-card--mobile .player-card__content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.player-card--mobile .player-card__header {
+  flex: 1 1 100%;
+}
+
+/* Active State */
+.player-card--active {
+  border-top: rgb(128, 141, 111) solid 3px;
+  border-bottom: rgb(29, 36, 34) solid 2px;
+  box-shadow: 
+    inset 0px 1px 60px 10px rgb(8, 8, 8),
+    0px 0 30px 15px rgba(186, 194, 141, 0.4),
+    0 0 0 3px rgba(186, 194, 141, 0.6);
+  transform: scale(1.02);
+}
+
+/* Turn Pulse Animation */
+.player-card__turn-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+  animation: pulse-turn 2s ease-in-out infinite;
+}
+
+@keyframes pulse-turn {
+  0%, 100% {
+    box-shadow: inset 0 0 20px rgba(186, 194, 141, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 40px rgba(186, 194, 141, 0.6);
+  }
+}
+
+/* Player Number Badge */
+.player-card__number {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+  background: rgb(34, 60, 47);
+  border: 2px rgb(120, 145, 122) solid;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+/* Content */
+.player-card__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Header */
+.player-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(186, 194, 141, 0.2);
+}
+
+.player-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid rgba(186, 194, 141, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.player-card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-card__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgb(228, 255, 177);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.player-card__meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.player-card__elo {
+  color: rgb(255, 223, 128);
+  font-weight: 600;
+}
+
+.player-card__type {
+  color: rgba(228, 255, 177, 0.7);
+}
+
+/* Status */
+.player-card__status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.player-card__status-icon {
+  font-size: 20px;
+}
+
+.player-card__status-text {
+  font-size: 10px;
+  color: rgba(228, 255, 177, 0.8);
+  text-align: center;
+  max-width: 60px;
+  line-height: 1.2;
+}
+
+/* Status States */
+.player-card--active .player-card__status-icon {
+  animation: bounce-icon 1.5s ease-in-out infinite;
+}
+
+.player-card--thinking .player-card__status-icon {
+  animation: thinking-pulse 2s ease-in-out infinite;
+}
+
+@keyframes bounce-icon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes thinking-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Stats Grid */
+.player-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.player-card__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(186, 194, 141, 0.2);
+}
+
+.player-card__stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(228, 255, 177, 0.6);
+}
+
+.player-card__stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgb(228, 255, 177);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Last Move */
+.player-card__last-move {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  border-left: 3px solid rgb(186, 194, 141);
+}
+
+.player-card__last-move-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(228, 255, 177, 0.6);
+}
+
+.player-card__last-move-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  color: rgb(228, 255, 177);
+}
+
+/* Clock */
+.player-card__clock {
+  margin-top: 4px;
+}
+
+/* Hover Effect */
+.player-card:hover {
+  background-position: 0 32%;
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0px 1px 60px 10px rgb(8, 8, 8),
+    0px 4px 30px 12px rgb(43, 44, 41);
+}
+
+.player-card--active:hover {
+  transform: scale(1.03) translateY(-2px);
+}
+
+/* Mobile Specific Adjustments */
+.player-card--mobile .player-card__avatar {
+  width: 48px;
+  height: 48px;
+}
+
+.player-card--mobile .player-card__name {
+  font-size: 14px;
+}
+
+.player-card--mobile .player-card__stats {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.player-card--mobile .player-card__stat {
+  padding: 6px;
+}
+
+.player-card--mobile .player-card__stat-value {
+  font-size: 16px;
+}
+
+.player-card--mobile .player-card__last-move {
+  flex: 1 1 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .player-card--desktop {
+    min-width: 240px;
+    max-width: 280px;
+    padding: 12px;
+  }
+  
+  .player-card__avatar {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Team-specific accents (optional enhancement) */
+.player-card[data-team="OUR"] .player-card__number {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #047857;
+}
+
+.player-card[data-team="OPPONENT"] .player-card__number {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #b91c1c;
+}
