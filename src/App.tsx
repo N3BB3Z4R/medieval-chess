@@ -206,6 +206,8 @@ function AppContent() {
               <Messboard 
                 topPlayerName={opponentPlayer?.profile.playerName}
                 bottomPlayerName={ourPlayer?.profile.playerName}
+                topPlayerElo={opponentPlayer?.profile.playerElo}
+                bottomPlayerElo={ourPlayer?.profile.playerElo}
               />
             </div>
           </>
@@ -234,6 +236,8 @@ function AppContent() {
             <Messboard 
               topPlayerName={opponentPlayer?.profile.playerName}
               bottomPlayerName={ourPlayer?.profile.playerName}
+              topPlayerElo={opponentPlayer?.profile.playerElo}
+              bottomPlayerElo={ourPlayer?.profile.playerElo}
             />
             
             {/* Right Panel: Move History */}

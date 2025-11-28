@@ -23,9 +23,16 @@ import GameOverModal from '../GameOverModal/GameOverModal';
 interface MessboardProps {
   topPlayerName?: string;
   bottomPlayerName?: string;
+  topPlayerElo?: number;
+  bottomPlayerElo?: number;
 }
 
-export default function Messboard({ topPlayerName, bottomPlayerName }: MessboardProps = {}) {
+export default function Messboard({ 
+  topPlayerName, 
+  bottomPlayerName,
+  topPlayerElo,
+  bottomPlayerElo 
+}: MessboardProps = {}) {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [ghostPiece, setGhostPiece] = useState<HTMLElement | null>(null);
   const [grabPosition, setGrabPosition] = useState<Position>({ x: -1, y: -1 });
@@ -376,6 +383,9 @@ export default function Messboard({ topPlayerName, bottomPlayerName }: Messboard
         {topPlayerName && (
           <div className="messboard-player-label messboard-player-label--top">
             <span className="messboard-player-name">{topPlayerName}</span>
+            {topPlayerElo && (
+              <span className="messboard-player-elo">⭐ {topPlayerElo}</span>
+            )}
           </div>
         )}
         
@@ -403,6 +413,9 @@ export default function Messboard({ topPlayerName, bottomPlayerName }: Messboard
         {bottomPlayerName && (
           <div className="messboard-player-label messboard-player-label--bottom">
             <span className="messboard-player-name">{bottomPlayerName}</span>
+            {bottomPlayerElo && (
+              <span className="messboard-player-elo">⭐ {bottomPlayerElo}</span>
+            )}
           </div>
         )}
       </div>
