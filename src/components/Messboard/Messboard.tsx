@@ -25,13 +25,15 @@ interface MessboardProps {
   bottomPlayerName?: string;
   topPlayerElo?: number;
   bottomPlayerElo?: number;
+  isAIThinking?: boolean;
 }
 
 export default function Messboard({ 
   topPlayerName, 
   bottomPlayerName,
   topPlayerElo,
-  bottomPlayerElo 
+  bottomPlayerElo,
+  isAIThinking = false 
 }: MessboardProps = {}) {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [ghostPiece, setGhostPiece] = useState<HTMLElement | null>(null);
@@ -394,6 +396,19 @@ export default function Messboard({
             <div className="review-mode-overlay">
               <div className="review-mode-indicator">
                 🔍 Revisando jugada #{(reviewMoveIndex ?? 0) + 1}
+              </div>
+            </div>
+          )}
+          {isAIThinking && !reviewMode && (
+            <div className="ai-thinking-overlay">
+              <div className="ai-thinking-indicator">
+                <span className="ai-thinking-icon">🤖</span>
+                <span className="ai-thinking-text">La IA está pensando</span>
+                <span className="ai-thinking-dots">
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </span>
               </div>
             </div>
           )}

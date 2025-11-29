@@ -12,31 +12,68 @@ import { Move } from '../core/Move';
 /**
  * Concrete implementation of turn management.
  * 
- * Supports 2-player mode with plans for 4-player expansion.
+ * Supports 2, 3, and 4-player modes with configurable player count.
  */
 export class TurnManager implements ITurnManager {
+  private readonly playerCount: 2 | 3 | 4;
+  private readonly teams: TeamType[];
+
+  constructor(playerCount: 2 | 3 | 4 = 2) {
+    this.playerCount = playerCount;
+    this.teams = this.initializeTeams(playerCount);
+  }
+
+  /**
+   * Initialize teams based on player count.
+   */
+  private initializeTeams(count: number): TeamType[] {
+    switch (count) {
+      case 2:
+        return [TeamType.OUR, TeamType.OPPONENT];
+      case 3:
+        return [TeamType.OUR, TeamType.OPPONENT, TeamType.OPPONENT_2];
+      case 4:
+        return [TeamType.OUR, TeamType.OPPONENT, TeamType.OPPONENT_2, TeamType.OPPONENT_3];
+      default:
+        return [TeamType.OUR, TeamType.OPPONENT];
+    }
+  }
+
   /**
    * Gets the team that should move next.
    * 
-   * For 2-player: Alternates between OUR and OPPONENT
-   * For 4-player: Cycles through all 4 teams (future implementation)
+   * Cycles through teams in order: OUR → OPPONENT → OPPONENT_2 → OPPONENT_3 → OUR
+   * Automatically skips eliminated teams (teams with no pieces).
    */
   public getNextTeam(currentState: GameStateReader): TeamType {
     const currentTurn = currentState.getCurrentTurn();
-
-    // 2-player logic (current implementation)
-    switch (currentTurn) {
-      case TeamType.OUR:
-        return TeamType.OPPONENT;
-      case TeamType.OPPONENT:
-        return TeamType.OUR;
-      default:
-        // Default to OUR if unknown state
-        return TeamType.OUR;
+    const currentIndex = this.teams.indexOf(currentTurn);
+    
+    // If current team not found, default to first team
+    if (currentIndex === -1) {
+      return this.teams[0];
     }
 
-    // TODO: 4-player logic (Phase 7)
-    // Will cycle: OUR → OPPONENT → OPPONENT_2 → OPPONENT_3 → OUR
+    // Find next active team (with pieces remaining)
+    let nextIndex = (currentIndex + 1) % this.teams.length;
+    let attempts = 0;
+    const maxAttempts = this.teams.length;
+
+    while (attempts < maxAttempts) {
+      const nextTeam = this.teams[nextIndex];
+      
+      // Check if team is still active (has pieces)
+      if (this.isTeamActive(nextTeam, currentState)) {
+        return nextTeam;
+      }
+
+      // Try next team
+      nextIndex = (nextIndex + 1) % this.teams.length;
+      attempts++;
+    }
+
+    // Fallback: return current team if no other team has pieces
+    return currentTurn;
   }
 
   /**
@@ -61,17 +98,29 @@ export class TurnManager implements ITurnManager {
   }
 
   /**
-   * Gets all active teams in the game.
+   * Gets all teams in the game (based on player count).
    * 
    * For 2-player: [OUR, OPPONENT]
+   * For 3-player: [OUR, OPPONENT, OPPONENT_2]
    * For 4-player: [OUR, OPPONENT, OPPONENT_2, OPPONENT_3]
    */
   public getActiveTeams(): TeamType[] {
-    // Currently only 2-player mode
-    return [TeamType.OUR, TeamType.OPPONENT];
+    return this.teams;
+  }
 
-    // TODO: 4-player mode (Phase 7)
-    // return [TeamType.OUR, TeamType.OPPONENT, TeamType.OPPONENT_2, TeamType.OPPONENT_3];
+  /**
+   * Gets opponents for a given team.
+   * Used by AI to evaluate threats from all opponents.
+   */
+  public getOpponents(forTeam: TeamType): TeamType[] {
+    return this.teams.filter(team => team !== forTeam);
+  }
+
+  /**
+   * Gets the player count configuration.
+   */
+  public getPlayerCount(): 2 | 3 | 4 {
+    return this.playerCount;
   }
 
   /**

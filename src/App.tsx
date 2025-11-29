@@ -6,17 +6,44 @@ import Messboard from './components/Messboard/Messboard';
 import GameSidebar from './components/GameSidebar/GameSidebar';
 import GameControlPanel from './components/GameControlPanel/GameControlPanel';
 import MoveHistory from './components/MoveHistory/MoveHistory';
-import GameSetupModal from './components/GameSetupModal/GameSetupModal';
+import GameSetupModal, { GameSetupConfig, AIConfig } from './components/GameSetupModal/GameSetupModal';
 import PieceLegend from './components/PieceLegend/PieceLegend';
 import { GameProvider, useGame } from './context/GameContext';
 import { GameConfig } from './domain/game/GameConfig';
 import { GameStatus, PieceType } from './domain/core/types';
 import { PlayerProfile, PlayerStats, PlayerStatus } from './components/PlayerCard/PlayerCard';
+import { useGameLoop } from './hooks/useGameLoop';
+import { Move } from './domain/core/Move';
 
 function AppContent() {
   const { gameState, gameConfig, dispatch } = useGame();
   const [showSetup, setShowSetup] = useState(true);
   const [isMobile, setIsMobile] = useState(globalThis.innerWidth <= 768);
+  
+  // AI Configuration State
+  const [gameMode, setGameMode] = useState<'pvp' | 'ai'>('pvp');
+  const [aiConfig, setAIConfig] = useState<AIConfig | undefined>(undefined);
+  
+  // AI Game Loop Integration
+  const handleMoveExecuted = React.useCallback((move: Move) => {
+    dispatch({ 
+      type: 'MAKE_MOVE', 
+      payload: { move } 
+    });
+  }, [dispatch]);
+  
+  const handleAIThinking = React.useCallback((isThinking: boolean) => {
+    // Update UI to show AI is thinking
+    console.log('AI thinking:', isThinking);
+  }, []);
+  
+  const { isProcessingAI } = useGameLoop({
+    gameState,
+    gameMode,
+    aiConfig: aiConfig ?? null,
+    onMoveExecuted: handleMoveExecuted,
+    onAIThinking: handleAIThinking,
+  });
   
   // Piece values for material advantage calculation
   const pieceValues: Record<PieceType, number> = {
@@ -54,8 +81,25 @@ function AppContent() {
     return () => globalThis.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleStartNewGame = (config: GameConfig) => {
-    dispatch({ type: 'SET_CONFIG', payload: config });
+  const handleStartNewGame = (config: GameSetupConfig) => {
+    // Extract AI configuration if present
+    if (config.mode && config.aiConfig) {
+      setGameMode(config.mode);
+      setAIConfig(config.aiConfig);
+    } else {
+      setGameMode('pvp');
+      setAIConfig(undefined);
+    }
+    
+    // Initialize game with base config
+    const gameConfig: GameConfig = {
+      playerCount: config.players.length as 2 | 3 | 4,
+      players: config.players,
+      timePerTurn: config.timePerTurn,
+      incrementPerTurn: config.incrementPerTurn,
+    };
+    
+    dispatch({ type: 'SET_CONFIG', payload: gameConfig });
     dispatch({ type: 'RESET_GAME' });
     setShowSetup(false);
   };
@@ -129,6 +173,13 @@ function AppContent() {
       
       const status: PlayerStatus = { state, message };
       
+      // Check if this player is AI and currently thinking
+      const isAIThinking = player.isAI && isActive && isProcessingAI;
+      if (isAIThinking) {
+        status.state = 'thinking';
+        status.message = '🤖 La IA está pensando...';
+      }
+      
       const profile: PlayerProfile = {
         playerPosition: player.position,
         playerName: player.name,
@@ -162,7 +213,7 @@ function AppContent() {
         },
       };
     });
-  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, pieceValues]);
+  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, pieceValues, isProcessingAI]);
 
   // Get player names for board labels (Chess.com style)
   const ourPlayer = playersData.find(p => p.profile.team === 'OUR');
@@ -208,6 +259,7 @@ function AppContent() {
                 bottomPlayerName={ourPlayer?.profile.playerName}
                 topPlayerElo={opponentPlayer?.profile.playerElo}
                 bottomPlayerElo={ourPlayer?.profile.playerElo}
+                isAIThinking={isProcessingAI}
               />
             </div>
           </>
@@ -238,6 +290,7 @@ function AppContent() {
               bottomPlayerName={ourPlayer?.profile.playerName}
               topPlayerElo={opponentPlayer?.profile.playerElo}
               bottomPlayerElo={ourPlayer?.profile.playerElo}
+              isAIThinking={isProcessingAI}
             />
             
             {/* Right Panel: Move History */}

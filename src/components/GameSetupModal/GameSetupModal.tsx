@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
 import './GameSetupModal.css';
-import { create2PlayerGame, create4PlayerGame, GameConfig } from '../../domain/game/GameConfig';
+import { GameConfig, create2PlayerGame, create4PlayerGame } from '../../domain/game/GameConfig';
+import { AIDifficulty, AIPersonality } from '../../domain/ai/interfaces';
+
+// Re-export AI types from domain for convenience
+export type { AIConfig } from '../../domain/ai/interfaces';
+
+export interface GameSetupConfig extends GameConfig {
+  mode?: 'pvp' | 'ai';
+  aiConfig?: {
+    difficulty: AIDifficulty;
+    personality: AIPersonality;
+  };
+}
 
 interface GameSetupModalProps {
-  onStartGame: (config: GameConfig) => void;
+  onStartGame: (config: GameSetupConfig) => void;
   onClose: () => void;
 }
 
@@ -39,37 +51,52 @@ const TIME_PRESETS: TimePreset[] = [
  * - Enable/disable timer
  */
 const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose }) => {
+  const [gameMode, setGameMode] = useState<'pvp' | 'ai'>('pvp');
   const [playerCount, setPlayerCount] = useState<2 | 3 | 4>(2);
   const [useTimer, setUseTimer] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customMinutes, setCustomMinutes] = useState(5);
   const [customIncrement, setCustomIncrement] = useState(0);
   const [showCustom, setShowCustom] = useState(false);
+  
+  // AI configuration
+  const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(AIDifficulty.MEDIUM);
+  const [aiPersonality, setAIPersonality] = useState<AIPersonality>(AIPersonality.TACTICAL);
 
   const handleStart = () => {
-    let config: GameConfig;
+    let baseConfig: GameConfig;
     
     if (playerCount === 2) {
-      config = create2PlayerGame();
+      baseConfig = create2PlayerGame();
     } else {
       // 3-4 players not yet implemented
-      config = create4PlayerGame(); // Falls back to 2-player
+      baseConfig = create4PlayerGame(); // Falls back to 2-player
     }
     
     // Apply time configuration
     if (useTimer) {
       if (selectedPreset !== null) {
         const preset = TIME_PRESETS[selectedPreset];
-        config.timePerTurn = preset.minutes * 60; // Convert to seconds
-        config.incrementPerTurn = preset.incrementSeconds;
+        baseConfig.timePerTurn = preset.minutes * 60; // Convert to seconds
+        baseConfig.incrementPerTurn = preset.incrementSeconds;
       } else if (showCustom) {
-        config.timePerTurn = customMinutes * 60; // Convert to seconds
-        config.incrementPerTurn = customIncrement;
+        baseConfig.timePerTurn = customMinutes * 60; // Convert to seconds
+        baseConfig.incrementPerTurn = customIncrement;
       }
     } else {
-      config.timePerTurn = undefined;
-      config.incrementPerTurn = undefined;
+      baseConfig.timePerTurn = undefined;
+      baseConfig.incrementPerTurn = undefined;
     }
+    
+    // Create setup config with AI settings
+    const config: GameSetupConfig = {
+      ...baseConfig,
+      mode: gameMode,
+      aiConfig: gameMode === 'ai' ? {
+        difficulty: aiDifficulty,
+        personality: aiPersonality
+      } : undefined
+    };
     
     onStartGame(config);
   };
@@ -89,6 +116,25 @@ const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose })
       <div className="game-setup-modal__backdrop" onClick={onClose} />
       <div className="game-setup-modal__content">
         <h2 className="game-setup-modal__title">🏰 Nueva Partida</h2>
+        
+        {/* Game Mode Selection */}
+        <div className="game-setup-modal__section">
+          <label className="game-setup-modal__label">Modo de Juego</label>
+          <div className="game-setup-modal__buttons">
+            <button
+              className={`game-setup-modal__button ${gameMode === 'pvp' ? 'active' : ''}`}
+              onClick={() => setGameMode('pvp')}
+            >
+              👥 Jugador vs Jugador
+            </button>
+            <button
+              className={`game-setup-modal__button ${gameMode === 'ai' ? 'active' : ''}`}
+              onClick={() => setGameMode('ai')}
+            >
+              🤖 Jugador vs IA
+            </button>
+          </div>
+        </div>
         
         <div className="game-setup-modal__section">
           <label className="game-setup-modal__label">Número de Jugadores</label>
@@ -193,6 +239,48 @@ const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose })
             </>
           )}
         </div>
+
+        {/* AI Configuration (only if mode === 'ai') */}
+        {gameMode === 'ai' && (
+          <>
+            <div className="game-setup-modal__section">
+              <label className="game-setup-modal__label">Dificultad de IA</label>
+              <select
+                className="game-setup-modal__select"
+                value={aiDifficulty}
+                onChange={(e) => setAIDifficulty(e.target.value as AIDifficulty)}
+              >
+                <option value={AIDifficulty.BEGINNER}>🌱 Principiante (Profundidad 1)</option>
+                <option value={AIDifficulty.MEDIUM}>⚔️ Medio (Profundidad 2)</option>
+                <option value={AIDifficulty.ADVANCED}>🛡️ Avanzado (Profundidad 3)</option>
+                <option value={AIDifficulty.MASTER}>👑 Maestro (Profundidad 4)</option>
+              </select>
+              <p className="game-setup-modal__hint">
+                Mayor profundidad = IA más fuerte pero más lenta
+              </p>
+            </div>
+
+            <div className="game-setup-modal__section">
+              <label className="game-setup-modal__label">Personalidad de IA</label>
+              <select
+                className="game-setup-modal__select"
+                value={aiPersonality}
+                onChange={(e) => setAIPersonality(e.target.value as AIPersonality)}
+              >
+                <option value={AIPersonality.AGGRESSIVE}>⚔️ Agresivo - Prioriza ataques y capturas</option>
+                <option value={AIPersonality.DEFENSIVE}>🛡️ Defensivo - Protege al rey y controla territorio</option>
+                <option value={AIPersonality.POSITIONAL}>📐 Posicional - Controla el centro del tablero</option>
+                <option value={AIPersonality.TACTICAL}>🎯 Táctico - Balanceado y calculador</option>
+                <option value={AIPersonality.OPPORTUNIST}>💰 Oportunista - Busca ventajas materiales</option>
+                <option value={AIPersonality.CAUTIOUS}>🐢 Cauteloso - Evita riesgos innecesarios</option>
+                <option value={AIPersonality.CHAOTIC}>🎲 Caótico - Movimientos impredecibles</option>
+              </select>
+              <p className="game-setup-modal__hint">
+                Cada personalidad tiene un estilo de juego único
+              </p>
+            </div>
+          </>
+        )}
 
         <div className="game-setup-modal__actions">
           <button

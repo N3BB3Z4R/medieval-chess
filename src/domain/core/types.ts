@@ -46,8 +46,8 @@ export enum PieceType {
 export enum TeamType {
   OUR = 'OUR',
   OPPONENT = 'OPPONENT',
-  // OPPONENT_2 = 'OPPONENT_2', // Reserved for 4-player mode
-  // OPPONENT_3 = 'OPPONENT_3', // Reserved for 4-player mode
+  OPPONENT_2 = 'OPPONENT_2', // For 4-player mode
+  OPPONENT_3 = 'OPPONENT_3', // For 4-player mode
 }
 
 /**
