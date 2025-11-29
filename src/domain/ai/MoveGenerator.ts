@@ -10,27 +10,12 @@
  * 3. Return only valid moves
  */
 
-import { GameState } from '../game/GameState';
+import { GameState, GamePiece } from '../game/GameState';
 import { Move } from '../core/Move';
 import { Position } from '../core/Position';
-import { TeamType, PieceType, Piece } from '../../Constants';
-import { TeamType as DomainTeamType } from '../core/types';
+import { TeamType } from '../core/types';
 import { RuleEngine } from '../rules/RuleEngine';
 import { IMoveGenerator } from './interfaces';
-
-/**
- * Convert legacy numeric TeamType to domain string TeamType
- */
-function convertTeamType(team: TeamType): DomainTeamType {
-  switch (team) {
-    case TeamType.OUR:
-      return DomainTeamType.OUR;
-    case TeamType.OPPONENT:
-      return DomainTeamType.OPPONENT;
-    default:
-      return DomainTeamType.OPPONENT; // Fallback
-  }
-}
 
 /**
  * Direction vectors for movement calculations.
@@ -83,7 +68,7 @@ export class MoveGenerator implements IMoveGenerator {
   /**
    * Generate legal moves for a specific piece.
    */
-  generateMovesForPiece(piece: Piece, gameState: GameState, debug: boolean = false): Move[] {
+  generateMovesForPiece(piece: GamePiece, gameState: GameState, debug: boolean = false): Move[] {
     const moves: Move[] = [];
     const from = piece.position;
 
@@ -101,6 +86,7 @@ export class MoveGenerator implements IMoveGenerator {
       const move: any = { 
         from: from,
         to: to as any,
+        pieceType: piece.type,  // ✅ CRITICAL: Include pieceType for validator
         team: piece.team
       };
       const validation = this.ruleEngine.validate(move, gameState);
@@ -123,36 +109,37 @@ export class MoveGenerator implements IMoveGenerator {
    * These are positions the piece MIGHT be able to move to,
    * subject to validation by RuleEngine.
    */
-  private generateCandidateDestinations(piece: Piece, gameState: GameState): Position[] {
+  private generateCandidateDestinations(piece: GamePiece, gameState: GameState): Position[] {
     const { position, type, team } = piece;
     const candidates: Position[] = [];
 
+    // Now using string enum comparisons
     switch (type) {
-      case PieceType.FARMER:
+      case 'FARMER':
         candidates.push(...this.generateFarmerCandidates(position, team));
         break;
-      case PieceType.RAM:
+      case 'RAM':
         candidates.push(...this.generateRamCandidates(position));
         break;
-      case PieceType.TRAP:
+      case 'TRAP':
         candidates.push(...this.generateTrapCandidates(position));
         break;
-      case PieceType.KNIGHT:
+      case 'KNIGHT':
         candidates.push(...this.generateKnightCandidates(position));
         break;
-      case PieceType.TEMPLAR:
+      case 'TEMPLAR':
         candidates.push(...this.generateTemplarCandidates(position));
         break;
-      case PieceType.SCOUT:
+      case 'SCOUT':
         candidates.push(...this.generateScoutCandidates(position));
         break;
-      case PieceType.TREBUCHET:
+      case 'TREBUCHET':
         candidates.push(...this.generateTrebuchetCandidates(position));
         break;
-      case PieceType.TREASURE:
+      case 'TREASURE':
         candidates.push(...this.generateTreasureCandidates(position));
         break;
-      case PieceType.KING:
+      case 'KING':
         candidates.push(...this.generateKingCandidates(position));
         break;
     }
@@ -165,11 +152,10 @@ export class MoveGenerator implements IMoveGenerator {
    * FARMER: 1 square forward, diagonal for captures
    */
   private generateFarmerCandidates(pos: { x: number; y: number }, team: TeamType): Position[] {
-    const domainTeam = convertTeamType(team);
-    const direction = this.getForwardDirection(domainTeam);
+    const direction = this.getForwardDirection(team);
     const candidates: Position[] = [];
     
-    console.log('[generateFarmerCandidates] Input:', { pos, team, domainTeam, direction });
+    console.log('[generateFarmerCandidates] Input:', { pos, team, direction });
     
     // Try to create positions, catching errors for invalid coordinates
     const potentialMoves = [
@@ -295,10 +281,10 @@ export class MoveGenerator implements IMoveGenerator {
   /**
    * Get forward direction for a team.
    */
-  private getForwardDirection(team: DomainTeamType): number {
+  private getForwardDirection(team: TeamType): number {
     // OUR team moves up (y increases), OPPONENT moves down
-    console.log('[getForwardDirection] team:', team, 'DomainTeamType.OUR:', DomainTeamType.OUR, 'equals:', team === DomainTeamType.OUR);
-    return team === DomainTeamType.OUR ? 1 : -1;
+    console.log('[getForwardDirection] team:', team, 'TeamType.OUR:', TeamType.OUR, 'equals:', team === TeamType.OUR);
+    return team === TeamType.OUR ? 1 : -1;
   }
 
   /**

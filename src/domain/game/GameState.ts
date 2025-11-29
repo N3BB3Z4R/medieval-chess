@@ -576,12 +576,18 @@ export class GameState implements GameStateReader, GameStateWriter {
   /**
    * Creates game state from existing pieces (for migration from legacy code).
    * 
-   * NOTE: Legacy code uses numeric enums (0,1,2...) while domain uses string enums.
-   * This method handles the conversion.
+   * NOTE: After Phase 3 migration, Constants.ts now exports string enums.
+   * This method handles BOTH numeric enums (old) and string enums (new).
    */
   public static fromLegacyPieces(pieces: any[], currentTurn: TeamType = TeamType.OUR): GameState {
-    // Helper to convert legacy numeric PieceType enum to domain string enum
-    const convertPieceType = (legacyType: number): PieceType => {
+    // Helper to convert PieceType (numeric OR string) to domain string enum
+    const convertPieceType = (type: any): PieceType => {
+      // If already a string enum, return as-is
+      if (typeof type === 'string') {
+        return type as PieceType;
+      }
+      
+      // If numeric enum, convert to string
       const mapping: Record<number, PieceType> = {
         0: PieceType.FARMER,
         1: PieceType.RAM,
@@ -593,12 +599,18 @@ export class GameState implements GameStateReader, GameStateWriter {
         7: PieceType.TREASURE,
         8: PieceType.KING,
       };
-      return mapping[legacyType] || PieceType.FARMER;
+      return mapping[type] || PieceType.FARMER;
     };
 
-    // Helper to convert legacy numeric TeamType enum to domain string enum
-    const convertTeamType = (legacyTeam: number): TeamType => {
-      return legacyTeam === 1 ? TeamType.OUR : TeamType.OPPONENT;
+    // Helper to convert TeamType (numeric OR string) to domain string enum
+    const convertTeamType = (team: any): TeamType => {
+      // If already a string enum, return as-is
+      if (typeof team === 'string') {
+        return team as TeamType;
+      }
+      
+      // If numeric enum, convert to string
+      return team === 1 ? TeamType.OUR : TeamType.OPPONENT;
     };
 
     // Convert legacy pieces to GamePiece format

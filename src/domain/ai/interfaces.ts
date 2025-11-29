@@ -5,11 +5,10 @@
  * and threat detection following SOLID principles (Dependency Inversion).
  */
 
-import { GameState } from '../game/GameState';
+import { GameState, GamePiece } from '../game/GameState';
 import { Move } from '../core/Move';
 import { Position } from '../core/Position';
 import { TeamType } from '../core/types';
-import { Piece } from '../../Constants';
 
 // ============================================================================
 // AI Difficulty & Personality
@@ -117,7 +116,7 @@ export interface IMoveGenerator {
    * @param gameState - Current game state
    * @returns Array of legal moves for this piece
    */
-  generateMovesForPiece(piece: Piece, gameState: GameState): Move[];
+  generateMovesForPiece(piece: GamePiece, gameState: GameState): Move[];
 }
 
 /**
@@ -155,8 +154,8 @@ export interface ThreatPathResult {
  * Analysis of a single threat.
  */
 export interface ThreatAnalysis {
-  attacker: Piece;         // Enemy piece threatening
-  target: Piece;           // Our piece being threatened
+  attacker: GamePiece;     // Enemy piece threatening
+  target: GamePiece;       // Our piece being threatened
   movesToReach: number;    // 1 = immediate, 2+ = future threat
   severity: number;        // 0-1000+, higher = more dangerous
   path: Position[];        // Attack path
@@ -176,7 +175,7 @@ export interface IThreatDetector {
    * @param depth - Search depth (1-4 moves ahead)
    * @returns Array of threats sorted by severity (most dangerous first)
    */
-  detectThreats(target: Piece, gameState: GameState, depth: number): ThreatAnalysis[];
+  detectThreats(target: GamePiece, gameState: GameState, depth: number): ThreatAnalysis[];
 
   /**
    * Analyze if an attacker can reach a target position.
@@ -188,7 +187,7 @@ export interface IThreatDetector {
    * @returns Path analysis result
    */
   analyzeThreatPath(
-    attacker: Piece,
+    attacker: GamePiece,
     targetPos: Position,
     gameState: GameState,
     maxDepth: number

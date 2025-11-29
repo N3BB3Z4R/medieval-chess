@@ -16,7 +16,6 @@ import { Position as PositionClass } from '../../domain/core/Position';
 import { screenToBoard, BoardConfig } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 import { useGame, useResetGame } from '../../context/GameContext';
-import { PieceType as DomainPieceType, TeamType as DomainTeamType } from '../../domain/core/types';
 import { Move } from '../../domain/core/Move';
 import GameOverModal from '../GameOverModal/GameOverModal';
 
@@ -47,53 +46,16 @@ export default function Messboard({
   const currentTurn = gameState.getCurrentTurn();
   const gameStatus = gameState.getStatus();
   
-  // Helper functions for type conversion (defined before useMemo to avoid hoisting issues)
-  
-  // Map legacy TeamType to domain TeamType
-  const mapTeamType = (legacyTeam: TeamType): DomainTeamType => {
-    return legacyTeam === TeamType.OUR ? DomainTeamType.OUR : DomainTeamType.OPPONENT;
-  };
-  
-  // Map legacy PieceType to domain PieceType
-  const mapPieceType = (legacyType: PieceType): DomainPieceType => {
-    const mapping: Record<number, string> = {
-      [PieceType.FARMER]: 'FARMER',
-      [PieceType.RAM]: 'RAM',
-      [PieceType.TRAP]: 'TRAP',
-      [PieceType.KNIGHT]: 'KNIGHT',
-      [PieceType.TEMPLAR]: 'TEMPLAR',
-      [PieceType.SCOUT]: 'SCOUT',
-      [PieceType.TREBUCHET]: 'TREBUCHET',
-      [PieceType.TREASURE]: 'TREASURE',
-      [PieceType.KING]: 'KING',
-    };
-    return mapping[legacyType] as DomainPieceType;
-  };
-  
-  // Map domain PieceType back to legacy (for Referee compatibility)
-  const mapDomainPieceTypeToLegacy = (domainType: DomainPieceType): PieceType => {
-    const mapping: Record<string, PieceType> = {
-      'FARMER': PieceType.FARMER,
-      'RAM': PieceType.RAM,
-      'TRAP': PieceType.TRAP,
-      'KNIGHT': PieceType.KNIGHT,
-      'TEMPLAR': PieceType.TEMPLAR,
-      'SCOUT': PieceType.SCOUT,
-      'TREBUCHET': PieceType.TREBUCHET,
-      'TREASURE': PieceType.TREASURE,
-      'KING': PieceType.KING,
-    };
-    return mapping[domainType];
-  };
+  // Helper functions for type conversion
   
   // Map piece type to image filename
-  const mapPieceTypeToImage = (domainType: DomainPieceType): string => {
+  const mapPieceTypeToImage = (pieceType: PieceType): string => {
     // Special cases where domain name differs from asset filename
     const specialMapping: Record<string, string> = {
       'SCOUT': 'hunter',      // hunter_w.svg, hunter_b.svg
       'TREBUCHET': 'catapult'  // catapult_w.svg, catapult_b.svg
     };
-    return specialMapping[domainType] || domainType.toLowerCase();
+    return specialMapping[pieceType] || pieceType.toLowerCase();
   };
   
   // Convert GameState pieces to legacy format for Referee
@@ -104,10 +66,10 @@ export default function Messboard({
       : gameState.getAllPieces();
       
     return sourcePieces.map(gamePiece => ({
-      image: `assets/images/${mapPieceTypeToImage(gamePiece.type)}_${gamePiece.team === DomainTeamType.OUR ? 'w' : 'b'}.svg`,
+      image: `assets/images/${mapPieceTypeToImage(gamePiece.type)}_${gamePiece.team === TeamType.OUR ? 'w' : 'b'}.svg`,
       position: { x: gamePiece.position.x, y: gamePiece.position.y },
-      type: mapDomainPieceTypeToLegacy(gamePiece.type),
-      team: gamePiece.team === DomainTeamType.OUR ? TeamType.OUR : TeamType.OPPONENT,
+      type: gamePiece.type, // Now both use string enums - no conversion needed
+      team: gamePiece.team, // Now both use string enums - no conversion needed
       enPassant: false, // Snapshots don't store enPassant flag
     }));
   }, [gameState, reviewMode, reviewSnapshot]);
@@ -133,9 +95,8 @@ export default function Messboard({
       
       if (currentPiece) {
         // Validate turn: only allow grabbing pieces of current team
-        // Convert domain TeamType to legacy TeamType for comparison
-        const currentTurnLegacy = currentTurn === DomainTeamType.OUR ? TeamType.OUR : TeamType.OPPONENT;
-        if (currentPiece.team !== currentTurnLegacy) {
+        // Now both use string enums - direct comparison
+        if (currentPiece.team !== currentTurn) {
           console.warn(`Not your turn! Current turn: ${currentTurn}, Piece team: ${currentPiece.team}`);
           return; // Cannot grab opponent's piece
         }
@@ -257,8 +218,8 @@ export default function Messboard({
 
       if (currentPiece) {
         // CRITICAL: Validate turn before processing move
-        const currentPieceTeam = mapTeamType(currentPiece.team);
-        if (currentPieceTeam !== currentTurn) {
+        // No conversion needed - both use string enums now
+        if (currentPiece.team !== currentTurn) {
           console.warn('Turn validation failed - resetting piece');
           activePiece.style.position = "relative";
           activePiece.style.removeProperty("left");
@@ -289,7 +250,7 @@ export default function Messboard({
         // CRITICAL: Detect if there's a piece at the destination (capture)
         const capturedPiece = pieces.find((p) => samePosition(p.position, { x, y }));
         const capturedPieceInfo = capturedPiece ? {
-          type: mapPieceType(capturedPiece.type),
+          type: capturedPiece.type, // No conversion needed - string enum
           position: new PositionClass(capturedPiece.position.x, capturedPiece.position.y)
         } : undefined;
 
@@ -304,11 +265,11 @@ export default function Messboard({
           const move = new Move({
             from: new PositionClass(grabPosition.x, grabPosition.y),
             to: new PositionClass(x, y),
-            pieceType: mapPieceType(currentPiece.type),
-            team: currentPieceTeam,
+            pieceType: currentPiece.type, // No conversion needed - string enum
+            team: currentPiece.team, // No conversion needed - string enum
             isEnPassant: true,
             capturedPiece: enPassantCapturedPiece ? {
-              type: mapPieceType(enPassantCapturedPiece.type),
+              type: enPassantCapturedPiece.type, // No conversion needed - string enum
               position: new PositionClass(enPassantCapturedPiece.position.x, enPassantCapturedPiece.position.y)
             } : undefined
           });
@@ -319,8 +280,8 @@ export default function Messboard({
           const move = new Move({
             from: new PositionClass(grabPosition.x, grabPosition.y),
             to: new PositionClass(x, y),
-            pieceType: mapPieceType(currentPiece.type),
-            team: currentPieceTeam,
+            pieceType: currentPiece.type, // No conversion needed - string enum
+            team: currentPiece.team, // No conversion needed - string enum
             capturedPiece: capturedPieceInfo
           });
           dispatch({ type: 'MAKE_MOVE', payload: { move } });

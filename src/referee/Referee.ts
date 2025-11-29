@@ -2,7 +2,6 @@ import { PieceType, TeamType, Piece, Position } from "../Constants";
 import { Move } from "../domain/core/Move";
 import { Position as DomainPosition } from "../domain/core/Position";
 import { GameState } from "../domain/game/GameState";
-import { PieceType as DomainPieceType, TeamType as DomainTeamType } from "../domain/core/types";
 import { 
   RuleEngine,
   FarmerMoveValidator,
@@ -85,49 +84,23 @@ export default class Referee {
     return new Move({
       from: new DomainPosition(from.x, from.y),
       to: new DomainPosition(to.x, to.y),
-      pieceType: this.mapLegacyPieceTypeToDomain(pieceType),
-      team: this.mapLegacyTeamTypeToDomain(team)
+      pieceType: pieceType, // No conversion needed - both use string enums
+      team: team // No conversion needed - both use string enums
     });
-  }
-
-  /**
-   * NEW: Converts legacy numeric PieceType to domain string PieceType.
-   */
-  private mapLegacyPieceTypeToDomain(legacyType: PieceType): DomainPieceType {
-    const mapping: Record<number, DomainPieceType> = {
-      [PieceType.FARMER]: DomainPieceType.FARMER,
-      [PieceType.RAM]: DomainPieceType.RAM,
-      [PieceType.TRAP]: DomainPieceType.TRAP,
-      [PieceType.KNIGHT]: DomainPieceType.KNIGHT,
-      [PieceType.TEMPLAR]: DomainPieceType.TEMPLAR,
-      [PieceType.SCOUT]: DomainPieceType.SCOUT,
-      [PieceType.TREBUCHET]: DomainPieceType.TREBUCHET,
-      [PieceType.TREASURE]: DomainPieceType.TREASURE,
-      [PieceType.KING]: DomainPieceType.KING
-    };
-    return mapping[legacyType];
-  }
-
-  /**
-   * NEW: Converts legacy TeamType to domain TeamType.
-   */
-  private mapLegacyTeamTypeToDomain(legacyTeam: TeamType): DomainTeamType {
-    return legacyTeam === TeamType.OUR ? DomainTeamType.OUR : DomainTeamType.OPPONENT;
   }
 
   /**
    * NEW: Converts legacy Piece[] array to GameState.
    * 
-   * Temporary adapter for backwards compatibility.
-   * In future, GameState should be passed directly.
+   * Now that types are unified (both use string enums), this is just a structural conversion.
    */
   private convertLegacyBoardToGameState(
     boardState: Piece[],
     currentTurn: TeamType
   ): GameState {
     const gamePieces = boardState.map(piece => ({
-      type: this.mapLegacyPieceTypeToDomain(piece.type),
-      team: this.mapLegacyTeamTypeToDomain(piece.team),
+      type: piece.type, // No conversion needed - both use string enums
+      team: piece.team, // No conversion needed - both use string enums
       position: new DomainPosition(piece.position.x, piece.position.y),
       enPassant: piece.enPassant
       // Note: hasMoved not tracked in legacy Piece type
@@ -135,7 +108,7 @@ export default class Referee {
 
     return new GameState({
       pieces: gamePieces,
-      currentTurn: this.mapLegacyTeamTypeToDomain(currentTurn)
+      currentTurn: currentTurn // No conversion needed - both use string enums
     });
   }
   // funcion de chequear si tile esta ocupada, y ponernos si la pieza que hay es un enemigo

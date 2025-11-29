@@ -16,9 +16,9 @@
  * - Severity: HIGH (target=KING, ranged attacker)
  */
 
-import { GameState } from '../game/GameState';
+import { GameState, GamePiece } from '../game/GameState';
 import { Position } from '../core/Position';
-import { TeamType, PieceType, Piece } from '../../Constants';
+import { TeamType, PieceType } from '../core/types';
 import { Move } from '../core/Move';
 import {
   IThreatDetector,
@@ -49,7 +49,7 @@ export class ThreatDetector implements IThreatDetector {
   /**
    * Detect all threats against a target piece.
    */
-  detectThreats(target: Piece, gameState: GameState, depth: number): ThreatAnalysis[] {
+  detectThreats(target: GamePiece, gameState: GameState, depth: number): ThreatAnalysis[] {
     const threats: ThreatAnalysis[] = [];
     const enemyTeam = this.getOpposingTeam(target.team, gameState);
     
@@ -59,18 +59,18 @@ export class ThreatDetector implements IThreatDetector {
 
       for (const enemyPiece of enemyPieces) {
         const threat = this.analyzeThreatPath(
-          enemyPiece as any,
-          target.position as any,
+          enemyPiece,
+          target.position,
           gameState,
           depth
         );
 
         if (threat.canReach) {
           threats.push({
-            attacker: enemyPiece as any,
+            attacker: enemyPiece,
             target: target,
             movesToReach: threat.distance,
-            severity: this.calculateThreatSeverity(enemyPiece as any, target, threat.distance),
+            severity: this.calculateThreatSeverity(enemyPiece, target, threat.distance),
             path: threat.path,
             blockers: threat.blockers
           });
@@ -93,28 +93,28 @@ export class ThreatDetector implements IThreatDetector {
    * @returns Path analysis with distance and blockers
    */
   analyzeThreatPath(
-    attacker: Piece,
+    attacker: GamePiece,
     targetPos: Position,
     gameState: GameState,
     maxDepth: number
   ): ThreatPathResult {
     // BFS queue
     const queue: PathNode[] = [{
-      position: attacker.position as any,
+      position: attacker.position,
       depth: 0,
-      path: [attacker.position as any],
+      path: [attacker.position],
       stateSnapshot: gameState
     }];
 
     // Visited positions (to avoid cycles)
     const visited = new Set<string>();
-    visited.add(this.positionKey(attacker.position as any));
+    visited.add(this.positionKey(attacker.position));
 
     while (queue.length > 0) {
       const current = queue.shift()!;
 
       // Check if reached target
-      if (Position.equals(current.position as any, targetPos as any)) {
+      if (Position.equals(current.position, targetPos)) {
         return {
           canReach: true,
           distance: current.depth,
@@ -129,7 +129,7 @@ export class ThreatDetector implements IThreatDetector {
       }
 
       // Generate possible moves from current position
-      const virtualPiece: Piece = {
+      const virtualPiece: GamePiece = {
         ...attacker,
         position: current.position
       };
@@ -169,18 +169,18 @@ export class ThreatDetector implements IThreatDetector {
   /**
    * Calculate threat severity
    */
-  private calculateThreatSeverity(attacker: Piece, target: Piece, distance: number): number {
+  private calculateThreatSeverity(attacker: GamePiece, target: GamePiece, distance: number): number {
     const attackerValue = (REFINED_PIECE_VALUES as any)[attacker.type] || 10;
     const targetValue = (REFINED_PIECE_VALUES as any)[target.type] || 10;
 
     let severity = (targetValue / Math.max(distance, 1)) * (attackerValue / 100);
 
-    // Special piece modifiers
-    if ((attacker.type as any) === (PieceType.TREBUCHET as any)) severity *= 1.5;
-    if ((attacker.type as any) === (PieceType.RAM as any)) severity *= 1.3;
-    if ((attacker.type as any) === (PieceType.TRAP as any)) severity *= 2;
-    if ((target.type as any) === (PieceType.KING as any)) severity *= 10;
-    if ((target.type as any) === (PieceType.TREASURE as any)) severity *= 2;
+    // Special piece modifiers - now using string enum comparisons
+    if (attacker.type === 'TREBUCHET') severity *= 1.5;
+    if (attacker.type === 'RAM') severity *= 1.3;
+    if (attacker.type === 'TRAP') severity *= 2;
+    if (target.type === 'KING') severity *= 10;
+    if (target.type === 'TREASURE') severity *= 2;
 
     // Distance modifiers
     if (distance === 1) severity *= 3;
@@ -256,9 +256,9 @@ export class ThreatDetector implements IThreatDetector {
    * Check if a trap is visible to a team.
    * TRAP pieces are invisible to opponents unless revealed.
    */
-  private isVisibleToTeam(trap: Piece, team: TeamType): boolean {
-    // Traps are invisible to opponents
-    if (trap.type === PieceType.TRAP && trap.team !== team) {
+  private isVisibleToTeam(trap: GamePiece, team: TeamType): boolean {
+    // Traps are invisible to opponents - using string enum comparison
+    if (trap.type === 'TRAP' && trap.team !== team) {
       // TODO: Check if revealed by SCOUT or KING
       return false;
     }
