@@ -219,6 +219,23 @@ export class GameState implements GameStateReader, GameStateWriter {
       boardSnapshot: boardSnapshot
     });
 
+    // RAM MULTI-KILL LOGIC
+    // Rule: "si en su camino hay uno o dos enemigos los eliminara"
+    // RAM kills ALL enemy pieces in path (max 2)
+    let ramKilledPieces: GamePiece[] = [];
+    if (movingPiece.type === PieceType.RAM) {
+      const path = this.calculatePathPositions(move.from, move.to);
+      
+      // Check each position in path for enemy pieces
+      for (const pathPos of path) {
+        const pieceAtPath = this.getPieceAt(pathPos);
+        if (pieceAtPath && pieceAtPath.team !== movingPiece.team) {
+          ramKilledPieces.push(pieceAtPath);
+          if (ramKilledPieces.length >= 2) break; // Max 2 kills
+        }
+      }
+    }
+
     // Create new pieces array with move applied
     let newPieces: GamePiece[];
     
@@ -241,6 +258,10 @@ export class GameState implements GameStateReader, GameStateWriter {
       // Normal move logic (no counter-attack)
       newPieces = this._pieces
         .filter(piece => {
+          // Remove RAM-killed pieces (in path)
+          if (ramKilledPieces.some(killed => Position.equals(piece.position, killed.position))) {
+            return false;
+          }
           // Remove piece at destination (capture) - either explicit or by position
           if (move.capturedPiece && Position.equals(piece.position, move.capturedPiece.position)) {
             return false; // Explicit capture (en passant, special abilities)
@@ -300,28 +321,42 @@ export class GameState implements GameStateReader, GameStateWriter {
     }
 
     // Get captured piece for history
-    let capturedPieceForHistory: GamePiece | undefined = undefined;
+    const allCapturedPieces: GamePiece[] = [];
+    
+    // Add RAM-killed pieces to captured list
+    if (ramKilledPieces.length > 0) {
+      allCapturedPieces.push(...ramKilledPieces);
+    }
+    
     if (move.capturedPiece) {
-      capturedPieceForHistory = this.getPieceAt(move.capturedPiece.position);
+      const capturedPiece = this.getPieceAt(move.capturedPiece.position);
+      if (capturedPiece) {
+        allCapturedPieces.push(capturedPiece);
+      }
     } else {
       // Check if there's an enemy at destination
       const pieceAtDestination = this.getPieceAt(move.to);
       if (pieceAtDestination && pieceAtDestination.team !== movingPiece.team) {
-        capturedPieceForHistory = pieceAtDestination;
+        // Only add if not already in RAM kills
+        if (!ramKilledPieces.some(killed => Position.equals(killed.position, pieceAtDestination.position))) {
+          allCapturedPieces.push(pieceAtDestination);
+        }
       }
     }
 
     // Update captured pieces list
-    const newCapturedPieces = capturedPieceForHistory
-      ? [...this._capturedPieces, capturedPieceForHistory]
+    const newCapturedPieces = allCapturedPieces.length > 0
+      ? [...this._capturedPieces, ...allCapturedPieces]
       : this._capturedPieces;
 
     // KING DEATH PENALTY
     // Rule: "Si le matan todas nuestras piezas pueden mover una casilla menos excepto el tesoro"
     // Check if a KING was captured - apply movement penalty to that team
     const newKingDeathPenalty = new Map(this._kingDeathPenalty);
-    if (capturedPieceForHistory && capturedPieceForHistory.type === PieceType.KING) {
-      newKingDeathPenalty.set(capturedPieceForHistory.team, true);
+    for (const capturedPiece of allCapturedPieces) {
+      if (capturedPiece.type === PieceType.KING) {
+        newKingDeathPenalty.set(capturedPiece.team, true);
+      }
     }
 
     // Add move with snapshot to history
@@ -483,6 +518,35 @@ export class GameState implements GameStateReader, GameStateWriter {
   moves: ${this._moveHistory.length},
   captured: ${this._capturedPieces.length}
 }`;
+  }
+
+  /**
+   * Calculate all positions in path between from and to (exclusive of endpoints).
+   * Used for RAM multi-kill logic.
+   * 
+   * @param from - Starting position
+   * @param to - Ending position
+   * @returns Array of positions in path (not including from/to)
+   */
+  private calculatePathPositions(from: Position, to: Position): Position[] {
+    const path: Position[] = [];
+    
+    // Calculate direction
+    const dx = Math.sign(to.x - from.x); // -1, 0, or 1
+    const dy = Math.sign(to.y - from.y); // -1, 0, or 1
+    
+    // Start from position after 'from'
+    let currentX = from.x + dx;
+    let currentY = from.y + dy;
+    
+    // Walk along path until we reach 'to' (exclusive)
+    while (currentX !== to.x || currentY !== to.y) {
+      path.push(new Position(currentX, currentY));
+      currentX += dx;
+      currentY += dy;
+    }
+    
+    return path;
   }
 
   // ==================== Factory Methods ====================

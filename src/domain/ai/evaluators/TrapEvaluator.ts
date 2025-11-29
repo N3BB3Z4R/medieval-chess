@@ -30,9 +30,9 @@
  * - 3 traps in center zone (mine field): +45 + clustering bonus
  */
 
-import { GameState } from '../../game/GameState';
+import { GameState, GamePiece } from '../../game/GameState';
 import { Position } from '../../core/Position';
-import { TeamType, PieceType, Piece } from '../../../Constants';
+import { TeamType, PieceType } from '../../core/types';
 import { IPositionEvaluator } from '../interfaces';
 
 /**
@@ -73,9 +73,10 @@ export class TrapEvaluator implements IPositionEvaluator {
    * 
    * @param gameState - Current game state
    * @param forTeam - Team to evaluate for
+   * @param weights - Evaluation weights (not used internally)
    * @returns Trap effectiveness score
    */
-  evaluate(gameState: GameState, forTeam: TeamType): number {
+  evaluate(gameState: GameState, forTeam: TeamType, weights?: any): number {
     const myTrapScore = this.evaluateTeamTraps(gameState, forTeam);
     const opponentTrapScore = this.evaluateTeamTraps(
       gameState,
@@ -95,7 +96,7 @@ export class TrapEvaluator implements IPositionEvaluator {
   private evaluateTeamTraps(gameState: GameState, forTeam: TeamType): number {
     const allPieces = gameState.getAllPieces();
     const traps = allPieces.filter(
-      p => (p.type as any) === (PieceType.TRAP as any) && (p.team as any) === forTeam
+      p => p.type === PieceType.TRAP && p.team === forTeam
     );
 
     if (traps.length === 0) {
@@ -105,11 +106,11 @@ export class TrapEvaluator implements IPositionEvaluator {
     let totalScore = 0;
 
     for (const trap of traps) {
-      totalScore += this.evaluateSingleTrap(trap as any, gameState, forTeam);
+      totalScore += this.evaluateSingleTrap(trap, gameState, forTeam);
     }
 
     // Clustering bonus
-    totalScore += this.evaluateTrapClustering(traps as any);
+    totalScore += this.evaluateTrapClustering(traps);
 
     return totalScore;
   }
@@ -122,14 +123,14 @@ export class TrapEvaluator implements IPositionEvaluator {
    * @param forTeam - Trap's team
    * @returns Trap position score
    */
-  private evaluateSingleTrap(trap: Piece, gameState: GameState, forTeam: TeamType): number {
-    const trapPos = trap.position as any;
+  private evaluateSingleTrap(trap: GamePiece, gameState: GameState, forTeam: TeamType): number {
+    const trapPos = trap.position;
     let score = 0;
 
     // 1. King protection bonus
     const king = this.findKing(gameState, forTeam);
     if (king) {
-      const distanceToKing = this.manhattanDistance(trapPos, king.position as any);
+      const distanceToKing = this.manhattanDistance(trapPos, king.position);
       if (distanceToKing <= TrapEvaluator.PROTECTION_RADIUS) {
         score += TrapEvaluator.KING_PROTECTION_BONUS;
       }
@@ -138,7 +139,7 @@ export class TrapEvaluator implements IPositionEvaluator {
     // 2. Treasure protection bonus
     const treasure = this.findTreasure(gameState, forTeam);
     if (treasure) {
-      const distanceToTreasure = this.manhattanDistance(trapPos, treasure.position as any);
+      const distanceToTreasure = this.manhattanDistance(trapPos, treasure.position);
       if (distanceToTreasure <= TrapEvaluator.PROTECTION_RADIUS) {
         score += TrapEvaluator.TREASURE_PROTECTION_BONUS;
       }
@@ -165,7 +166,7 @@ export class TrapEvaluator implements IPositionEvaluator {
    * @param traps - Array of trap pieces
    * @returns Clustering bonus score
    */
-  private evaluateTrapClustering(traps: Piece[]): number {
+  private evaluateTrapClustering(traps: GamePiece[]): number {
     if (traps.length < 2) {
       return 0;
     }
@@ -175,8 +176,8 @@ export class TrapEvaluator implements IPositionEvaluator {
     // Check all pairs for proximity
     for (let i = 0; i < traps.length; i++) {
       for (let j = i + 1; j < traps.length; j++) {
-        const pos1 = traps[i].position as any;
-        const pos2 = traps[j].position as any;
+        const pos1 = traps[i].position;
+        const pos2 = traps[j].position;
         const distance = this.manhattanDistance(pos1, pos2);
 
         if (distance <= TrapEvaluator.CLUSTERING_RADIUS) {
@@ -217,10 +218,10 @@ export class TrapEvaluator implements IPositionEvaluator {
     opponentTeam: TeamType
   ): boolean {
     const allPieces = gameState.getAllPieces();
-    const opponentPieces = allPieces.filter(p => (p.team as any) === opponentTeam);
+    const opponentPieces = allPieces.filter(p => p.team === opponentTeam);
 
     for (const piece of opponentPieces) {
-      const distance = this.manhattanDistance(position, piece.position as any);
+      const distance = this.manhattanDistance(position, piece.position);
       if (distance <= TrapEvaluator.OPPONENT_PROXIMITY_RADIUS) {
         return true;
       }
@@ -236,12 +237,12 @@ export class TrapEvaluator implements IPositionEvaluator {
    * @param forTeam - Team whose king to find
    * @returns King piece or undefined
    */
-  private findKing(gameState: GameState, forTeam: TeamType): Piece | undefined {
+  private findKing(gameState: GameState, forTeam: TeamType): GamePiece | undefined {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.find(
-      p => (p.type as any) === (PieceType.KING as any) && (p.team as any) === forTeam
-    ) as any;
+      p => p.type === PieceType.KING && p.team === forTeam
+    );
   }
 
   /**
@@ -251,12 +252,12 @@ export class TrapEvaluator implements IPositionEvaluator {
    * @param forTeam - Team whose treasure to find
    * @returns Treasure piece or undefined
    */
-  private findTreasure(gameState: GameState, forTeam: TeamType): Piece | undefined {
+  private findTreasure(gameState: GameState, forTeam: TeamType): GamePiece | undefined {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.find(
-      p => (p.type as any) === (PieceType.TREASURE as any) && (p.team as any) === forTeam
-    ) as any;
+      p => p.type === PieceType.TREASURE && p.team === forTeam
+    );
   }
 
   /**
@@ -291,7 +292,7 @@ export class TrapEvaluator implements IPositionEvaluator {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.filter(
-      p => (p.type as any) === (PieceType.TRAP as any) && (p.team as any) === forTeam
+      p => p.type === PieceType.TRAP && p.team === forTeam
     ).length;
   }
 
@@ -305,9 +306,9 @@ export class TrapEvaluator implements IPositionEvaluator {
   getTrapPositions(gameState: GameState, forTeam: TeamType): Position[] {
     const allPieces = gameState.getAllPieces();
     const traps = allPieces.filter(
-      p => (p.type as any) === (PieceType.TRAP as any) && (p.team as any) === forTeam
+      p => p.type === PieceType.TRAP && p.team === forTeam
     );
     
-    return traps.map(t => t.position as any);
+    return traps.map(t => t.position);
   }
 }

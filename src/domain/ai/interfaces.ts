@@ -7,8 +7,9 @@
 
 import { GameState } from '../game/GameState';
 import { Move } from '../core/Move';
-import { TeamType, PieceType, Piece, Position as LegacyPosition } from '../../Constants';
 import { Position } from '../core/Position';
+import { TeamType } from '../core/types';
+import { Piece } from '../../Constants';
 
 // ============================================================================
 // AI Difficulty & Personality
