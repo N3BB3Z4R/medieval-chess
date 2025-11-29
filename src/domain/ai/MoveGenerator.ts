@@ -14,8 +14,23 @@ import { GameState } from '../game/GameState';
 import { Move } from '../core/Move';
 import { Position } from '../core/Position';
 import { TeamType, PieceType, Piece } from '../../Constants';
+import { TeamType as DomainTeamType } from '../core/types';
 import { RuleEngine } from '../rules/RuleEngine';
 import { IMoveGenerator } from './interfaces';
+
+/**
+ * Convert legacy numeric TeamType to domain string TeamType
+ */
+function convertTeamType(team: TeamType): DomainTeamType {
+  switch (team) {
+    case TeamType.OUR:
+      return DomainTeamType.OUR;
+    case TeamType.OPPONENT:
+      return DomainTeamType.OPPONENT;
+    default:
+      return DomainTeamType.OPPONENT; // Fallback
+  }
+}
 
 /**
  * Direction vectors for movement calculations.
@@ -150,8 +165,11 @@ export class MoveGenerator implements IMoveGenerator {
    * FARMER: 1 square forward, diagonal for captures
    */
   private generateFarmerCandidates(pos: { x: number; y: number }, team: TeamType): Position[] {
-    const direction = this.getForwardDirection(team);
+    const domainTeam = convertTeamType(team);
+    const direction = this.getForwardDirection(domainTeam);
     const candidates: Position[] = [];
+    
+    console.log('[generateFarmerCandidates] Input:', { pos, team, domainTeam, direction });
     
     // Try to create positions, catching errors for invalid coordinates
     const potentialMoves = [
@@ -160,11 +178,16 @@ export class MoveGenerator implements IMoveGenerator {
       { x: pos.x - 1, y: pos.y + direction }
     ];
     
+    console.log('[generateFarmerCandidates] Potential moves:', potentialMoves);
+    
     for (const move of potentialMoves) {
+      console.log('[generateFarmerCandidates] Checking:', move, 'isValid:', Position.isValid(move.x, move.y));
       if (Position.isValid(move.x, move.y)) {
         candidates.push(new Position(move.x, move.y));
       }
     }
+    
+    console.log('[generateFarmerCandidates] Final candidates:', candidates);
     
     return candidates;
   }
@@ -272,9 +295,10 @@ export class MoveGenerator implements IMoveGenerator {
   /**
    * Get forward direction for a team.
    */
-  private getForwardDirection(team: TeamType): number {
+  private getForwardDirection(team: DomainTeamType): number {
     // OUR team moves up (y increases), OPPONENT moves down
-    return team === TeamType.OUR ? 1 : -1;
+    console.log('[getForwardDirection] team:', team, 'DomainTeamType.OUR:', DomainTeamType.OUR, 'equals:', team === DomainTeamType.OUR);
+    return team === DomainTeamType.OUR ? 1 : -1;
   }
 
   /**
