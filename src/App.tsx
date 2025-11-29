@@ -41,6 +41,7 @@ function AppContent() {
     gameState,
     gameMode,
     aiConfig: aiConfig ?? null,
+    gameConfig,
     onMoveExecuted: handleMoveExecuted,
     onAIThinking: handleAIThinking,
   });
@@ -82,13 +83,17 @@ function AppContent() {
   }, []);
 
   const handleStartNewGame = (config: GameSetupConfig) => {
+    console.log('[App] Starting new game with config:', config);
+    
     // Extract AI configuration if present
     if (config.mode && config.aiConfig) {
       setGameMode(config.mode);
       setAIConfig(config.aiConfig);
+      console.log('[App] AI mode enabled:', config.mode, config.aiConfig);
     } else {
       setGameMode('pvp');
       setAIConfig(undefined);
+      console.log('[App] PvP mode');
     }
     
     // Initialize game with base config
@@ -98,6 +103,9 @@ function AppContent() {
       timePerTurn: config.timePerTurn,
       incrementPerTurn: config.incrementPerTurn,
     };
+    
+    console.log('[App] Game config:', gameConfig);
+    console.log('[App] Players:', gameConfig.players.map(p => ({ team: p.team, isAI: p.isAI, name: p.name })));
     
     dispatch({ type: 'SET_CONFIG', payload: gameConfig });
     dispatch({ type: 'RESET_GAME' });

@@ -73,6 +73,16 @@ const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStartGame, onClose })
       baseConfig = create4PlayerGame(); // Falls back to 2-player
     }
     
+    // If AI mode, mark opponent as AI player
+    if (gameMode === 'ai') {
+      baseConfig.players = baseConfig.players.map((player, index) => ({
+        ...player,
+        // First player (index 0) is human, second player (index 1) is AI
+        isAI: index === 1,
+        name: index === 1 ? `IA ${aiPersonality}` : player.name
+      }));
+    }
+    
     // Apply time configuration
     if (useTimer) {
       if (selectedPreset !== null) {

@@ -76,6 +76,12 @@ export function useAI(config: AIConfig | null): UseAIReturn {
         return null;
       }
 
+      console.log('[useAI] Starting move calculation...', {
+        currentTurn: gameState.getCurrentTurn(),
+        difficulty: config.difficulty,
+        personality: config.personality
+      });
+
       setIsThinking(true);
 
       try {
@@ -84,6 +90,8 @@ export function useAI(config: AIConfig | null): UseAIReturn {
 
         // Calculate move
         const move = aiRef.current.calculateMove(gameState, config);
+
+        console.log('[useAI] Move calculation result:', move);
 
         // Update stats
         const stats = aiRef.current.getStats();
