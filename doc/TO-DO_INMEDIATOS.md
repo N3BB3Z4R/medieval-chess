@@ -1,0 +1,4 @@
+- Hacer que el peon pueda atacar en sus diagonales cuando este en modo 3 o 4 jugadores asi como desplazarse en cruz arriba, abajo, derecha izquierda una casilla.
+- Arreglar tamaño contador de piezas eliminadas en el playercard.
+- Hacer que se vean las playercards integradas en el tablero tambien en modo 2 jugadores.
+- Hacer que el boton de rendirse funcione en el playercard para cada jugador.
