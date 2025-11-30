@@ -15,7 +15,7 @@ import {
 import { Position as PositionClass } from '../../domain/core/Position';
 import { screenToBoard, BoardConfig } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
-import { useGame, useResetGame } from '../../context/GameContext';
+import { useGame } from '../../context/GameContext';
 import { Move } from '../../domain/core/Move';
 import CornerPlayerCard, { CornerPlayerData } from '../CornerPlayerCard/CornerPlayerCard';
 
@@ -44,9 +44,8 @@ export default function Messboard({
   const messboardRef = useRef<HTMLDivElement>(null);
   const referee = useMemo(() => new Referee(), []);
   const { gameState, dispatch, reviewMode, reviewSnapshot, reviewMoveIndex } = useGame();
-  const resetGame = useResetGame();
   const currentTurn = gameState.getCurrentTurn();
-  const gameStatus = gameState.getStatus();
+  const moveHistory = gameState.getMoveHistory();
   
   // Helper functions for type conversion
   
@@ -184,7 +183,7 @@ export default function Messboard({
       
       // Clean up ghost piece
       if (ghostPiece) {
-        messboard.removeChild(ghostPiece);
+        ghostPiece.remove();
         setGhostPiece(null);
       }
       
@@ -297,7 +296,7 @@ export default function Messboard({
     const board = [];
     
     // Get last move for highlighting
-    const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
+    const lastMove = moveHistory.at(-1) ?? null;
     
     for (let j = VERTICAL_AXIS.length - 1; j >= 0; j--) {
       for (let i = 0; i < HORIZONTAL_AXIS.length; i++) {
@@ -346,8 +345,7 @@ export default function Messboard({
   }
 
   return (
-    <>
-      <div className="messboard-container">
+    <div className="messboard-container">
         {/* Top player name (Opponent) - hide if using corner cards */}
         {topPlayerName && cornerPlayers.length === 0 && (
           <div className="messboard-player-label messboard-player-label--top">
@@ -409,7 +407,6 @@ export default function Messboard({
           </div>
         )}
       </div>
-    </>
   );
 }
 
