@@ -339,8 +339,8 @@ export default function Messboard({
     }
   }
 
-  function generateBoard() {
-    const board = [];
+  const board = useMemo(() => {
+    const tiles = [];
     
     // Get last move for highlighting
     // eslint-disable-next-line prefer-destructuring
@@ -375,7 +375,7 @@ export default function Messboard({
         const isLastMoveOrigin = lastMove ? samePosition(lastMove.from, { x: i, y: j }) : false;
         const isLastMoveDestination = lastMove ? samePosition(lastMove.to, { x: i, y: j }) : false;
         
-        board.push(
+        tiles.push(
           <Tile 
             key={`${j},${i}`} 
             image={image} 
@@ -394,8 +394,8 @@ export default function Messboard({
         );
       }
     }
-    return board;
-  }
+    return tiles;
+  }, [pieces, gameState, reviewMode, reviewSnapshot, grabPosition, validMoves, captureMoves, currentTurn, moveHistory, animatedPiece]);
 
   return (
     <div className="messboard-container">
@@ -438,7 +438,7 @@ export default function Messboard({
             ref={messboardRef}
             className={reviewMode ? 'messboard--review-mode' : ''}
           >
-            {generateBoard()}
+            {board}
             
             {/* Animated piece for AI moves */}
             {animatedPiece && messboardRef.current && (

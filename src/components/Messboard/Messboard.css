@@ -53,6 +53,9 @@
   height: 800px;
   position: relative; /* Required for absolute positioning of dragged pieces and corner cards */
   overflow: visible; /* Allow corner cards to extend slightly beyond board if needed */
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: contents;
 }
 
 /* Corner player cards positioning adjustments */
@@ -117,6 +120,10 @@
   /* Initial position (from) */
   left: var(--from-x);
   top: var(--from-y);
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform, left, top;
+  backface-visibility: hidden;
   /* Animate to final position */
   animation: pieceMove 600ms cubic-bezier(0.42, 0, 0.58, 1) forwards;
   /* Add a subtle glow effect */

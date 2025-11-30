@@ -1,3 +1,4 @@
+import React from 'react';
 import './Tile.css';
 import { TeamType as DomainTeamType, PieceType as DomainPieceType } from '../../domain/core/types';
 
@@ -18,7 +19,7 @@ interface Props {
   isLastMoveDestination?: boolean;
 }
 
-export default function Tile({ 
+function Tile({ 
   number, 
   image, 
   x, 
@@ -73,3 +74,6 @@ export default function Tile({
       </div>
     );
 }
+
+// Memoize to prevent unnecessary re-renders of 256 tiles
+export default React.memo(Tile);
