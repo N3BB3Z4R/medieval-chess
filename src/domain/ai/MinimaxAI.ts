@@ -46,13 +46,14 @@
 
 import { GameState } from '../game/GameState';
 import { Move } from '../core/Move';
-import { TeamType } from '../../Constants';
+import { TeamType, PieceType } from '../../Constants';
 import { 
   IAIPlayer, 
   AIConfig, 
   IMoveGenerator, 
   IPositionEvaluator 
 } from './interfaces';
+import { getPieceValue } from './PieceValues';
 
 /**
  * AI player using minimax with alpha-beta pruning.
@@ -83,6 +84,12 @@ export class MinimaxAI implements IAIPlayer {
   private startTime: number = 0;
   private nodesEvaluated: number = 0;
   private pruneCount: number = 0;
+  
+  // Killer moves: Store two best non-capture moves per depth level
+  private killerMoves: Map<number, [Move | null, Move | null]> = new Map();
+  
+  // History heuristic: Track move success rates
+  private historyTable: Map<string, number> = new Map();
 
   constructor(
     private readonly config: AIConfig,
@@ -108,6 +115,9 @@ export class MinimaxAI implements IAIPlayer {
     this.startTime = Date.now();
     this.nodesEvaluated = 0;
     this.pruneCount = 0;
+    
+    // Reset killer moves for new search
+    this.killerMoves.clear();
 
     const team = gameState.getCurrentTurn();
     const legalMoves = this.moveGenerator.generateLegalMoves(gameState, team as any);
@@ -121,7 +131,7 @@ export class MinimaxAI implements IAIPlayer {
     }
 
     // Order moves for better pruning
-    const orderedMoves = this.orderMoves(legalMoves, gameState);
+    const orderedMoves = this.orderMoves(legalMoves, gameState, this.maxDepth);
 
     let bestMove: Move | null = null;
     let bestScore = -Infinity;
@@ -207,7 +217,7 @@ export class MinimaxAI implements IAIPlayer {
     }
 
     // Order moves for better pruning
-    const orderedMoves = this.orderMoves(legalMoves, gameState);
+    const orderedMoves = this.orderMoves(legalMoves, gameState, depth);
 
     if (maximizing) {
       let maxEval = -Infinity;
@@ -219,9 +229,18 @@ export class MinimaxAI implements IAIPlayer {
         maxEval = Math.max(maxEval, score);
         alpha = Math.max(alpha, score);
 
-        // Beta cutoff
+        // Beta cutoff - store killer move and update history
         if (beta <= alpha) {
           this.pruneCount++;
+          
+          // Store non-capture killer moves
+          if (!this.isCapture(move, gameState)) {
+            this.storeKillerMove(move, depth);
+          }
+          
+          // Update history for all cutoff moves
+          this.updateHistory(move, depth);
+          
           break;
         }
       }
@@ -237,9 +256,18 @@ export class MinimaxAI implements IAIPlayer {
         minEval = Math.min(minEval, score);
         beta = Math.min(beta, score);
 
-        // Alpha cutoff
+        // Alpha cutoff - store killer move and update history
         if (beta <= alpha) {
           this.pruneCount++;
+          
+          // Store non-capture killer moves
+          if (!this.isCapture(move, gameState)) {
+            this.storeKillerMove(move, depth);
+          }
+          
+          // Update history for all cutoff moves
+          this.updateHistory(move, depth);
+          
           break;
         }
       }
@@ -251,35 +279,176 @@ export class MinimaxAI implements IAIPlayer {
   /**
    * Order moves for better alpha-beta pruning.
    * 
-   * Move ordering heuristics:
-   * 1. Captures (removing opponent pieces)
-   * 2. Checks (threatening opponent king)
-   * 3. Center moves (strategic positioning)
-   * 4. Other moves
+   * Move ordering heuristics (in priority order):
+   * 1. **MVV-LVA (Most Valuable Victim - Least Valuable Attacker)**
+   *    - Score = victimValue - (attackerValue / 10)
+   *    - Example: FARMER takes KNIGHT = 45 - (10/10) = 44 points
+   *    - Example: KNIGHT takes FARMER = 10 - (45/10) = 5.5 points
+   *    - Prioritizes high-value captures with low-value pieces
+   * 
+   * 2. **Killer moves**: Non-capture moves that caused cutoffs at same depth
+   *    - First killer: +900 points
+   *    - Second killer: +800 points
+   * 
+   * 3. **History heuristic**: Moves that historically caused cutoffs
+   *    - Score based on past success rate
+   * 
+   * 4. **Center control**: Moves toward center (e6-j10)
+   *    - +100 points for center moves
+   * 
+   * 5. **Forward advancement**: Moves toward opponent
+   *    - +0 to +10 based on distance
+   * 
+   * Good move ordering can improve alpha-beta pruning efficiency by 2-3x.
    * 
    * @param moves - Legal moves to order
    * @param gameState - Current game state
+   * @param depth - Current search depth (for killer move lookup)
    * @returns Ordered moves (best first)
    */
-  private orderMoves(moves: Move[], gameState: GameState): Move[] {
+  private orderMoves(moves: Move[], gameState: GameState, depth: number = 0): Move[] {
+    const killers = this.killerMoves.get(depth) || [null, null];
+    
     return moves.sort((a, b) => {
       let scoreA = 0;
       let scoreB = 0;
 
-      // 1. Prioritize captures
-      if (this.isCapture(a, gameState)) scoreA += 1000;
-      if (this.isCapture(b, gameState)) scoreB += 1000;
+      // 1. MVV-LVA for captures
+      const captureScoreA = this.getMVVLVAScore(a, gameState);
+      const captureScoreB = this.getMVVLVAScore(b, gameState);
+      
+      if (captureScoreA > 0) scoreA += 10000 + captureScoreA;
+      if (captureScoreB > 0) scoreB += 10000 + captureScoreB;
 
-      // 2. Prioritize center moves
+      // 2. Killer moves (non-captures that caused beta cutoffs)
+      if (!this.isCapture(a, gameState)) {
+        if (this.movesEqual(a, killers[0])) scoreA += 900;
+        else if (this.movesEqual(a, killers[1])) scoreA += 800;
+      }
+      if (!this.isCapture(b, gameState)) {
+        if (this.movesEqual(b, killers[0])) scoreB += 900;
+        else if (this.movesEqual(b, killers[1])) scoreB += 800;
+      }
+
+      // 3. History heuristic
+      scoreA += this.getHistoryScore(a);
+      scoreB += this.getHistoryScore(b);
+
+      // 4. Center control
       if (this.isCenterMove(a)) scoreA += 100;
       if (this.isCenterMove(b)) scoreB += 100;
 
-      // 3. Prioritize forward moves
+      // 5. Forward advancement
       scoreA += this.getForwardBonus(a);
       scoreB += this.getForwardBonus(b);
 
       return scoreB - scoreA; // Higher score first
     });
+  }
+  
+  /**
+   * Calculate MVV-LVA score for a capture.
+   * 
+   * MVV-LVA (Most Valuable Victim - Least Valuable Attacker):
+   * - Prioritizes capturing high-value pieces with low-value pieces
+   * - Formula: victimValue - (attackerValue / 10)
+   * 
+   * Examples:
+   * - FARMER (10) x KNIGHT (45) = 45 - 1 = 44 (excellent!)
+   * - KNIGHT (45) x FARMER (10) = 10 - 4.5 = 5.5 (poor)
+   * - SCOUT (50) x KING (1000) = 1000 - 5 = 995 (amazing!)
+   * 
+   * @param move - Move to evaluate
+   * @param gameState - Current game state
+   * @returns MVV-LVA score (0 if not a capture)
+   */
+  private getMVVLVAScore(move: Move, gameState: GameState): number {
+    // Check if there's a piece at the destination
+    const victim = gameState.getPieceAt(move.to as any);
+    if (!victim) return 0; // Not a capture
+    
+    // Check if victim is opponent (not same team)
+    if (victim.team === move.team) return 0; // Same team, not a capture
+    
+    const victimValue = getPieceValue(victim.type as PieceType);
+    const attackerValue = getPieceValue(move.pieceType);
+    
+    // MVV-LVA: Victim value minus (attacker value / 10)
+    return victimValue - (attackerValue / 10);
+  }
+  
+  /**
+   * Store killer move (non-capture that caused beta cutoff).
+   * 
+   * @param move - Killer move
+   * @param depth - Depth where cutoff occurred
+   */
+  private storeKillerMove(move: Move, depth: number): void {
+    const killers = this.killerMoves.get(depth) || [null, null];
+    
+    // Don't store if already in killer moves
+    if (this.movesEqual(move, killers[0])) return;
+    
+    // Shift: second killer becomes first, new move becomes second
+    this.killerMoves.set(depth, [killers[1], move]);
+  }
+  
+  /**
+   * Get history heuristic score for a move.
+   * 
+   * @param move - Move to evaluate
+   * @returns History score (0-100)
+   */
+  private getHistoryScore(move: Move): number {
+    const key = this.getMoveKey(move);
+    return this.historyTable.get(key) || 0;
+  }
+  
+  /**
+   * Update history table when move causes cutoff.
+   * 
+   * @param move - Move that caused cutoff
+   * @param depth - Depth where cutoff occurred
+   */
+  private updateHistory(move: Move, depth: number): void {
+    const key = this.getMoveKey(move);
+    const currentScore = this.historyTable.get(key) || 0;
+    
+    // Increment score, more points for deeper cutoffs
+    this.historyTable.set(key, currentScore + depth * depth);
+    
+    // Decay old history to prevent stale data
+    if (this.historyTable.size > 1000) {
+      for (const [k, v] of this.historyTable.entries()) {
+        this.historyTable.set(k, Math.floor(v * 0.9));
+      }
+    }
+  }
+  
+  /**
+   * Generate unique key for a move.
+   * 
+   * @param move - Move to generate key for
+   * @returns String key "from_to_piece"
+   */
+  private getMoveKey(move: Move): string {
+    return `${move.from.x}_${move.from.y}_${move.to.x}_${move.to.y}_${move.pieceType}`;
+  }
+  
+  /**
+   * Check if two moves are equal.
+   * 
+   * @param a - First move
+   * @param b - Second move (can be null)
+   * @returns True if moves are equal
+   */
+  private movesEqual(a: Move, b: Move | null): boolean {
+    if (!b) return false;
+    return a.from.x === b.from.x && 
+           a.from.y === b.from.y && 
+           a.to.x === b.to.x && 
+           a.to.y === b.to.y &&
+           a.pieceType === b.pieceType;
   }
 
   /**
@@ -290,9 +459,8 @@ export class MinimaxAI implements IAIPlayer {
    * @returns True if move captures opponent piece
    */
   private isCapture(move: Move, gameState: GameState): boolean {
-    const targetPiece = gameState.getPieceAt(move.to as any);
-    const movingTeam = gameState.getPieceAt(move.from as any)?.team;
-    return targetPiece !== undefined && (targetPiece.team as any) !== movingTeam;
+    const victim = gameState.getPieceAt(move.to as any);
+    return victim !== undefined && victim.team !== move.team;
   }
 
   /**

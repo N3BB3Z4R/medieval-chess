@@ -186,10 +186,17 @@ export class MoveGenerator implements IMoveGenerator {
     const allDirections = Object.values(DIRECTIONS);
 
     for (const dir of allDirections) {
-      candidates.push(
-        new Position(pos.x + dir.x, pos.y + dir.y),
-        new Position(pos.x + dir.x * 2, pos.y + dir.y * 2)
-      );
+      const pos1X = pos.x + dir.x;
+      const pos1Y = pos.y + dir.y;
+      const pos2X = pos.x + dir.x * 2;
+      const pos2Y = pos.y + dir.y * 2;
+      
+      if (Position.isValid(pos1X, pos1Y)) {
+        candidates.push(new Position(pos1X, pos1Y));
+      }
+      if (Position.isValid(pos2X, pos2Y)) {
+        candidates.push(new Position(pos2X, pos2Y));
+      }
     }
 
     return candidates;
@@ -203,10 +210,17 @@ export class MoveGenerator implements IMoveGenerator {
     const diagonals = [DIRECTIONS.UP_LEFT, DIRECTIONS.UP_RIGHT, DIRECTIONS.DOWN_LEFT, DIRECTIONS.DOWN_RIGHT];
 
     for (const dir of diagonals) {
-      candidates.push(
-        new Position(pos.x + dir.x, pos.y + dir.y),
-        new Position(pos.x + dir.x * 2, pos.y + dir.y * 2)
-      );
+      const pos1X = pos.x + dir.x;
+      const pos1Y = pos.y + dir.y;
+      const pos2X = pos.x + dir.x * 2;
+      const pos2Y = pos.y + dir.y * 2;
+      
+      if (Position.isValid(pos1X, pos1Y)) {
+        candidates.push(new Position(pos1X, pos1Y));
+      }
+      if (Position.isValid(pos2X, pos2Y)) {
+        candidates.push(new Position(pos2X, pos2Y));
+      }
     }
     return candidates;
   }
@@ -220,10 +234,18 @@ export class MoveGenerator implements IMoveGenerator {
     const diagonals = [DIRECTIONS.UP_LEFT, DIRECTIONS.UP_RIGHT, DIRECTIONS.DOWN_LEFT, DIRECTIONS.DOWN_RIGHT];
 
     for (const dir of straights) {
-      candidates.push(new Position(pos.x + dir.x * 3, pos.y + dir.y * 3));
+      const newX = pos.x + dir.x * 3;
+      const newY = pos.y + dir.y * 3;
+      if (Position.isValid(newX, newY)) {
+        candidates.push(new Position(newX, newY));
+      }
     }
     for (const dir of diagonals) {
-      candidates.push(new Position(pos.x + dir.x * 2, pos.y + dir.y * 2));
+      const newX = pos.x + dir.x * 2;
+      const newY = pos.y + dir.y * 2;
+      if (Position.isValid(newX, newY)) {
+        candidates.push(new Position(newX, newY));
+      }
     }
     return candidates;
   }
@@ -243,10 +265,17 @@ export class MoveGenerator implements IMoveGenerator {
     const allDirections = Object.values(DIRECTIONS);
 
     for (const dir of allDirections) {
-      candidates.push(
-        new Position(pos.x + dir.x * 2, pos.y + dir.y * 2),
-        new Position(pos.x + dir.x * 3, pos.y + dir.y * 3)
-      );
+      const pos2X = pos.x + dir.x * 2;
+      const pos2Y = pos.y + dir.y * 2;
+      const pos3X = pos.x + dir.x * 3;
+      const pos3Y = pos.y + dir.y * 3;
+      
+      if (Position.isValid(pos2X, pos2Y)) {
+        candidates.push(new Position(pos2X, pos2Y));
+      }
+      if (Position.isValid(pos3X, pos3Y)) {
+        candidates.push(new Position(pos3X, pos3Y));
+      }
     }
     return candidates;
   }
