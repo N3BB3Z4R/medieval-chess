@@ -282,15 +282,22 @@
   color: #fca5a5;
 }
 
-/* Clock Container - Minimal design */
+/* Clock Container - Ultra minimal, no borders */
 .corner-player-card__clock-container {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 6px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  border: none;
+  padding: 2px 4px;
+  background: transparent;
+  border-radius: 0;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.corner-player-card__clock-container * {
+  border: none !important;
+  outline: none !important;
 }
 
 .corner-player-card__clock-label {
@@ -314,9 +321,16 @@
 .corner-player-card__captures-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
   padding: 2px 4px;
   border-bottom: 1px solid rgba(186, 194, 141, 0.15);
+}
+
+.corner-player-card__captures-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .corner-player-card__captures-icon {
@@ -330,6 +344,19 @@
   color: rgb(228, 255, 177);
   text-transform: uppercase;
   letter-spacing: 0.3px;
+}
+
+.corner-player-card__captures-points {
+  font-size: 9px;
+  font-weight: 800;
+  color: rgb(129, 195, 65);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  padding: 1px 4px;
+  background: rgba(129, 195, 65, 0.15);
+  border-radius: 3px;
+  border: 1px solid rgba(129, 195, 65, 0.3);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 /* Hover Effect */

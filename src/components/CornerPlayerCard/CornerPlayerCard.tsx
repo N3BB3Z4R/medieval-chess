@@ -131,8 +131,11 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
       {capturedPieces.length > 0 && (
         <div className="corner-player-card__captures">
           <div className="corner-player-card__captures-header">
-            <span className="corner-player-card__captures-icon">🏆</span>
-            <span className="corner-player-card__captures-label">Capturas ({capturedPieces.length})</span>
+            <div className="corner-player-card__captures-title">
+              <span className="corner-player-card__captures-icon">🏆</span>
+              <span className="corner-player-card__captures-label">Capturas ({capturedPieces.length})</span>
+            </div>
+            <span className="corner-player-card__captures-points">+{score}</span>
           </div>
           <GroupedCapturedPieces pieces={capturedPieces} />
         </div>
