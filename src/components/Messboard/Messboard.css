@@ -131,3 +131,68 @@
   cursor: not-allowed !important;
   opacity: 0.9;
 }
+
+/* ===================================
+   AI THINKING INDICATOR
+   =================================== */
+
+.ai-thinking-overlay {
+  position: absolute;
+  top: 20px; /* Position at top */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 400; /* Below review mode but above board */
+  pointer-events: none;
+}
+
+.ai-thinking-indicator {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  color: rgb(228, 255, 177);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(186, 194, 141, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fade-in 0.3s ease-out;
+}
+
+.ai-thinking-icon {
+  font-size: 16px;
+  animation: spin-slow 3s linear infinite;
+}
+
+.ai-thinking-dots span {
+  animation: dots 1.4s infinite both;
+  margin-left: 2px;
+}
+
+.ai-thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dots {
+  0% { opacity: 0.2; }
+  20% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
