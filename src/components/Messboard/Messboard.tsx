@@ -232,8 +232,10 @@ export default function Messboard({
           return;
         }
 
-        // CRITICAL: Detect if there's a piece at the destination (capture)
-        const capturedPiece = pieces.find((p) => samePosition(p.position, { x, y }));
+        // CRITICAL: Detect if there's an ENEMY piece at the destination (capture)
+        const capturedPiece = pieces.find((p) => 
+          samePosition(p.position, { x, y }) && p.team !== currentPiece.team
+        );
         const capturedPieceInfo = capturedPiece ? {
           type: capturedPiece.type, // No conversion needed - string enum
           position: new PositionClass(capturedPiece.position.x, capturedPiece.position.y)
