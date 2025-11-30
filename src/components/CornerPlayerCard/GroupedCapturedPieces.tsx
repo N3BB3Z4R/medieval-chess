@@ -25,6 +25,19 @@ const pieceValues: Record<PieceType, number> = {
   [PieceType.KING]: 0,
 };
 
+// Nombres en español para los tooltips
+const pieceNames: Record<PieceType, string> = {
+  [PieceType.FARMER]: 'Granjero',
+  [PieceType.RAM]: 'Ariete',
+  [PieceType.TRAP]: 'Trampa',
+  [PieceType.KNIGHT]: 'Caballero',
+  [PieceType.TEMPLAR]: 'Templario',
+  [PieceType.SCOUT]: 'Explorador',
+  [PieceType.TREBUCHET]: 'Trabuco',
+  [PieceType.TREASURE]: 'Tesoro',
+  [PieceType.KING]: 'Rey',
+};
+
 /**
  * Groups captured pieces by type and shows count multiplier.
  * Much more space-efficient than showing individual pieces.
@@ -79,21 +92,29 @@ const GroupedCapturedPieces: React.FC<GroupedCapturedPiecesProps> = ({ pieces })
 
   return (
     <div className="grouped-captured-pieces">
-      {groupedPieces.map((group) => (
-        <div key={group.type} className="grouped-captured-piece">
-          <img 
-            src={group.image} 
-            alt={group.type}
-            className="grouped-captured-piece__icon"
-            title={`${group.type} x${group.count}`}
-          />
-          {group.count > 1 && (
-            <span className="grouped-captured-piece__count">
-              x{group.count}
-            </span>
-          )}
-        </div>
-      ))}
+      {groupedPieces.map((group) => {
+        const pieceName = pieceNames[group.type];
+        const pieceValue = pieceValues[group.type];
+        const totalValue = pieceValue * group.count;
+        const tooltip = group.count > 1 
+          ? `${pieceName} x${group.count} (${totalValue} pts)`
+          : `${pieceName} (${pieceValue} pts)`;
+        
+        return (
+          <div key={group.type} className="grouped-captured-piece" title={tooltip}>
+            <img 
+              src={group.image} 
+              alt={pieceName}
+              className="grouped-captured-piece__icon"
+            />
+            {group.count > 1 && (
+              <span className="grouped-captured-piece__count">
+                x{group.count}
+              </span>
+            )}
+          </div>
+        );
+      })}
       {totalPoints > 0 && (
         <div className="grouped-captured-pieces__total">
           +{totalPoints}
