@@ -347,6 +347,31 @@ export class MinimaxAI implements IAIPlayer {
   }
   
   /**
+   * Check if move is a capture.
+   * 
+   * @param move - Move to check
+   * @param gameState - Current game state
+   * @returns True if move captures opponent piece
+   */
+  private isCapture(move: Move, gameState: GameState): boolean {
+    // 1. Standard capture (destination occupied by opponent)
+    const victim = gameState.getPieceAt(move.to as any);
+    if (victim !== undefined && victim.team !== move.team) {
+      return true;
+    }
+
+    // 2. RAM path capture (kills enemies in path)
+    if (move.pieceType === 'RAM') {
+      const kills = this.getRamKills(move, gameState);
+      if (kills.length > 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Calculate MVV-LVA score for a capture.
    * 
    * MVV-LVA (Most Valuable Victim - Least Valuable Attacker):
@@ -363,21 +388,68 @@ export class MinimaxAI implements IAIPlayer {
    * @returns MVV-LVA score (0 if not a capture)
    */
   private getMVVLVAScore(move: Move, gameState: GameState): number {
-    // Check if there's a piece at the destination
-    const victim = gameState.getPieceAt(move.to as any);
-    if (!victim) return 0; // Not a capture
-    
-    // Check if victim is opponent (not same team)
-    if (victim.team === move.team) return 0; // Same team, not a capture
-    
-    const victimValue = getPieceValue(victim.type);
     const attackerValue = getPieceValue(move.pieceType);
+    let maxScore = 0;
+
+    // 1. Standard capture
+    const victim = gameState.getPieceAt(move.to as any);
+    if (victim && victim.team !== move.team) {
+      const victimValue = getPieceValue(victim.type);
+      const score = victimValue - (attackerValue / 10);
+      maxScore = Math.max(maxScore, score);
+    }
     
-    // MVV-LVA: Victim value minus (attacker value / 10)
-    return victimValue - (attackerValue / 10);
+    // 2. RAM path capture
+    if (move.pieceType === 'RAM') {
+      const kills = this.getRamKills(move, gameState);
+      for (const killedPiece of kills) {
+        const victimValue = getPieceValue(killedPiece.type);
+        const score = victimValue - (attackerValue / 10);
+        // Accumulate scores for multi-kills? Or just take max?
+        // Accumulating is better for RAM as it kills ALL in path
+        maxScore += score;
+      }
+    }
+    
+    return maxScore;
   }
-  
+
   /**
+   * Get pieces killed by RAM movement.
+   * 
+   * @param move - Move to check
+   * @param gameState - Current game state
+   * @returns Array of killed pieces
+   */
+  private getRamKills(move: Move, gameState: GameState): any[] {
+    const kills: any[] = [];
+    const from = move.from;
+    const to = move.to;
+    
+    // Calculate direction
+    const dx = Math.sign(to.x - from.x);
+    const dy = Math.sign(to.y - from.y);
+    
+    // Start from position after 'from'
+    let currentX = from.x + dx;
+    let currentY = from.y + dy;
+    
+    // Walk along path until we reach 'to' (exclusive)
+    while (currentX !== to.x || currentY !== to.y) {
+      const pos = { x: currentX, y: currentY };
+      const piece = gameState.getPieceAt(pos as any);
+      
+      if (piece && piece.team !== move.team) {
+        kills.push(piece);
+        if (kills.length >= 2) break; // Max 2 kills
+      }
+      
+      currentX += dx;
+      currentY += dy;
+    }
+    
+    return kills;
+  }  /**
    * Store killer move (non-capture that caused beta cutoff).
    * 
    * @param move - Killer move
@@ -450,18 +522,6 @@ export class MinimaxAI implements IAIPlayer {
            a.to.x === b.to.x && 
            a.to.y === b.to.y &&
            a.pieceType === b.pieceType;
-  }
-
-  /**
-   * Check if move is a capture.
-   * 
-   * @param move - Move to check
-   * @param gameState - Current game state
-   * @returns True if move captures opponent piece
-   */
-  private isCapture(move: Move, gameState: GameState): boolean {
-    const victim = gameState.getPieceAt(move.to as any);
-    return victim !== undefined && victim.team !== move.team;
   }
 
   /**
