@@ -11,7 +11,7 @@ import GameOverModal, { PlayerScore } from './components/GameOverModal/GameOverM
 import PieceLegend from './components/PieceLegend/PieceLegend';
 import { GameProvider, useGame } from './context/GameContext';
 import { GameConfig } from './domain/game/GameConfig';
-import { GameStatus, PieceType } from './domain/core/types';
+import { GameStatus, PieceType, TeamType } from './domain/core/types';
 import { PlayerProfile, PlayerStats, PlayerStatus } from './components/PlayerCard/PlayerCard';
 import { CornerPlayerData } from './components/CornerPlayerCard/CornerPlayerCard';
 import { useGameLoop } from './hooks/useGameLoop';
@@ -112,8 +112,8 @@ function AppContent() {
     return specialMapping[pieceType] || pieceType.toLowerCase();
   };
 
-  // Helper function to determine which pieces each player captured
-  // Uses gameState.getCapturedPieces() which tracks all captured pieces
+  // Get capture statistics directly from GameState
+  // This is the source of truth for all capture tracking
   const getCapturedPiecesByPlayer = useMemo(() => {
     const capturesByTeam = new Map<string, Array<{ type: PieceType; image: string }>>();
     
@@ -122,53 +122,24 @@ function AppContent() {
       capturesByTeam.set(p.team, []);
     }
     
-    // Get all captured pieces from game state
-    const allCaptured = gameState.getCapturedPieces();
-    
-    // Calculate initial piece counts for each team
-    const initialPieceCounts = new Map<string, number>();
+    // Get capture stats from GameState (single source of truth)
+    // Convert CaptureStats to format needed for display
     for (const player of gameConfig.players) {
-      // In a 4-player game, each team starts with 24 pieces (except treasure/king special cases)
-      // For simplicity, we count current + captured to get initial
-      const currentPieces = gameState.getPiecesForTeam(player.team).length;
-      const lostPieces = allCaptured.filter(p => p.team === player.team).length;
-      initialPieceCounts.set(player.team, currentPieces + lostPieces);
-    }
-    
-    // For each team, determine who captured their pieces
-    // Logic: if a team lost pieces, the other teams captured them
-    // In a 4-player game, we distribute captures based on who has more pieces remaining
-    for (const capturedPiece of allCaptured) {
-      const victimTeam = capturedPiece.team;
+      const stats = gameState.getCaptureStatsForTeam(player.team);
       
-      // Find which team(s) could have captured this piece
-      // For now, we'll credit all captures to the team with the most pieces remaining
-      // This is a simplification - ideally we'd track this in the move history
-      const activePlayers = gameConfig.players.filter(p => p.team !== victimTeam && p.isActive);
+      const pieces = stats.capturedPieces.map(captured => ({
+        type: captured.type,
+        image: `assets/images/${mapPieceTypeToImage(captured.type)}_${captured.team === 'OUR' ? 'w' : 'b'}.svg`
+      }));
       
-      if (activePlayers.length > 0) {
-        // Sort by pieces remaining (descending) and give credit to the leading player
-        const sortedByStrength = activePlayers.sort((a, b) => {
-          const aPieces = gameState.getPiecesForTeam(a.team).length;
-          const bPieces = gameState.getPiecesForTeam(b.team).length;
-          return bPieces - aPieces;
-        });
-        
-        const capturerTeam = sortedByStrength[0].team;
-        const captures = capturesByTeam.get(capturerTeam) || [];
-        captures.push({
-          type: capturedPiece.type,
-          image: `assets/images/${mapPieceTypeToImage(capturedPiece.type)}_${capturedPiece.team === 'OUR' ? 'w' : 'b'}.svg`
-        });
-        capturesByTeam.set(capturerTeam, captures);
-      }
+      capturesByTeam.set(player.team, pieces);
     }
     
     // Debug: log captures for verification
-    console.log('[App] Captured pieces by player:', Array.from(capturesByTeam.entries()).map(([team, pieces]) => ({
+    console.log('[App] Captured pieces by player (from GameState):', Array.from(capturesByTeam.entries()).map(([team, pieces]) => ({
       team,
       count: pieces.length,
-      totalValue: pieces.reduce((sum, p) => sum + pieceValues[p.type], 0)
+      totalValue: gameState.getCaptureStatsForTeam(team as TeamType).totalValue
     })));
     
     return capturesByTeam;
@@ -185,22 +156,21 @@ function AppContent() {
       const activePieces = gameState.getPiecesForTeam(player.team);
       const piecesRemaining = activePieces.length;
       
-      // Get captured pieces BY this specific player (from move history analysis)
+      // Get captured pieces BY this specific player (from GameState)
       const capturedPieces = getCapturedPiecesByPlayer.get(player.team) || [];
       
-      // Calculate material advantage (positive = ahead, negative = behind)
-      const capturedValue = capturedPieces.reduce((sum, p) => sum + pieceValues[p.type], 0);
+      // Get score directly from GameState capture stats (single source of truth)
+      const captureStats = gameState.getCaptureStatsForTeam(player.team);
+      const score = captureStats.totalValue;
       
-      // Get pieces lost by this player
+      // Calculate material advantage (positive = ahead, negative = behind)
       const allCaptured = gameState.getCapturedPieces();
       const lostPieces = allCaptured.filter(p => p.team === player.team);
       const lostValue = lostPieces.reduce((sum, p) => sum + pieceValues[p.type], 0);
-      
-      const materialAdvantage = capturedValue - lostValue;
+      const materialAdvantage = score - lostValue;
       
       // Calculate stats
       const movesPlayed = Math.floor(moveHistory.length / activePlayers.length);
-      const score = capturedValue; // Score = material captured
       
       // Get last move (ES5-compatible way)
       const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;

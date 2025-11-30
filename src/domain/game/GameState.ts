@@ -32,6 +32,18 @@ export interface GamePiece {
 }
 
 /**
+ * Statistics for pieces captured by a team.
+ */
+export interface CaptureStats {
+  readonly capturedPieces: ReadonlyArray<{
+    readonly type: PieceType;
+    readonly team: TeamType; // Team of the captured piece
+  }>;
+  readonly totalValue: number; // Sum of piece values
+  readonly count: number; // Total pieces captured
+}
+
+/**
  * Immutable game state entity.
  * 
  * Central source of truth for all game information. Every state change
@@ -52,6 +64,7 @@ export class GameState implements GameStateReader, GameStateWriter {
   private readonly _capturedPieces: ReadonlyArray<GamePiece>;
   private readonly _trebuchetReadyPositions: ReadonlySet<string>; // Set of "x,y" positions
   private readonly _kingDeathPenalty: ReadonlyMap<TeamType, boolean>; // team -> has penalty
+  private readonly _captureStats: ReadonlyMap<TeamType, CaptureStats>; // team -> capture statistics
 
   constructor(params: {
     pieces: ReadonlyArray<GamePiece>;
@@ -61,6 +74,7 @@ export class GameState implements GameStateReader, GameStateWriter {
     capturedPieces?: ReadonlyArray<GamePiece>;
     trebuchetReadyPositions?: ReadonlySet<string>;
     kingDeathPenalty?: ReadonlyMap<TeamType, boolean>;
+    captureStats?: ReadonlyMap<TeamType, CaptureStats>;
   }) {
     this._pieces = params.pieces;
     this._currentTurn = params.currentTurn;
@@ -69,6 +83,7 @@ export class GameState implements GameStateReader, GameStateWriter {
     this._capturedPieces = params.capturedPieces ?? [];
     this._trebuchetReadyPositions = params.trebuchetReadyPositions ?? new Set();
     this._kingDeathPenalty = params.kingDeathPenalty ?? new Map();
+    this._captureStats = params.captureStats ?? new Map();
   }
 
   // ==================== GameStateReader Implementation ====================
@@ -147,6 +162,24 @@ export class GameState implements GameStateReader, GameStateWriter {
    */
   public hasKingDeathPenalty(team: TeamType): boolean {
     return this._kingDeathPenalty.get(team) === true;
+  }
+
+  /**
+   * Gets capture statistics for a specific team.
+   */
+  public getCaptureStatsForTeam(team: TeamType): CaptureStats {
+    return this._captureStats.get(team) ?? {
+      capturedPieces: [],
+      totalValue: 0,
+      count: 0
+    };
+  }
+
+  /**
+   * Gets all capture statistics for all teams.
+   */
+  public getAllCaptureStats(): ReadonlyMap<TeamType, CaptureStats> {
+    return this._captureStats;
   }
 
   /**
@@ -357,6 +390,49 @@ export class GameState implements GameStateReader, GameStateWriter {
       ? [...this._capturedPieces, ...allCapturedPieces]
       : this._capturedPieces;
 
+    // UPDATE CAPTURE STATISTICS
+    // Track which team captured which pieces for scoring
+    const pieceValues: Record<PieceType, number> = {
+      [PieceType.FARMER]: 1,
+      [PieceType.RAM]: 3,
+      [PieceType.TRAP]: 2,
+      [PieceType.KNIGHT]: 4,
+      [PieceType.TEMPLAR]: 5,
+      [PieceType.SCOUT]: 3,
+      [PieceType.TREBUCHET]: 4,
+      [PieceType.TREASURE]: 0,
+      [PieceType.KING]: 0,
+    };
+
+    const newCaptureStats = new Map(this._captureStats);
+    
+    if (allCapturedPieces.length > 0) {
+      // Get current stats for the capturing team (the team that moved)
+      const capturingTeam = movingPiece.team;
+      const currentStats = newCaptureStats.get(capturingTeam) ?? {
+        capturedPieces: [],
+        totalValue: 0,
+        count: 0
+      };
+      
+      // Add newly captured pieces to stats
+      const newCapturedForTeam = allCapturedPieces.map(piece => ({
+        type: piece.type,
+        team: piece.team
+      }));
+      
+      const totalNewValue = allCapturedPieces.reduce(
+        (sum, piece) => sum + pieceValues[piece.type], 
+        0
+      );
+      
+      newCaptureStats.set(capturingTeam, {
+        capturedPieces: [...currentStats.capturedPieces, ...newCapturedForTeam],
+        totalValue: currentStats.totalValue + totalNewValue,
+        count: currentStats.count + allCapturedPieces.length
+      });
+    }
+
     // KING DEATH PENALTY
     // Rule: "Si le matan todas nuestras piezas pueden mover una casilla menos excepto el tesoro"
     // Check if a KING was captured - apply movement penalty to that team
@@ -377,7 +453,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       status: this._status,
       capturedPieces: newCapturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
-      kingDeathPenalty: newKingDeathPenalty
+      kingDeathPenalty: newKingDeathPenalty,
+      captureStats: newCaptureStats
     });
   }
 
@@ -392,7 +469,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       status: this._status,
       capturedPieces: this._capturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
-      kingDeathPenalty: this._kingDeathPenalty
+      kingDeathPenalty: this._kingDeathPenalty,
+      captureStats: this._captureStats
     });
   }
 
@@ -407,7 +485,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       status: status,
       capturedPieces: this._capturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
-      kingDeathPenalty: this._kingDeathPenalty
+      kingDeathPenalty: this._kingDeathPenalty,
+      captureStats: this._captureStats
     });
   }
 
@@ -431,7 +510,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       status: this._status,
       capturedPieces: newCapturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
-      kingDeathPenalty: this._kingDeathPenalty
+      kingDeathPenalty: this._kingDeathPenalty,
+      captureStats: this._captureStats
     });
   }
 
@@ -453,7 +533,10 @@ export class GameState implements GameStateReader, GameStateWriter {
       currentTurn: this._currentTurn,
       moveHistory: this._moveHistory,
       status: this._status,
-      capturedPieces: this._capturedPieces
+      capturedPieces: this._capturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: this._kingDeathPenalty,
+      captureStats: this._captureStats
     });
   }
 
@@ -511,7 +594,10 @@ export class GameState implements GameStateReader, GameStateWriter {
       currentTurn: this._currentTurn,
       moveHistory: this._moveHistory,
       status: this._status,
-      capturedPieces: this._capturedPieces
+      capturedPieces: this._capturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: this._kingDeathPenalty,
+      captureStats: this._captureStats
     });
   }
 
