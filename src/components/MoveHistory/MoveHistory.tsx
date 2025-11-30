@@ -1,7 +1,7 @@
 import React from 'react';
 import './MoveHistory.css';
 import { Move } from '../../domain/core/Move';
-import { PieceType } from '../../domain/core/types';
+import { PieceType, TeamType } from '../../domain/core/types';
 import { useGame } from '../../context/GameContext';
 
 interface MoveHistoryProps {
@@ -59,6 +59,24 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({ moves }) => {
     const file = files[x];
     const rank = y + 1; // Ranks are 1-indexed
     return `${file}${rank}`;
+  };
+
+  /**
+   * Get color for team indicator
+   */
+  const getTeamColor = (team: TeamType): string => {
+    switch (team) {
+      case TeamType.OUR:
+        return '#10b981'; // Verde
+      case TeamType.OPPONENT:
+        return '#ef4444'; // Rojo
+      case TeamType.OPPONENT_2:
+        return '#f59e0b'; // Naranja
+      case TeamType.OPPONENT_3:
+        return '#8b5cf6'; // Morado
+      default:
+        return '#64748b'; // Gris por defecto
+    }
   };
 
   /**
@@ -152,6 +170,10 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({ moves }) => {
                     onClick={() => handleMoveClick(ourMoveIndex)}
                     title="Click para revisar esta jugada"
                   >
+                    <span 
+                      className="move-history__team-indicator"
+                      style={{ backgroundColor: getTeamColor(group.ourMove.team) }}
+                    />
                     {formatMove(group.ourMove, group.moveNumber)}
                   </span>
                 )}
@@ -163,6 +185,10 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({ moves }) => {
                     onClick={() => handleMoveClick(opponentMoveIndex)}
                     title="Click para revisar esta jugada"
                   >
+                    <span 
+                      className="move-history__team-indicator"
+                      style={{ backgroundColor: getTeamColor(group.opponentMove.team) }}
+                    />
                     {formatMove(group.opponentMove, group.moveNumber)}
                   </span>
                 )}

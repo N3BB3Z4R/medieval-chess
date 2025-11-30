@@ -129,6 +129,10 @@
   text-align: center;
   transition: all 0.2s ease;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .move-history__move:hover {
@@ -144,6 +148,16 @@
 .move-history__move--opponent {
   background: #334155;
   color: #cbd5e1;
+}
+
+/* Team color indicator */
+.move-history__team-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Footer */
