@@ -148,6 +148,9 @@ export interface GameStateReader {
   getValidMovesFrom(position: unknown): ReadonlyArray<unknown>;
   getKing(team: TeamType): unknown | undefined;
   hasKing(team: TeamType): boolean;
+  isTeamEliminated(team: TeamType): boolean;
+  getEliminatedPlayers(): ReadonlyMap<TeamType, unknown>;
+  getActiveTeamsCount(): number;
 }
 
 /**

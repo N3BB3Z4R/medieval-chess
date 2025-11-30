@@ -21,19 +21,24 @@ export class WinConditionChecker implements IWinConditionChecker {
    * 
    * Returns specific GameStatus if game over, null if still in progress.
    * 
+   * For multi-player games:
+   * - When a king is captured, that player is eliminated but game continues
+   * - Game ends when only 1 team with a king remains
+   * 
    * Priority order:
-   * 1. Check for king captures (TREASURE_CAPTURED_*)
-   * 2. Check for checkmate (CHECKMATE_*)
-   * 3. Check for stalemate (STALEMATE)
+   * 1. Check for king captures and player elimination
+   * 2. Check if only 1 team remains (winner)
+   * 3. Check for checkmate (DISABLED - requires working move validator)
+   * 4. Check for stalemate (DISABLED - requires working move validator)
    * 
    * @param state - Current game state
    * @returns GameStatus if game ended, null otherwise
    */
   public checkWinCondition(state: GameStateReader): GameStatus | null {
-    // Check king captures first (highest priority)
-    const kingStatus = this.checkKingCaptures(state);
-    if (kingStatus !== null) {
-      return kingStatus;
+    // Check king captures and eliminate players
+    const eliminationStatus = this.checkKingCapturesAndEliminations(state);
+    if (eliminationStatus !== null) {
+      return eliminationStatus;
     }
     
     // TODO Phase 3: Enable checkmate/stalemate detection once getValidMovesFrom() is implemented
@@ -116,36 +121,49 @@ export class WinConditionChecker implements IWinConditionChecker {
   }
   
   /**
-   * Checks for king captures and determines winner.
+   * Checks for king captures and handles player elimination.
    * 
-   * In medieval chess:
-   * - Capturing opponent's king = immediate win
-   * - If multiple kings captured, last team with king wins
+   * Multi-player logic:
+   * - Count teams with kings (excluding already eliminated)
+   * - If only 1 team has king → that team wins
+   * - If 2+ teams have kings → game continues (but we might eliminate someone this turn)
    * 
    * @param state - Current game state
-   * @returns GameStatus if a team won by king capture, null otherwise
+   * @returns GameStatus if game should end, null if continues
    */
-  private checkKingCaptures(state: GameStateReader): GameStatus | null {
-    const ourKingExists = state.hasKing(TeamType.OUR);
-    const opponentKingExists = state.hasKing(TeamType.OPPONENT);
+  private checkKingCapturesAndEliminations(state: GameStateReader): GameStatus | null {
+    // Get all possible teams
+    const allTeams = [TeamType.OUR, TeamType.OPPONENT, TeamType.OPPONENT_2, TeamType.OPPONENT_3];
     
-    // Both kings alive = game continues
-    if (ourKingExists && opponentKingExists) {
-      return null;
+    // Find teams with kings that are NOT already eliminated
+    const teamsWithKings = allTeams.filter(team => 
+      !state.isTeamEliminated(team) && state.hasKing(team)
+    );
+    
+    // If only 1 team has a king, they win
+    if (teamsWithKings.length === 1) {
+      const winner = teamsWithKings[0];
+      
+      // Determine appropriate GameStatus based on winner
+      switch (winner) {
+        case TeamType.OUR:
+          return GameStatus.WINNER_OUR;
+        case TeamType.OPPONENT:
+        case TeamType.OPPONENT_2:
+        case TeamType.OPPONENT_3:
+          return GameStatus.WINNER_OPPONENT;
+        default:
+          return GameStatus.WINNER_OUR; // Fallback
+      }
     }
     
-    // Our king captured = opponent wins
-    if (!ourKingExists && opponentKingExists) {
-      return GameStatus.WINNER_OPPONENT;
+    // If 0 teams have kings (shouldn't happen but handle gracefully)
+    if (teamsWithKings.length === 0) {
+      return GameStatus.DRAW;
     }
     
-    // Opponent king captured = we win
-    if (ourKingExists && !opponentKingExists) {
-      return GameStatus.WINNER_OUR;
-    }
-    
-    // Both kings captured = draw (edge case, should not happen normally)
-    return GameStatus.STALEMATE;
+    // 2+ teams still have kings, game continues
+    return null;
   }
   
   /**

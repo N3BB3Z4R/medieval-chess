@@ -129,6 +129,28 @@ export interface GameStateReader {
    * @returns true if team has a king
    */
   hasKing(team: TeamType): boolean;
+
+  /**
+   * Checks if a team has been eliminated.
+   * 
+   * @param team - Team to check
+   * @returns true if team is eliminated
+   */
+  isTeamEliminated(team: TeamType): boolean;
+
+  /**
+   * Gets all eliminated players data.
+   * 
+   * @returns Map of team to elimination data
+   */
+  getEliminatedPlayers(): ReadonlyMap<TeamType, unknown>;
+
+  /**
+   * Gets count of active (non-eliminated) teams.
+   * 
+   * @returns Number of teams still in the game
+   */
+  getActiveTeamsCount(): number;
 }
 
 /**

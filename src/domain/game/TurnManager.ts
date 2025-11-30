@@ -43,7 +43,7 @@ export class TurnManager implements ITurnManager {
    * Gets the team that should move next.
    * 
    * Cycles through teams in order: OUR → OPPONENT → OPPONENT_2 → OPPONENT_3 → OUR
-   * Automatically skips eliminated teams (teams with no pieces).
+   * Automatically skips eliminated teams (teams marked as eliminated or with no pieces).
    */
   public getNextTeam(currentState: GameStateReader): TeamType {
     const currentTurn = currentState.getCurrentTurn();
@@ -54,7 +54,7 @@ export class TurnManager implements ITurnManager {
       return this.teams[0];
     }
 
-    // Find next active team (with pieces remaining)
+    // Find next active team (not eliminated and with pieces remaining)
     let nextIndex = (currentIndex + 1) % this.teams.length;
     let attempts = 0;
     const maxAttempts = this.teams.length;
@@ -62,7 +62,7 @@ export class TurnManager implements ITurnManager {
     while (attempts < maxAttempts) {
       const nextTeam = this.teams[nextIndex];
       
-      // Check if team is still active (has pieces)
+      // Check if team is still active (not eliminated and has pieces)
       if (this.isTeamActive(nextTeam, currentState)) {
         return nextTeam;
       }
@@ -72,7 +72,7 @@ export class TurnManager implements ITurnManager {
       attempts++;
     }
 
-    // Fallback: return current team if no other team has pieces
+    // Fallback: return current team if no other team is active
     return currentTurn;
   }
 
@@ -124,11 +124,17 @@ export class TurnManager implements ITurnManager {
   }
 
   /**
-   * Checks if a team is still active (has pieces on board).
+   * Checks if a team is still active (has pieces on board and not eliminated).
    * 
-   * Used for elimination mode in 4-player games.
+   * Used for elimination mode in multi-player games.
    */
   public isTeamActive(team: TeamType, currentState: GameStateReader): boolean {
+    // Check if team is eliminated
+    if (currentState.isTeamEliminated(team)) {
+      return false;
+    }
+    
+    // Check if team has pieces
     const teamPieces = currentState.getPiecesForTeam(team);
     return teamPieces.length > 0;
   }

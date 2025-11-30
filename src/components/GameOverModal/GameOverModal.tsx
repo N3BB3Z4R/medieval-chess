@@ -10,6 +10,8 @@ export interface PlayerScore {
   capturedPiecesCount: number;
   piecesRemaining: number;
   isAI: boolean;
+  isEliminated?: boolean;
+  eliminationTurn?: number;
 }
 
 interface GameOverModalProps {
@@ -68,8 +70,8 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
     }
   };
 
-  // Sort players by score (descending)
-  const sortedPlayers = [...playerScores].sort((a, b) => b.score - a.score);
+  // Players are already sorted from App.tsx based on elimination order
+  const sortedPlayers = playerScores;
 
   return (
     <div className="game-over-modal">
@@ -90,33 +92,44 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
           <div className="game-over-modal__leaderboard">
             <h3 className="game-over-modal__leaderboard-title">📊 Clasificación Final</h3>
             <div className="game-over-modal__leaderboard-table">
-              {sortedPlayers.map((player, index) => (
-                <div 
-                  key={player.team}
-                  className={`game-over-modal__leaderboard-row ${index === 0 ? 'game-over-modal__leaderboard-row--winner' : ''}`}
-                >
-                  <div className="game-over-modal__rank">
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}º`}
-                  </div>
-                  <img 
-                    src={player.playerAvatar} 
-                    alt={player.playerName}
-                    className="game-over-modal__avatar"
-                  />
-                  <div className="game-over-modal__player-info">
-                    <div className="game-over-modal__player-name">
-                      {player.playerName} {player.isAI && '🤖'}
+              {sortedPlayers.map((player, index) => {
+                const isWinner = index === 0 && !player.isEliminated;
+                const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}º`;
+                
+                return (
+                  <div 
+                    key={player.team}
+                    className={`game-over-modal__leaderboard-row ${isWinner ? 'game-over-modal__leaderboard-row--winner' : ''} ${player.isEliminated ? 'game-over-modal__leaderboard-row--eliminated' : ''}`}
+                    style={player.isEliminated ? { opacity: 0.8 } : {}}
+                  >
+                    <div className="game-over-modal__rank">
+                      {rankEmoji}
                     </div>
-                    <div className="game-over-modal__player-stats">
-                      {player.capturedPiecesCount} {player.capturedPiecesCount === 1 ? 'captura' : 'capturas'} • {player.piecesRemaining} {player.piecesRemaining === 1 ? 'viva' : 'vivas'}
+                    <img 
+                      src={player.playerAvatar} 
+                      alt={player.playerName}
+                      className="game-over-modal__avatar"
+                      style={player.isEliminated ? { filter: 'grayscale(0.3)' } : {}}
+                    />
+                    <div className="game-over-modal__player-info">
+                      <div className="game-over-modal__player-name">
+                        {player.playerName} {player.isAI && '🤖'}
+                        {player.isEliminated && ' ☠️'}
+                      </div>
+                      <div className="game-over-modal__player-stats">
+                        {player.capturedPiecesCount} {player.capturedPiecesCount === 1 ? 'captura' : 'capturas'} • {player.piecesRemaining} {player.piecesRemaining === 1 ? 'viva' : 'vivas'}
+                        {player.isEliminated && player.eliminationTurn !== undefined && (
+                          <> • Eliminado turno {player.eliminationTurn}</>
+                        )}
+                      </div>
+                    </div>
+                    <div className="game-over-modal__score" title={`${player.score} puntos de material capturado`}>
+                      <span className="game-over-modal__score-value">{player.score}</span>
+                      <span className="game-over-modal__score-label">pts</span>
                     </div>
                   </div>
-                  <div className="game-over-modal__score" title={`${player.score} puntos de material capturado`}>
-                    <span className="game-over-modal__score-value">{player.score}</span>
-                    <span className="game-over-modal__score-label">pts</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

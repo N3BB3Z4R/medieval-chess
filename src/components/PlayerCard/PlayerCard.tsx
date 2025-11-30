@@ -27,7 +27,7 @@ export interface PlayerStats {
 }
 
 export interface PlayerStatus {
-  state: 'active' | 'waiting' | 'thinking' | 'check' | 'disconnected';
+  state: 'active' | 'waiting' | 'thinking' | 'check' | 'disconnected' | 'defeated';
   message?: string;
 }
 
@@ -78,6 +78,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
       case 'thinking': return '🤔';
       case 'check': return '⚠️';
       case 'disconnected': return '🔌';
+      case 'defeated': return '☠️';
       default: return '👤';
     }
   };
@@ -86,14 +87,17 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     return `player-card--${status.state}`;
   };
 
+  const isDefeated = status.state === 'defeated';
+
   // Compact version for sidebar
   if (isCompact) {
     return (
       <div 
-        className={`player-card player-card--compact ${isActive ? 'player-card--active' : ''}`}
+        className={`player-card player-card--compact ${isActive ? 'player-card--active' : ''} ${isDefeated ? 'player-card--defeated' : ''}`}
         data-team={team}
+        style={isDefeated ? { opacity: 0.6, filter: 'grayscale(0.5)' } : {}}
       >
-        {isActive && <div className="player-card__turn-pulse" />}
+        {isActive && !isDefeated && <div className="player-card__turn-pulse" />}
         
         {/* Header: Avatar + Name + Score */}
         <div className="player-card__compact-header">
@@ -104,7 +108,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               <span className="player-card__player-type">{playerRange === 'Human' ? '👤' : '🤖'}</span>
             </div>
             <div className="player-card__meta-compact">
-              {getStatusIcon()} <span>{piecesRemaining} piezas</span>
+              {getStatusIcon()} <span>{isDefeated ? status.message : `${piecesRemaining} piezas`}</span>
             </div>
           </div>
           <div className="player-card__score-compact">
@@ -118,22 +122,24 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
         
         {/* Stats Row: Turno + Tiempo */}
-        <div className="player-card__compact-stats">
-          <div className="player-card__compact-stat">
-            <span className="player-card__stat-icon">🎯</span>
-            <span className="player-card__stat-text">Turno {movesPlayed}</span>
-          </div>
-          {timePerTurn && (
+        {!isDefeated && (
+          <div className="player-card__compact-stats">
             <div className="player-card__compact-stat">
-              <BoardClock
-                active={isActive}
-                initialTimeSeconds={timePerTurn}
-                incrementSeconds={incrementPerTurn}
-                onTimeUp={onTimeUp}
-              />
+              <span className="player-card__stat-icon">🎯</span>
+              <span className="player-card__stat-text">Turno {movesPlayed}</span>
             </div>
-          )}
-        </div>
+            {timePerTurn && (
+              <div className="player-card__compact-stat">
+                <BoardClock
+                  active={isActive}
+                  initialTimeSeconds={timePerTurn}
+                  incrementSeconds={incrementPerTurn}
+                  onTimeUp={onTimeUp}
+                />
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Captured Pieces (sin materialAdvantage duplicado) */}
         {capturedPieces.length > 0 && (
@@ -148,11 +154,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   // Full version for mobile/other layouts
   return (
     <div 
-      className={`player-card ${isActive ? 'player-card--active' : ''} ${getStatusClass()} player-card--${variant}`}
+      className={`player-card ${isActive ? 'player-card--active' : ''} ${getStatusClass()} player-card--${variant} ${isDefeated ? 'player-card--defeated' : ''}`}
       data-team={team}
+      style={isDefeated ? { opacity: 0.6, filter: 'grayscale(0.5)' } : {}}
     >
       {/* Active Turn Indicator */}
-      {isActive && (
+      {isActive && !isDefeated && (
         <div className="player-card__turn-pulse" />
       )}
 
@@ -202,7 +209,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
 
         {/* Last Move */}
-        {lastMovedPiece && (
+        {lastMovedPiece && !isDefeated && (
           <div className="player-card__last-move">
             <span className="player-card__last-move-label">Última jugada:</span>
             <span className="player-card__last-move-value">
@@ -219,7 +226,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         />
 
         {/* Clock */}
-        {timePerTurn && (
+        {timePerTurn && !isDefeated && (
           <div className="player-card__clock">
             <BoardClock
               active={isActive}

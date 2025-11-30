@@ -44,6 +44,28 @@ export interface CaptureStats {
 }
 
 /**
+ * Reason for player elimination.
+ */
+export enum EliminationReason {
+  KING_CAPTURED = 'KING_CAPTURED',
+  SURRENDER = 'SURRENDER',
+  TIMEOUT = 'TIMEOUT',
+}
+
+/**
+ * Data stored when a player is eliminated.
+ * Used for leaderboard and final statistics.
+ */
+export interface EliminatedPlayerData {
+  readonly team: TeamType;
+  readonly reason: EliminationReason;
+  readonly eliminationTurn: number; // Turn number when eliminated
+  readonly finalScore: number; // Material captured
+  readonly capturedPieces: ReadonlyArray<GamePiece>;
+  readonly piecesRemaining: number; // Pieces they had when eliminated
+}
+
+/**
  * Immutable game state entity.
  * 
  * Central source of truth for all game information. Every state change
@@ -65,6 +87,7 @@ export class GameState implements GameStateReader, GameStateWriter {
   private readonly _trebuchetReadyPositions: ReadonlySet<string>; // Set of "x,y" positions
   private readonly _kingDeathPenalty: ReadonlyMap<TeamType, boolean>; // team -> has penalty
   private readonly _captureStats: ReadonlyMap<TeamType, CaptureStats>; // team -> capture statistics
+  private readonly _eliminatedPlayers: ReadonlyMap<TeamType, EliminatedPlayerData>; // team -> elimination data
 
   constructor(params: {
     pieces: ReadonlyArray<GamePiece>;
@@ -75,6 +98,7 @@ export class GameState implements GameStateReader, GameStateWriter {
     trebuchetReadyPositions?: ReadonlySet<string>;
     kingDeathPenalty?: ReadonlyMap<TeamType, boolean>;
     captureStats?: ReadonlyMap<TeamType, CaptureStats>;
+    eliminatedPlayers?: ReadonlyMap<TeamType, EliminatedPlayerData>;
   }) {
     this._pieces = params.pieces;
     this._currentTurn = params.currentTurn;
@@ -84,6 +108,7 @@ export class GameState implements GameStateReader, GameStateWriter {
     this._trebuchetReadyPositions = params.trebuchetReadyPositions ?? new Set();
     this._kingDeathPenalty = params.kingDeathPenalty ?? new Map();
     this._captureStats = params.captureStats ?? new Map();
+    this._eliminatedPlayers = params.eliminatedPlayers ?? new Map();
   }
 
   // ==================== GameStateReader Implementation ====================
@@ -180,6 +205,30 @@ export class GameState implements GameStateReader, GameStateWriter {
    */
   public getAllCaptureStats(): ReadonlyMap<TeamType, CaptureStats> {
     return this._captureStats;
+  }
+
+  /**
+   * Gets eliminated players data.
+   */
+  public getEliminatedPlayers(): ReadonlyMap<TeamType, EliminatedPlayerData> {
+    return this._eliminatedPlayers;
+  }
+
+  /**
+   * Checks if a team has been eliminated.
+   */
+  public isTeamEliminated(team: TeamType): boolean {
+    return this._eliminatedPlayers.has(team);
+  }
+
+  /**
+   * Gets count of active (non-eliminated) teams.
+   */
+  public getActiveTeamsCount(): number {
+    const allTeams = [TeamType.OUR, TeamType.OPPONENT, TeamType.OPPONENT_2, TeamType.OPPONENT_3];
+    return allTeams.filter(team => 
+      !this.isTeamEliminated(team) && this.getPiecesForTeam(team).length > 0
+    ).length;
   }
 
   /**
@@ -454,7 +503,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       capturedPieces: newCapturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
       kingDeathPenalty: newKingDeathPenalty,
-      captureStats: newCaptureStats
+      captureStats: newCaptureStats,
+      eliminatedPlayers: this._eliminatedPlayers
     });
   }
 
@@ -470,7 +520,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       capturedPieces: this._capturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
       kingDeathPenalty: this._kingDeathPenalty,
-      captureStats: this._captureStats
+      captureStats: this._captureStats,
+      eliminatedPlayers: this._eliminatedPlayers
     });
   }
 
@@ -486,7 +537,50 @@ export class GameState implements GameStateReader, GameStateWriter {
       capturedPieces: this._capturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
       kingDeathPenalty: this._kingDeathPenalty,
-      captureStats: this._captureStats
+      captureStats: this._captureStats,
+      eliminatedPlayers: this._eliminatedPlayers
+    });
+  }
+
+  /**
+   * Eliminates a player from the game.
+   * Stores their final stats for leaderboard display.
+   */
+  public eliminatePlayer(team: TeamType, reason: EliminationReason): GameState {
+    // Don't eliminate twice
+    if (this.isTeamEliminated(team)) {
+      return this;
+    }
+
+    // Calculate final stats
+    const captureStats = this.getCaptureStatsForTeam(team);
+    const piecesRemaining = this.getPiecesForTeam(team).length;
+    const eliminationData: EliminatedPlayerData = {
+      team,
+      reason,
+      eliminationTurn: this._moveHistory.length,
+      finalScore: captureStats.totalValue,
+      capturedPieces: captureStats.capturedPieces.map(cp => ({
+        type: cp.type,
+        team: cp.team,
+        position: new Position(0, 0), // Position doesn't matter for captured pieces
+      })),
+      piecesRemaining,
+    };
+
+    const newEliminatedPlayers = new Map(this._eliminatedPlayers);
+    newEliminatedPlayers.set(team, eliminationData);
+
+    return new GameState({
+      pieces: this._pieces,
+      currentTurn: this._currentTurn,
+      moveHistory: this._moveHistory,
+      status: this._status,
+      capturedPieces: this._capturedPieces,
+      trebuchetReadyPositions: this._trebuchetReadyPositions,
+      kingDeathPenalty: this._kingDeathPenalty,
+      captureStats: this._captureStats,
+      eliminatedPlayers: newEliminatedPlayers
     });
   }
 
@@ -511,7 +605,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       capturedPieces: newCapturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
       kingDeathPenalty: this._kingDeathPenalty,
-      captureStats: this._captureStats
+      captureStats: this._captureStats,
+      eliminatedPlayers: this._eliminatedPlayers
     });
   }
 
@@ -536,7 +631,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       capturedPieces: this._capturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
       kingDeathPenalty: this._kingDeathPenalty,
-      captureStats: this._captureStats
+      captureStats: this._captureStats,
+      eliminatedPlayers: this._eliminatedPlayers
     });
   }
 
@@ -597,7 +693,8 @@ export class GameState implements GameStateReader, GameStateWriter {
       capturedPieces: this._capturedPieces,
       trebuchetReadyPositions: this._trebuchetReadyPositions,
       kingDeathPenalty: this._kingDeathPenalty,
-      captureStats: this._captureStats
+      captureStats: this._captureStats,
+      eliminatedPlayers: this._eliminatedPlayers
     });
   }
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { GameState } from '../domain/game/GameState';
+import { GameState, EliminationReason } from '../domain/game/GameState';
 import { TurnManager } from '../domain/game/TurnManager';
 import { WinConditionChecker } from '../domain/game/WinConditionChecker';
 import { GameConfig, create2PlayerGame } from '../domain/game/GameConfig';
@@ -57,6 +57,7 @@ type GameAction =
   | { type: 'RESET_GAME' }
   | { type: 'SET_STATUS'; payload: { status: GameStatus } }
   | { type: 'SET_CONFIG'; payload: GameConfig }
+  | { type: 'SURRENDER'; payload: { team: DomainTeamType } }
   | { type: 'REVIEW_MOVE'; payload: { index: number | null } };
 
 /**
@@ -88,7 +89,17 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
       // Execute move (returns new GameState)
       let newGameState = state.gameState.executeMove(move) as GameState;
       
-      // Check win condition
+      // Check if any player lost their king this turn and eliminate them
+      const allTeams = [DomainTeamType.OUR, DomainTeamType.OPPONENT, DomainTeamType.OPPONENT_2, DomainTeamType.OPPONENT_3];
+      for (const team of allTeams) {
+        // If team lost their king and isn't already eliminated
+        if (!newGameState.hasKing(team) && !newGameState.isTeamEliminated(team)) {
+          console.log(`[GameContext] Team ${team} lost their king - eliminating player`);
+          newGameState = newGameState.eliminatePlayer(team, EliminationReason.KING_CAPTURED) as GameState;
+        }
+      }
+      
+      // Check win condition (after eliminations)
       const winStatus = state.winConditionChecker.checkWinCondition(newGameState);
       if (winStatus !== null) {
         newGameState = newGameState.setStatus(winStatus) as GameState;
@@ -123,6 +134,29 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
     
     case 'SET_STATUS': {
       const newGameState = state.gameState.setStatus(action.payload.status) as GameState;
+      return {
+        ...state,
+        gameState: newGameState,
+      };
+    }
+    
+    case 'SURRENDER': {
+      const { team } = action.payload;
+      
+      // Mark player as eliminated due to surrender
+      let newGameState = state.gameState.eliminatePlayer(team, EliminationReason.SURRENDER) as GameState;
+      
+      // Check if game should end (only 1 team left)
+      const winStatus = state.winConditionChecker.checkWinCondition(newGameState);
+      if (winStatus !== null) {
+        newGameState = newGameState.setStatus(winStatus) as GameState;
+      } else {
+        // Game continues, advance turn if it was the surrendering player's turn
+        if (state.gameState.getCurrentTurn() === team) {
+          newGameState = state.turnManager.advanceTurn(newGameState) as GameState;
+        }
+      }
+      
       return {
         ...state,
         gameState: newGameState,

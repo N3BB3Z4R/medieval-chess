@@ -90,13 +90,10 @@ function AppContent() {
 
   const handleSurrender = () => {
     if (globalThis.confirm('¿Estás seguro de que quieres rendirte?')) {
-      const winnerStatus = currentTurn === 'OUR' 
-        ? GameStatus.WINNER_OPPONENT 
-        : GameStatus.WINNER_OUR;
-      
+      // Surrender current player
       dispatch({ 
-        type: 'SET_STATUS', 
-        payload: { status: winnerStatus }
+        type: 'SURRENDER', 
+        payload: { team: currentTurn }
       });
     }
   };
@@ -181,10 +178,19 @@ function AppContent() {
       } : undefined;
       
       // Determine player status
-      let state: 'active' | 'waiting' | 'thinking' | 'check' | 'disconnected' = 'waiting';
+      let state: 'active' | 'waiting' | 'thinking' | 'check' | 'disconnected' | 'defeated' = 'waiting';
       let message = 'Esperando';
       
-      if (isActive) {
+      // Check if player is eliminated/defeated
+      if (gameState.isTeamEliminated(player.team as any)) {
+        state = 'defeated';
+        const eliminatedData = gameState.getEliminatedPlayers().get(player.team as any);
+        if (eliminatedData) {
+          message = eliminatedData.reason === 'SURRENDER' ? 'Se ha rendido' : 'Rey capturado';
+        } else {
+          message = 'Derrotado';
+        }
+      } else if (isActive) {
         if (player.isAI) {
           state = 'thinking';
           message = 'Calculando...';
@@ -196,8 +202,8 @@ function AppContent() {
       
       const status: PlayerStatus = { state, message };
       
-      // Check if this player is AI and currently thinking
-      const isAIThinking = player.isAI && isActive && isProcessingAI;
+      // Check if this player is AI and currently thinking (only if not defeated)
+      const isAIThinking = player.isAI && isActive && isProcessingAI && state !== 'defeated';
       if (isAIThinking) {
         status.state = 'thinking';
         status.message = '🤖 La IA está pensando...';
@@ -298,23 +304,50 @@ function AppContent() {
 
   // Prepare leaderboard data for GameOverModal
   const playerScoresForLeaderboard = useMemo<PlayerScore[]>(() => {
-    const scores = playersData.map(player => ({
-      playerName: player.profile.playerName,
-      playerAvatar: player.profile.playerAvatar,
-      team: player.profile.team,
-      score: player.stats.score,
-      capturedPiecesCount: player.stats.capturedPieces.length,
-      piecesRemaining: player.stats.piecesRemaining,
-      isAI: player.profile.playerRange !== 'Human'
-    }));
+    const eliminatedPlayers = gameState.getEliminatedPlayers();
+    
+    const scores = playersData.map(player => {
+      const isEliminated = eliminatedPlayers.has(player.profile.team as any);
+      const eliminatedData = eliminatedPlayers.get(player.profile.team as any);
+      
+      return {
+        playerName: player.profile.playerName,
+        playerAvatar: player.profile.playerAvatar,
+        team: player.profile.team,
+        score: player.stats.score,
+        capturedPiecesCount: player.stats.capturedPieces.length,
+        piecesRemaining: player.stats.piecesRemaining,
+        isAI: player.profile.playerRange !== 'Human',
+        isEliminated,
+        eliminationTurn: eliminatedData?.eliminationTurn ?? Infinity,
+      };
+    });
+    
+    // Sort by:
+    // 1. Non-eliminated first (winner is the one not eliminated when game ends)
+    // 2. Then by elimination turn (last to be eliminated = higher rank)
+    // 3. Then by score as tiebreaker
+    const sortedScores = scores.sort((a, b) => {
+      if (a.isEliminated !== b.isEliminated) {
+        return a.isEliminated ? 1 : -1; // Non-eliminated first
+      }
+      if (a.isEliminated && b.isEliminated) {
+        // Both eliminated: later elimination = better rank
+        if (a.eliminationTurn !== b.eliminationTurn) {
+          return b.eliminationTurn - a.eliminationTurn;
+        }
+      }
+      // Same elimination status: sort by score
+      return b.score - a.score;
+    });
     
     // Debug: log final scores when game ends
     if (gameStatus !== GameStatus.IN_PROGRESS && gameStatus !== GameStatus.NOT_STARTED) {
-      console.log('[App] Final leaderboard:', scores);
+      console.log('[App] Final leaderboard with eliminations:', sortedScores);
     }
     
-    return scores;
-  }, [playersData, gameStatus]);
+    return sortedScores;
+  }, [playersData, gameStatus, gameState]);
 
   return (
     <div id="app">
