@@ -116,7 +116,111 @@
   background-size: 42px;
   padding: 1px;
   opacity: 0.9;
+  position: relative;
+  border-radius: 50%;
   /* transition: 0.3s ease-in-out; */
+}
+
+/* Team color borders - Strong visual identification for multiplayer */
+.tile .mess-piece[data-piece-team="OUR"] {
+  box-shadow: 
+    0 0 0 3px rgba(16, 185, 129, 0.8),
+    0 0 12px 2px rgba(16, 185, 129, 0.6),
+    inset 0 0 20px 2px rgba(16, 185, 129, 0.2);
+  border: 2px solid rgba(16, 185, 129, 1);
+}
+
+.tile .mess-piece[data-piece-team="OPPONENT"] {
+  box-shadow: 
+    0 0 0 3px rgba(239, 68, 68, 0.8),
+    0 0 12px 2px rgba(239, 68, 68, 0.6),
+    inset 0 0 20px 2px rgba(239, 68, 68, 0.2);
+  border: 2px solid rgba(239, 68, 68, 1);
+}
+
+.tile .mess-piece[data-piece-team="OPPONENT_2"] {
+  box-shadow: 
+    0 0 0 3px rgba(245, 158, 11, 0.8),
+    0 0 12px 2px rgba(245, 158, 11, 0.6),
+    inset 0 0 20px 2px rgba(245, 158, 11, 0.2);
+  border: 2px solid rgba(245, 158, 11, 1);
+}
+
+.tile .mess-piece[data-piece-team="OPPONENT_3"] {
+  box-shadow: 
+    0 0 0 3px rgba(139, 92, 246, 0.8),
+    0 0 12px 2px rgba(139, 92, 246, 0.6),
+    inset 0 0 20px 2px rgba(139, 92, 246, 0.2);
+  border: 2px solid rgba(139, 92, 246, 1);
+}
+
+/* Enhance team colors when piece is selected */
+.tile .mess-piece--selected[data-piece-team="OUR"] {
+  box-shadow: 
+    0 0 0 4px rgba(16, 185, 129, 1),
+    0 0 20px 4px rgba(16, 185, 129, 0.8),
+    inset 0 0 30px 4px rgba(16, 185, 129, 0.3);
+  animation: team-glow-green 1.5s ease-in-out infinite;
+}
+
+.tile .mess-piece--selected[data-piece-team="OPPONENT"] {
+  box-shadow: 
+    0 0 0 4px rgba(239, 68, 68, 1),
+    0 0 20px 4px rgba(239, 68, 68, 0.8),
+    inset 0 0 30px 4px rgba(239, 68, 68, 0.3);
+  animation: team-glow-red 1.5s ease-in-out infinite;
+}
+
+.tile .mess-piece--selected[data-piece-team="OPPONENT_2"] {
+  box-shadow: 
+    0 0 0 4px rgba(245, 158, 11, 1),
+    0 0 20px 4px rgba(245, 158, 11, 0.8),
+    inset 0 0 30px 4px rgba(245, 158, 11, 0.3);
+  animation: team-glow-orange 1.5s ease-in-out infinite;
+}
+
+.tile .mess-piece--selected[data-piece-team="OPPONENT_3"] {
+  box-shadow: 
+    0 0 0 4px rgba(139, 92, 246, 1),
+    0 0 20px 4px rgba(139, 92, 246, 0.8),
+    inset 0 0 30px 4px rgba(139, 92, 246, 0.3);
+  animation: team-glow-purple 1.5s ease-in-out infinite;
+}
+
+@keyframes team-glow-green {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 16px rgba(16, 185, 129, 0.9));
+  }
+}
+
+@keyframes team-glow-red {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 16px rgba(239, 68, 68, 0.9));
+  }
+}
+
+@keyframes team-glow-orange {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 16px rgba(245, 158, 11, 0.9));
+  }
+}
+
+@keyframes team-glow-purple {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 16px rgba(139, 92, 246, 0.9));
+  }
 }
 
 .tile .mess-piece:hover {
