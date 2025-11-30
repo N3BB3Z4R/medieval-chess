@@ -224,13 +224,13 @@ export interface DirectionVector {
 export function getDirectionForTeam(team: TeamType): DirectionVector {
   switch (team) {
     case TeamType.OUR:
-      return { x: 0, y: 1 }; // Moves UP
+      return { x: 0, y: 1 }; // Moves UP (toward center)
     case TeamType.OPPONENT:
-      return { x: 0, y: -1 }; // Moves DOWN
+      return { x: 0, y: -1 }; // Moves DOWN (toward center)
     case TeamType.OPPONENT_2:
-      return { x: 1, y: 0 }; // Moves RIGHT
+      return { x: -1, y: 0 }; // Moves LEFT (from right side toward center)
     case TeamType.OPPONENT_3:
-      return { x: -1, y: 0 }; // Moves LEFT
+      return { x: 1, y: 0 }; // Moves RIGHT (from left side toward center)
     default:
       throw new Error(`Unknown team type: ${team}`);
   }

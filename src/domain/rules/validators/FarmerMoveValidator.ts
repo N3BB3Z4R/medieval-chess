@@ -17,7 +17,7 @@
  * - Destination must have opponent for diagonal attacks
  */
 
-import { PieceType } from '../../core/types';
+import { PieceType, getDirectionForTeam } from '../../core/types';
 import { BaseMoveValidator, ValidationResult } from '../MoveValidator';
 import type { Move } from '../../core/Move';
 import type { GameState } from '../../game/GameState';
@@ -30,19 +30,19 @@ export class FarmerMoveValidator extends BaseMoveValidator {
   validate(move: Move, gameState: GameState): ValidationResult {
     const { from, to, team } = move;
 
-    // Determine direction based on team
-    const farmerDirection = team === 'OUR' ? 1 : -1;
-    const specialRow = team === 'OUR' ? 2 : 13; // Starting row for 2-square move
+    // Get direction vector for team (supports 4 teams)
+    const direction = getDirectionForTeam(team);
 
     const deltaX = to.x - from.x;
     const deltaY = to.y - from.y;
 
     // CASE 1: Two squares forward from starting position (first move only)
-    if (
-      deltaX === 0 && // Same column
-      from.y === specialRow && // Starting row
-      deltaY === 2 * farmerDirection // Two squares in correct direction
-    ) {
+    const isTwoSquareMove = (
+      deltaX === 2 * direction.x && deltaY === 2 * direction.y &&
+      this.isOnStartingRow(from, team)
+    );
+    
+    if (isTwoSquareMove) {
       // Check if KING death penalty is active
       if (gameState.hasKingDeathPenalty(team as any)) {
         return ValidationResult.invalid(
@@ -51,7 +51,10 @@ export class FarmerMoveValidator extends BaseMoveValidator {
       }
 
       // Check both intermediate and destination tiles are empty
-      const intermediateTile = { x: from.x, y: from.y + farmerDirection };
+      const intermediateTile = { 
+        x: from.x + direction.x, 
+        y: from.y + direction.y 
+      };
       
       if (this.tileIsOccupied(intermediateTile.x, intermediateTile.y, gameState)) {
         return ValidationResult.invalid(
@@ -71,10 +74,11 @@ export class FarmerMoveValidator extends BaseMoveValidator {
     }
 
     // CASE 2: One square forward only
-    if (
-      deltaX === 0 && // Same column
-      deltaY === farmerDirection // One square in correct direction
-    ) {
+    const isOneSquareForward = (
+      deltaX === direction.x && deltaY === direction.y
+    );
+    
+    if (isOneSquareForward) {
       // Destination must be empty (can't capture moving forward)
       if (this.tileIsOccupied(to.x, to.y, gameState)) {
         return ValidationResult.invalid(
@@ -87,17 +91,12 @@ export class FarmerMoveValidator extends BaseMoveValidator {
     }
 
     // CASE 3: Diagonal attack (capture)
-    const isDiagonalMove = Math.abs(deltaX) === 1 && Math.abs(deltaY) === 1;
+    // For vertical teams (OUR/OPPONENT): deltaY = direction.y, deltaX = ±1
+    // For horizontal teams (OPPONENT_2/3): deltaX = direction.x, deltaY = ±1
+    const isDiagonalMove = this.isDiagonalAttack(deltaX, deltaY, direction);
     
     if (isDiagonalMove) {
-      // Must move diagonally forward (not backward)
-      const isForwardDiagonal = deltaY === farmerDirection;
-      
-      if (!isForwardDiagonal) {
-        return ValidationResult.invalid(
-          'Invalid diagonal: FARMER can only attack diagonally forward'
-        );
-      }
+      // Diagonal is already validated by isDiagonalAttack
 
       // Destination must have opponent piece
       if (!this.tileIsOccupiedByOpponent(to.x, to.y, team, gameState)) {
@@ -123,5 +122,60 @@ export class FarmerMoveValidator extends BaseMoveValidator {
       `Invalid FARMER move: Can only move forward 1 square or attack diagonally. ` +
       `Attempted: dx=${deltaX}, dy=${deltaY}`
     );
+  }
+
+  /**
+   * Check if position is on the starting row for the team
+   */
+  private isOnStartingRow(pos: { x: number; y: number }, team: string): boolean {
+    switch (team) {
+      case 'OUR':
+        return pos.y === 2; // Bottom row
+      case 'OPPONENT':
+        return pos.y === 13; // Top row
+      case 'OPPONENT_2':
+        return pos.x === 13; // Right column (team on the right side)
+      case 'OPPONENT_3':
+        return pos.x === 2; // Left column (team on the left side)
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Get starting row for 2-square move
+   */
+  private getStartingRow(team: string): number {
+    switch (team) {
+      case 'OUR':
+        return 2;
+      case 'OPPONENT':
+        return 13;
+      case 'OPPONENT_2':
+        return 13; // Right column
+      case 'OPPONENT_3':
+        return 2; // Left column
+      default:
+        return 2;
+    }
+  }
+
+  /**
+   * Check if move is a valid diagonal attack for the team's direction
+   */
+  private isDiagonalAttack(
+    deltaX: number, 
+    deltaY: number, 
+    direction: { x: number; y: number }
+  ): boolean {
+    // For vertical teams (OUR/OPPONENT): move forward in Y, ±1 in X
+    if (direction.y !== 0) {
+      return deltaY === direction.y && Math.abs(deltaX) === 1;
+    }
+    // For horizontal teams (OPPONENT_2/3): move forward in X, ±1 in Y
+    if (direction.x !== 0) {
+      return deltaX === direction.x && Math.abs(deltaY) === 1;
+    }
+    return false;
   }
 }

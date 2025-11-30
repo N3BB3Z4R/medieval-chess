@@ -13,7 +13,7 @@
 import { GameState, GamePiece } from '../game/GameState';
 import { Move } from '../core/Move';
 import { Position } from '../core/Position';
-import { TeamType } from '../core/types';
+import { TeamType, getDirectionForTeam } from '../core/types';
 import { RuleEngine } from '../rules/RuleEngine';
 import { IMoveGenerator } from './interfaces';
 
@@ -152,28 +152,41 @@ export class MoveGenerator implements IMoveGenerator {
    * FARMER: 1 square forward, diagonal for captures
    */
   private generateFarmerCandidates(pos: { x: number; y: number }, team: TeamType): Position[] {
-    const direction = this.getForwardDirection(team);
+    const direction = getDirectionForTeam(team);
     const candidates: Position[] = [];
     
-    // console.log('[generateFarmerCandidates] Input:', { pos, team, direction });
+    // Forward move: in the direction of the team
+    const forwardMove = {
+      x: pos.x + direction.x,
+      y: pos.y + direction.y
+    };
     
-    // Try to create positions, catching errors for invalid coordinates
-    const potentialMoves = [
-      { x: pos.x, y: pos.y + direction },
-      { x: pos.x + 1, y: pos.y + direction },
-      { x: pos.x - 1, y: pos.y + direction }
-    ];
+    // Diagonal attacks:
+    // - For vertical teams (OUR/OPPONENT): forward in Y, ±1 in X
+    // - For horizontal teams (OPPONENT_2/3): forward in X, ±1 in Y
+    let diagonalMoves: Array<{ x: number; y: number }> = [];
     
-    // console.log('[generateFarmerCandidates] Potential moves:', potentialMoves);
+    if (direction.y !== 0) {
+      // Vertical movement: diagonal is ±X
+      diagonalMoves = [
+        { x: pos.x + 1, y: pos.y + direction.y },
+        { x: pos.x - 1, y: pos.y + direction.y }
+      ];
+    } else if (direction.x !== 0) {
+      // Horizontal movement: diagonal is ±Y
+      diagonalMoves = [
+        { x: pos.x + direction.x, y: pos.y + 1 },
+        { x: pos.x + direction.x, y: pos.y - 1 }
+      ];
+    }
+    
+    const potentialMoves = [forwardMove, ...diagonalMoves];
     
     for (const move of potentialMoves) {
-      // console.log('[generateFarmerCandidates] Checking:', move, 'isValid:', Position.isValid(move.x, move.y));
       if (Position.isValid(move.x, move.y)) {
         candidates.push(new Position(move.x, move.y));
       }
     }
-    
-    // console.log('[generateFarmerCandidates] Final candidates:', candidates);
     
     return candidates;
   }
@@ -315,10 +328,10 @@ export class MoveGenerator implements IMoveGenerator {
 
   /**
    * Get forward direction for a team.
+   * @deprecated Use getDirectionForTeam from types.ts instead
    */
   private getForwardDirection(team: TeamType): number {
-    // OUR team moves up (y increases), OPPONENT moves down
-    // console.log('[getForwardDirection] team:', team, 'TeamType.OUR:', TeamType.OUR, 'equals:', team === TeamType.OUR);
+    // Kept for backward compatibility, but should use getDirectionForTeam
     return team === TeamType.OUR ? 1 : -1;
   }
 
