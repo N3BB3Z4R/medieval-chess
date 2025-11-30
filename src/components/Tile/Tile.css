@@ -118,108 +118,115 @@
   opacity: 0.9;
   position: relative;
   border-radius: 50%;
+  /* Default border for all pieces */
+  border: 3px solid transparent;
+  box-sizing: border-box;
   /* transition: 0.3s ease-in-out; */
 }
 
 /* Team color borders - Strong visual identification for multiplayer */
-.tile .mess-piece[data-piece-team="OUR"] {
+.mess-piece[data-piece-team="OUR"] {
+  border-color: rgb(16, 185, 129) !important;
   box-shadow: 
-    0 0 0 3px rgba(16, 185, 129, 0.8),
-    0 0 12px 2px rgba(16, 185, 129, 0.6),
-    inset 0 0 20px 2px rgba(16, 185, 129, 0.2);
-  border: 2px solid rgba(16, 185, 129, 1);
+    0 0 0 2px rgba(16, 185, 129, 0.4),
+    0 0 15px 3px rgba(16, 185, 129, 0.5),
+    inset 0 0 25px 3px rgba(16, 185, 129, 0.15);
 }
 
-.tile .mess-piece[data-piece-team="OPPONENT"] {
+.mess-piece[data-piece-team="OPPONENT"] {
+  border-color: rgb(239, 68, 68) !important;
   box-shadow: 
-    0 0 0 3px rgba(239, 68, 68, 0.8),
-    0 0 12px 2px rgba(239, 68, 68, 0.6),
-    inset 0 0 20px 2px rgba(239, 68, 68, 0.2);
-  border: 2px solid rgba(239, 68, 68, 1);
+    0 0 0 2px rgba(239, 68, 68, 0.4),
+    0 0 15px 3px rgba(239, 68, 68, 0.5),
+    inset 0 0 25px 3px rgba(239, 68, 68, 0.15);
 }
 
-.tile .mess-piece[data-piece-team="OPPONENT_2"] {
+.mess-piece[data-piece-team="OPPONENT_2"] {
+  border-color: rgb(245, 158, 11) !important;
   box-shadow: 
-    0 0 0 3px rgba(245, 158, 11, 0.8),
-    0 0 12px 2px rgba(245, 158, 11, 0.6),
-    inset 0 0 20px 2px rgba(245, 158, 11, 0.2);
-  border: 2px solid rgba(245, 158, 11, 1);
+    0 0 0 2px rgba(245, 158, 11, 0.4),
+    0 0 15px 3px rgba(245, 158, 11, 0.5),
+    inset 0 0 25px 3px rgba(245, 158, 11, 0.15);
 }
 
-.tile .mess-piece[data-piece-team="OPPONENT_3"] {
+.mess-piece[data-piece-team="OPPONENT_3"] {
+  border-color: rgb(139, 92, 246) !important;
   box-shadow: 
-    0 0 0 3px rgba(139, 92, 246, 0.8),
-    0 0 12px 2px rgba(139, 92, 246, 0.6),
-    inset 0 0 20px 2px rgba(139, 92, 246, 0.2);
-  border: 2px solid rgba(139, 92, 246, 1);
+    0 0 0 2px rgba(139, 92, 246, 0.4),
+    0 0 15px 3px rgba(139, 92, 246, 0.5),
+    inset 0 0 25px 3px rgba(139, 92, 246, 0.15);
 }
 
 /* Enhance team colors when piece is selected */
-.tile .mess-piece--selected[data-piece-team="OUR"] {
+.mess-piece--selected[data-piece-team="OUR"] {
+  border-color: rgb(16, 185, 129) !important;
   box-shadow: 
-    0 0 0 4px rgba(16, 185, 129, 1),
-    0 0 20px 4px rgba(16, 185, 129, 0.8),
-    inset 0 0 30px 4px rgba(16, 185, 129, 0.3);
+    0 0 0 3px rgba(16, 185, 129, 0.8),
+    0 0 25px 5px rgba(16, 185, 129, 0.7),
+    inset 0 0 35px 5px rgba(16, 185, 129, 0.25);
   animation: team-glow-green 1.5s ease-in-out infinite;
 }
 
-.tile .mess-piece--selected[data-piece-team="OPPONENT"] {
+.mess-piece--selected[data-piece-team="OPPONENT"] {
+  border-color: rgb(239, 68, 68) !important;
   box-shadow: 
-    0 0 0 4px rgba(239, 68, 68, 1),
-    0 0 20px 4px rgba(239, 68, 68, 0.8),
-    inset 0 0 30px 4px rgba(239, 68, 68, 0.3);
+    0 0 0 3px rgba(239, 68, 68, 0.8),
+    0 0 25px 5px rgba(239, 68, 68, 0.7),
+    inset 0 0 35px 5px rgba(239, 68, 68, 0.25);
   animation: team-glow-red 1.5s ease-in-out infinite;
 }
 
-.tile .mess-piece--selected[data-piece-team="OPPONENT_2"] {
+.mess-piece--selected[data-piece-team="OPPONENT_2"] {
+  border-color: rgb(245, 158, 11) !important;
   box-shadow: 
-    0 0 0 4px rgba(245, 158, 11, 1),
-    0 0 20px 4px rgba(245, 158, 11, 0.8),
-    inset 0 0 30px 4px rgba(245, 158, 11, 0.3);
+    0 0 0 3px rgba(245, 158, 11, 0.8),
+    0 0 25px 5px rgba(245, 158, 11, 0.7),
+    inset 0 0 35px 5px rgba(245, 158, 11, 0.25);
   animation: team-glow-orange 1.5s ease-in-out infinite;
 }
 
-.tile .mess-piece--selected[data-piece-team="OPPONENT_3"] {
+.mess-piece--selected[data-piece-team="OPPONENT_3"] {
+  border-color: rgb(139, 92, 246) !important;
   box-shadow: 
-    0 0 0 4px rgba(139, 92, 246, 1),
-    0 0 20px 4px rgba(139, 92, 246, 0.8),
-    inset 0 0 30px 4px rgba(139, 92, 246, 0.3);
+    0 0 0 3px rgba(139, 92, 246, 0.8),
+    0 0 25px 5px rgba(139, 92, 246, 0.7),
+    inset 0 0 35px 5px rgba(139, 92, 246, 0.25);
   animation: team-glow-purple 1.5s ease-in-out infinite;
 }
 
 @keyframes team-glow-green {
   0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+    filter: brightness(1) drop-shadow(0 0 10px rgba(16, 185, 129, 0.6));
   }
   50% {
-    filter: brightness(1.2) drop-shadow(0 0 16px rgba(16, 185, 129, 0.9));
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(16, 185, 129, 0.9));
   }
 }
 
 @keyframes team-glow-red {
   0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+    filter: brightness(1) drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
   }
   50% {
-    filter: brightness(1.2) drop-shadow(0 0 16px rgba(239, 68, 68, 0.9));
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(239, 68, 68, 0.9));
   }
 }
 
 @keyframes team-glow-orange {
   0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+    filter: brightness(1) drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));
   }
   50% {
-    filter: brightness(1.2) drop-shadow(0 0 16px rgba(245, 158, 11, 0.9));
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(245, 158, 11, 0.9));
   }
 }
 
 @keyframes team-glow-purple {
   0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+    filter: brightness(1) drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
   }
   50% {
-    filter: brightness(1.2) drop-shadow(0 0 16px rgba(139, 92, 246, 0.9));
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(139, 92, 246, 0.9));
   }
 }
 
