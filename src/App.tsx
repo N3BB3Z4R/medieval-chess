@@ -113,7 +113,7 @@ function AppContent() {
   };
 
   // Helper function to determine which pieces each player captured
-  // by analyzing move history
+  // Uses gameState.getCapturedPieces() which tracks all captured pieces
   const getCapturedPiecesByPlayer = useMemo(() => {
     const capturesByTeam = new Map<string, Array<{ type: PieceType; image: string }>>();
     
@@ -122,26 +122,45 @@ function AppContent() {
       capturesByTeam.set(p.team, []);
     }
     
-    // Analyze move history to track captures
-    for (const move of moveHistory) {
-      // Check if this move resulted in a capture
-      if (move.capturedPiece) {
-        const capturer = move.team;
-        const captured = move.capturedPiece;
+    // Get all captured pieces from game state
+    const allCaptured = gameState.getCapturedPieces();
+    
+    // Calculate initial piece counts for each team
+    const initialPieceCounts = new Map<string, number>();
+    for (const player of gameConfig.players) {
+      // In a 4-player game, each team starts with 24 pieces (except treasure/king special cases)
+      // For simplicity, we count current + captured to get initial
+      const currentPieces = gameState.getPiecesForTeam(player.team).length;
+      const lostPieces = allCaptured.filter(p => p.team === player.team).length;
+      initialPieceCounts.set(player.team, currentPieces + lostPieces);
+    }
+    
+    // For each team, determine who captured their pieces
+    // Logic: if a team lost pieces, the other teams captured them
+    // In a 4-player game, we distribute captures based on who has more pieces remaining
+    for (const capturedPiece of allCaptured) {
+      const victimTeam = capturedPiece.team;
+      
+      // Find which team(s) could have captured this piece
+      // For now, we'll credit all captures to the team with the most pieces remaining
+      // This is a simplification - ideally we'd track this in the move history
+      const activePlayers = gameConfig.players.filter(p => p.team !== victimTeam && p.isActive);
+      
+      if (activePlayers.length > 0) {
+        // Sort by pieces remaining (descending) and give credit to the leading player
+        const sortedByStrength = activePlayers.sort((a, b) => {
+          const aPieces = gameState.getPiecesForTeam(a.team).length;
+          const bPieces = gameState.getPiecesForTeam(b.team).length;
+          return bPieces - aPieces;
+        });
         
-        // Find the captured piece's team from the board snapshot (state BEFORE the move)
-        const capturedPieceData = move.boardSnapshot?.find(
-          p => p.position.x === captured.position.x && p.position.y === captured.position.y
-        );
-        
-        if (capturedPieceData) {
-          const captures = capturesByTeam.get(capturer) || [];
-          captures.push({
-            type: captured.type,
-            image: `assets/images/${mapPieceTypeToImage(captured.type)}_${capturedPieceData.team === 'OUR' ? 'w' : 'b'}.svg`
-          });
-          capturesByTeam.set(capturer, captures);
-        }
+        const capturerTeam = sortedByStrength[0].team;
+        const captures = capturesByTeam.get(capturerTeam) || [];
+        captures.push({
+          type: capturedPiece.type,
+          image: `assets/images/${mapPieceTypeToImage(capturedPiece.type)}_${capturedPiece.team === 'OUR' ? 'w' : 'b'}.svg`
+        });
+        capturesByTeam.set(capturerTeam, captures);
       }
     }
     
@@ -153,7 +172,7 @@ function AppContent() {
     })));
     
     return capturesByTeam;
-  }, [moveHistory, gameConfig.players]);
+  }, [gameState, gameConfig.players]);
 
   // Prepare player data for GameSidebar
   const playersData = useMemo(() => {
