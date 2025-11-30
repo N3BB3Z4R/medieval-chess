@@ -296,7 +296,7 @@ export default function Messboard({
     const board = [];
     
     // Get last move for highlighting
-    const lastMove = moveHistory.at(-1) ?? null;
+    const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
     
     for (let j = VERTICAL_AXIS.length - 1; j >= 0; j--) {
       for (let i = 0; i < HORIZONTAL_AXIS.length; i++) {
