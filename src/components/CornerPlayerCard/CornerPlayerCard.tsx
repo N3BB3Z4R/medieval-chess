@@ -1,6 +1,7 @@
 import React from 'react';
 import './CornerPlayerCard.css';
 import { PieceType } from '../../domain/core/types';
+import GroupedCapturedPieces from './GroupedCapturedPieces';
 
 export interface CornerPlayerData {
   playerName: string;
@@ -72,20 +73,7 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
 
       {/* Captured Pieces Row */}
       {capturedPieces.length > 0 && (
-        <div className="corner-player-card__captured">
-          {capturedPieces.slice(0, 8).map((piece, index) => (
-            <img
-              key={`${piece.type}-${index}`}
-              src={piece.image}
-              alt={piece.type}
-              className="corner-player-card__piece-icon"
-              title={piece.type}
-            />
-          ))}
-          {capturedPieces.length > 8 && (
-            <span className="corner-player-card__more">+{capturedPieces.length - 8}</span>
-          )}
-        </div>
+        <GroupedCapturedPieces pieces={capturedPieces} />
       )}
     </div>
   );

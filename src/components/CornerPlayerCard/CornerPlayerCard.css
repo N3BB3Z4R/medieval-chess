@@ -175,48 +175,6 @@
   color: #fca5a5;
 }
 
-/* Captured Pieces Row */
-.corner-player-card__captured {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 4px 6px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 6px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(186, 194, 141, 0.3) rgba(0, 0, 0, 0.2);
-}
-
-.corner-player-card__captured::-webkit-scrollbar {
-  height: 4px;
-}
-
-.corner-player-card__captured::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 2px;
-}
-
-.corner-player-card__captured::-webkit-scrollbar-thumb {
-  background: rgba(186, 194, 141, 0.3);
-  border-radius: 2px;
-}
-
-.corner-player-card__piece-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
-}
-
-.corner-player-card__more {
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(228, 255, 177, 0.7);
-  margin-left: 2px;
-  flex-shrink: 0;
-}
-
 /* Hover Effect */
 .corner-player-card:hover {
   background-position: center;

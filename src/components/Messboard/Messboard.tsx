@@ -340,8 +340,8 @@ export default function Messboard({
     <>
       <GameOverModal gameStatus={gameStatus} onRestart={resetGame} />
       <div className="messboard-container">
-        {/* Top player name (Opponent) */}
-        {topPlayerName && (
+        {/* Top player name (Opponent) - hide if using corner cards */}
+        {topPlayerName && cornerPlayers.length === 0 && (
           <div className="messboard-player-label messboard-player-label--top">
             <span className="messboard-player-name">{topPlayerName}</span>
             {topPlayerElo && (
@@ -391,8 +391,8 @@ export default function Messboard({
           </div>
         </div>
         
-        {/* Bottom player name (Our team) */}
-        {bottomPlayerName && (
+        {/* Bottom player name (Our team) - hide if using corner cards */}
+        {bottomPlayerName && cornerPlayers.length === 0 && (
           <div className="messboard-player-label messboard-player-label--bottom">
             <span className="messboard-player-name">{bottomPlayerName}</span>
             {bottomPlayerElo && (

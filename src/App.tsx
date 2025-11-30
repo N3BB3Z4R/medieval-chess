@@ -54,15 +54,6 @@ function AppContent() {
     onAIThinking: handleAIThinking,
   });
   
-  // Helper to map piece type to image filename
-  const mapPieceTypeToImage = (type: PieceType): string => {
-    const specialMapping: Record<string, string> = {
-      'SCOUT': 'hunter',
-      'TREBUCHET': 'catapult'
-    };
-    return specialMapping[type] || type.toLowerCase();
-  };
-  
   const currentTurn = gameState.getCurrentTurn();
   const gameStatus = gameState.getStatus();
   const moveHistory = gameState.getMoveHistory();
@@ -111,6 +102,51 @@ function AppContent() {
 
   const isGameActive = gameStatus === GameStatus.IN_PROGRESS;
 
+  // Helper to map piece type to image filename
+  const mapPieceTypeToImage = (pieceType: PieceType): string => {
+    const specialMapping: Record<string, string> = {
+      'SCOUT': 'hunter',
+      'TREBUCHET': 'catapult'
+    };
+    return specialMapping[pieceType] || pieceType.toLowerCase();
+  };
+
+  // Helper function to determine which pieces each player captured
+  // by analyzing move history
+  const getCapturedPiecesByPlayer = useMemo(() => {
+    const capturesByTeam = new Map<string, Array<{ type: PieceType; image: string }>>();
+    
+    // Initialize empty arrays for each team
+    for (const p of gameConfig.players) {
+      capturesByTeam.set(p.team, []);
+    }
+    
+    // Analyze move history to track captures
+    for (const move of moveHistory) {
+      // Check if this move resulted in a capture
+      if (move.capturedPiece) {
+        const capturer = move.team;
+        const captured = move.capturedPiece;
+        
+        // Find the captured piece's team from the board snapshot (state BEFORE the move)
+        const capturedPieceData = move.boardSnapshot?.find(
+          p => p.position.x === captured.position.x && p.position.y === captured.position.y
+        );
+        
+        if (capturedPieceData) {
+          const captures = capturesByTeam.get(capturer) || [];
+          captures.push({
+            type: captured.type,
+            image: `assets/images/${mapPieceTypeToImage(captured.type)}_${capturedPieceData.team === 'OUR' ? 'w' : 'b'}.svg`
+          });
+          capturesByTeam.set(capturer, captures);
+        }
+      }
+    }
+    
+    return capturesByTeam;
+  }, [moveHistory, gameConfig.players]);
+
   // Prepare player data for GameSidebar
   const playersData = useMemo(() => {
     const activePlayers = gameConfig.players.filter(p => p.isActive);
@@ -122,19 +158,17 @@ function AppContent() {
       const activePieces = gameState.getPiecesForTeam(player.team);
       const piecesRemaining = activePieces.length;
       
-      // Get captured pieces (pieces captured BY this player = opponent's lost pieces)
-      const allCaptured = gameState.getCapturedPieces();
-      const capturedByPlayer = allCaptured.filter(p => p.team !== player.team);
-      
-      const capturedPieces: Array<{ type: PieceType; image: string }> = capturedByPlayer.map(p => ({
-        type: p.type,
-        image: `assets/images/${mapPieceTypeToImage(p.type)}_${p.team === 'OUR' ? 'w' : 'b'}.svg`
-      }));
+      // Get captured pieces BY this specific player (from move history analysis)
+      const capturedPieces = getCapturedPiecesByPlayer.get(player.team) || [];
       
       // Calculate material advantage (positive = ahead, negative = behind)
-      const capturedValue = capturedByPlayer.reduce((sum, p) => sum + pieceValues[p.type], 0);
+      const capturedValue = capturedPieces.reduce((sum, p) => sum + pieceValues[p.type], 0);
+      
+      // Get pieces lost by this player
+      const allCaptured = gameState.getCapturedPieces();
       const lostPieces = allCaptured.filter(p => p.team === player.team);
       const lostValue = lostPieces.reduce((sum, p) => sum + pieceValues[p.type], 0);
+      
       const materialAdvantage = capturedValue - lostValue;
       
       // Calculate stats
@@ -205,7 +239,7 @@ function AppContent() {
         },
       };
     });
-  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, isProcessingAI]);
+  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, isProcessingAI, getCapturedPiecesByPlayer]);
 
   // Get player names for board labels (Chess.com style)
   const ourPlayer = playersData.find(p => p.profile.team === 'OUR');
@@ -229,6 +263,29 @@ function AppContent() {
 
   // Determine if we should show corner cards (for 3-4 players or on user preference)
   const showCornerCards = gameConfig.playerCount > 2;
+
+  // Generate detailed match type description
+  const matchTypeDescription = useMemo(() => {
+    const totalPlayers = playersData.length;
+    const aiCount = playersData.filter(p => p.profile.playerRange !== 'Human').length;
+    const humanCount = totalPlayers - aiCount;
+    
+    if (totalPlayers === 2) {
+      if (aiCount === 2) return '2 Jugadores (2 IA)';
+      if (aiCount === 1) return '2 Jugadores (1 IA, 1 Humano)';
+      return '2 Jugadores (2 Humanos)';
+    }
+    
+    if (totalPlayers === 3) {
+      return `3 Jugadores (${aiCount} IA, ${humanCount} Humano${humanCount !== 1 ? 's' : ''})`;
+    }
+    
+    if (totalPlayers === 4) {
+      return `4 Jugadores (${aiCount} IA, ${humanCount} Humano${humanCount !== 1 ? 's' : ''})`;
+    }
+    
+    return `${totalPlayers} Jugadores`;
+  }, [playersData]);
 
   return (
     <div id="app">
@@ -284,7 +341,7 @@ function AppContent() {
                 gameStatus={gameStatus}
                 onNewGame={() => setShowSetup(true)}
                 onSurrender={handleSurrender}
-                matchType={`${playersData.length} Jugadores`}
+                matchType={matchTypeDescription}
                 timeControl={gameConfig.timePerTurn ? `${gameConfig.timePerTurn/60}min` : 'Sin límite'}
               />
               {/* Only show sidebar players if 2 players (for 3-4, use corner cards) */}
