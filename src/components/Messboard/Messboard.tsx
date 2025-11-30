@@ -17,7 +17,6 @@ import { screenToBoard, BoardConfig } from '../../domain/core/boardConfig';
 import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 import { useGame, useResetGame } from '../../context/GameContext';
 import { Move } from '../../domain/core/Move';
-import GameOverModal from '../GameOverModal/GameOverModal';
 import CornerPlayerCard, { CornerPlayerData } from '../CornerPlayerCard/CornerPlayerCard';
 
 interface MessboardProps {
@@ -338,7 +337,6 @@ export default function Messboard({
 
   return (
     <>
-      <GameOverModal gameStatus={gameStatus} onRestart={resetGame} />
       <div className="messboard-container">
         {/* Top player name (Opponent) - hide if using corner cards */}
         {topPlayerName && cornerPlayers.length === 0 && (

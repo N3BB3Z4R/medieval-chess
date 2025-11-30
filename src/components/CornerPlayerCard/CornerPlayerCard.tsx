@@ -2,6 +2,7 @@ import React from 'react';
 import './CornerPlayerCard.css';
 import { PieceType } from '../../domain/core/types';
 import GroupedCapturedPieces from './GroupedCapturedPieces';
+import BoardClock from '../BoardCounter/BoardClock/BoardClock';
 
 export interface CornerPlayerData {
   playerName: string;
@@ -14,6 +15,9 @@ export interface CornerPlayerData {
   isActive: boolean;
   piecesRemaining: number;
   isAI: boolean;
+  timePerTurn?: number; // Time control in seconds
+  incrementPerTurn?: number; // Increment per turn in seconds
+  onTimeUp?: () => void; // Callback when time runs out
 }
 
 interface CornerPlayerCardProps {
@@ -35,7 +39,10 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
     capturedPieces,
     isActive,
     piecesRemaining,
-    isAI
+    isAI,
+    timePerTurn,
+    incrementPerTurn,
+    onTimeUp
   } = player;
 
   return (
@@ -60,6 +67,17 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
           <div className="corner-player-card__pieces">
             {piecesRemaining} piezas
           </div>
+          {/* Clock - only show if time control is enabled */}
+          {timePerTurn && (
+            <div className="corner-player-card__clock">
+              <BoardClock
+                active={isActive}
+                initialTimeSeconds={timePerTurn}
+                incrementSeconds={incrementPerTurn}
+                onTimeUp={onTimeUp}
+              />
+            </div>
+          )}
         </div>
         <div className="corner-player-card__score">
           <div className="corner-player-card__score-value">{score}</div>

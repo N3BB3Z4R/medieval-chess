@@ -57,13 +57,108 @@
   line-height: 1.5;
 }
 
+/* Leaderboard */
+.game-over-modal__leaderboard {
+  margin: 1.5rem 0 2rem 0;
+  text-align: left;
+}
+
+.game-over-modal__leaderboard-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.game-over-modal__leaderboard-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.game-over-modal__leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.game-over-modal__leaderboard-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.game-over-modal__leaderboard-row--winner {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.game-over-modal__rank {
+  font-size: 1.5rem;
+  font-weight: 900;
+  min-width: 40px;
+  text-align: center;
+}
+
+.game-over-modal__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.game-over-modal__player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-over-modal__player-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-over-modal__player-stats {
+  font-size: 0.85rem;
+  color: #b0b0b0;
+  margin-top: 2px;
+}
+
+.game-over-modal__score {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Buttons container */
+.game-over-modal__buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
 .game-over-modal__button {
+  flex: 1;
+  max-width: 200px;
   background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -74,6 +169,31 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(74, 158, 255, 0.5);
   background: linear-gradient(135deg, #5ba9ff 0%, #4089cd 100%);
+}
+
+.game-over-modal__button:active {
+  transform: translateY(0);
+}
+
+/* Secondary button variant */
+.game-over-modal__button--secondary {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+.game-over-modal__button--secondary:hover {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.5);
+}
+
+.game-over-modal__button--primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.game-over-modal__button--primary:hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
 }
 
 .game-over-modal__button:active {
@@ -126,8 +246,33 @@
     font-size: 4rem;
   }
 
+  .game-over-modal__buttons {
+    flex-direction: column;
+  }
+
   .game-over-modal__button {
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
+    max-width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .game-over-modal__leaderboard-row {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .game-over-modal__avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .game-over-modal__rank {
+    font-size: 1.2rem;
+    min-width: 32px;
+  }
+
+  .game-over-modal__score {
+    font-size: 1.2rem;
+    min-width: 50px;
   }
 }

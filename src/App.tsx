@@ -7,6 +7,7 @@ import GameSidebar from './components/GameSidebar/GameSidebar';
 import GameControlPanel from './components/GameControlPanel/GameControlPanel';
 import MoveHistory from './components/MoveHistory/MoveHistory';
 import GameSetupModal, { GameSetupConfig } from './components/GameSetupModal/GameSetupModal';
+import GameOverModal, { PlayerScore } from './components/GameOverModal/GameOverModal';
 import PieceLegend from './components/PieceLegend/PieceLegend';
 import { GameProvider, useGame } from './context/GameContext';
 import { GameConfig } from './domain/game/GameConfig';
@@ -257,7 +258,10 @@ function AppContent() {
       capturedPieces: player.stats.capturedPieces,
       isActive: player.isActive,
       piecesRemaining: player.stats.piecesRemaining,
-      isAI: player.profile.playerRange !== 'Human'
+      isAI: player.profile.playerRange !== 'Human',
+      timePerTurn: player.timePerTurn,
+      incrementPerTurn: player.incrementPerTurn,
+      onTimeUp: player.onTimeUp
     }));
   }, [playersData]);
 
@@ -287,8 +291,31 @@ function AppContent() {
     return `${totalPlayers} Jugadores`;
   }, [playersData]);
 
+  // Prepare leaderboard data for GameOverModal
+  const playerScoresForLeaderboard = useMemo<PlayerScore[]>(() => {
+    return playersData.map(player => ({
+      playerName: player.profile.playerName,
+      playerAvatar: player.profile.playerAvatar,
+      team: player.profile.team,
+      score: player.stats.score,
+      capturedPiecesCount: player.stats.capturedPieces.length,
+      piecesRemaining: player.stats.piecesRemaining,
+      isAI: player.profile.playerRange !== 'Human'
+    }));
+  }, [playersData]);
+
   return (
     <div id="app">
+      {/* Game Over Modal - shown on top of everything */}
+      <GameOverModal 
+        gameStatus={gameStatus}
+        onRestart={() => {
+          dispatch({ type: 'RESET_GAME' });
+        }}
+        onNewGame={() => setShowSetup(true)}
+        playerScores={playerScoresForLeaderboard}
+      />
+
       <header>
         <h1>MESS - Medieval Chess</h1>
         <div className="header-actions">
