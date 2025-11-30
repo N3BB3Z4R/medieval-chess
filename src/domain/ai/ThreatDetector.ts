@@ -18,7 +18,7 @@
 
 import { GameState, GamePiece } from '../game/GameState';
 import { Position } from '../core/Position';
-import { TeamType, PieceType } from '../core/types';
+import { TeamType } from '../core/types';
 import { Move } from '../core/Move';
 import {
   IThreatDetector,

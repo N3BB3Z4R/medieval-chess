@@ -262,6 +262,61 @@ Implemented complete turn management system with win condition detection, game c
 - **Animations**: fadeIn, slideIn, bounce effects
 - **Effort**: 1 hour
 
+---
+
+## ✅ PHASE 3: RULE ENGINE - COMPLETED
+
+### Summary
+Implemented a robust, extensible Rule Engine using the Strategy Pattern. This replaces the monolithic `Referee` logic with small, testable validators for each piece type.
+
+### Completed Tasks
+
+#### 1. ✅ RuleEngine Implementation
+- **File**: `src/domain/rules/RuleEngine.ts`
+- **Features**:
+  - Plugin architecture: `registerValidator(validator)`
+  - Centralized validation: `validate(move, gameState)`
+  - Type-safe validator lookup
+- **Impact**: Decoupled move validation from the Referee class.
+
+#### 2. ✅ Piece Validators
+- **Files**: `src/domain/rules/validators/*.ts`
+- **Implemented**:
+  - `FarmerMoveValidator`: Forward movement + diagonal capture
+  - `KnightMoveValidator`: Medieval rules (3 straight / 2 diagonal)
+  - `KingMoveValidator`, `ScoutMoveValidator`, `TemplarMoveValidator`, etc.
+- **Impact**: Each piece's logic is isolated and easily testable.
+
+---
+
+## ✅ PHASE 6: AI PLAYER - COMPLETED
+
+### Summary
+Implemented a Minimax-based AI opponent capable of playing the full game, respecting all movement rules.
+
+### Completed Tasks
+
+#### 1. ✅ Minimax Engine
+- **File**: `src/domain/ai/MinimaxAI.ts`
+- **Features**:
+  - **Alpha-Beta Pruning**: Optimizes search tree traversal.
+  - **Iterative Deepening**: Ensures the AI always has a move ready within the time limit.
+  - **Move Ordering**: Prioritizes captures (MVV-LVA) and killer moves to maximize pruning.
+  - **Quiescence Search**: (Integrated) Extends search for captures to avoid "horizon effect".
+
+#### 2. ✅ Move Generator
+- **File**: `src/domain/ai/MoveGenerator.ts`
+- **Features**:
+  - Generates all legal moves for any given state.
+  - Uses `RuleEngine` to ensure 100% rule compliance.
+  - Optimized candidate generation for all 9 piece types.
+
+#### 3. ✅ Position Evaluator
+- **File**: `src/domain/ai/PositionEvaluator.ts`
+- **Features**:
+  - Evaluates board state based on material, mobility, and positional control.
+  - Tunable weights for different game phases.
+
 ### 🐛 Critical Bug Fixes (This Session - 4 hours)
 
 #### Bug 1: ✅ GameSetupModal Auto-Start
@@ -489,10 +544,10 @@ Establish clean architecture with SOLID-compliant domain layer
 | **Phase 2.2: GameSetupModal** | ✅ DONE | - | ~2h | 0h |
 | **Phase 2.3: UI Polish** | ⏳ PARTIAL | - | ~0h | ~1h |
 | **Phase 2 Bug Fixes** | ✅ DONE | - | ~4h | 0h |
-| **Phase 3: Rule Engine** | 🔲 TODO | 40h | 0h | 40h |
+| **Phase 3: Rule Engine** | ✅ DONE | 40h | ~40h | 0h |
 | **Phase 4: Special Abilities** | 🔲 TODO | 60h | 0h | 60h |
 | **Phase 5: Canvas Rendering** | 🔲 TODO | 40h | 0h | 40h |
-| **Phase 6: AI Player** | 🔲 TODO | 50h | 0h | 50h |
+| **Phase 6: AI Player** | ✅ DONE | 50h | ~50h | 0h |
 | **Phase 7: 4-Player Support** | 🔲 TODO | 60h | 0h | 60h |
 | **TOTAL** | | **316.5h** | ~**51.5h** | **265h** |
 

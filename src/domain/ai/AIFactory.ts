@@ -46,8 +46,6 @@ import { TreasureMoveValidator } from '../rules/validators/TreasureMoveValidator
  * Singleton pattern: Reuses RuleEngine instance across AI creations.
  */
 export class AIFactory {
-  private static ruleEngine: RuleEngine | null = null;
-
   /**
    * Initialize RuleEngine with all validators registered.
    * 
@@ -77,13 +75,11 @@ export class AIFactory {
    * @returns Fully configured MinimaxAI instance
    */
   static create(config: AIConfig): MinimaxAI {
-    // Initialize RuleEngine (singleton)
-    if (!AIFactory.ruleEngine) {
-      AIFactory.ruleEngine = AIFactory.initializeRuleEngine();
-    }
+    // Always create a fresh RuleEngine to avoid state issues
+    const ruleEngine = AIFactory.initializeRuleEngine();
 
     // Create MoveGenerator
-    const moveGenerator = new MoveGenerator(AIFactory.ruleEngine);
+    const moveGenerator = new MoveGenerator(ruleEngine);
 
     // Create ThreatDetector (depends on MoveGenerator)
     const threatDetector = new ThreatDetector(moveGenerator);
@@ -119,12 +115,5 @@ export class AIFactory {
       personality: AIPersonality.TACTICAL,
       difficulty: AIDifficulty.MEDIUM
     });
-  }
-
-  /**
-   * Reset singleton instances (for testing).
-   */
-  static reset(): void {
-    AIFactory.ruleEngine = null;
   }
 }

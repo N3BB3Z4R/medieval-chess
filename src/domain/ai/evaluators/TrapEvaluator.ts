@@ -96,7 +96,7 @@ export class TrapEvaluator implements IPositionEvaluator {
   private evaluateTeamTraps(gameState: GameState, forTeam: TeamType): number {
     const allPieces = gameState.getAllPieces();
     const traps = allPieces.filter(
-      p => p.type === PieceType.TRAP && p.team === forTeam
+      p => p.type === (PieceType.TRAP as any) && p.team === (forTeam as any)
     );
 
     if (traps.length === 0) {
@@ -241,7 +241,7 @@ export class TrapEvaluator implements IPositionEvaluator {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.find(
-      p => p.type === PieceType.KING && p.team === forTeam
+      p => p.type === (PieceType.KING as any) && p.team === (forTeam as any)
     );
   }
 
@@ -256,7 +256,7 @@ export class TrapEvaluator implements IPositionEvaluator {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.find(
-      p => p.type === PieceType.TREASURE && p.team === forTeam
+      p => p.type === (PieceType.TREASURE as any) && p.team === (forTeam as any)
     );
   }
 
@@ -292,7 +292,7 @@ export class TrapEvaluator implements IPositionEvaluator {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.filter(
-      p => p.type === PieceType.TRAP && p.team === forTeam
+      p => p.type === (PieceType.TRAP as any) && p.team === (forTeam as any)
     ).length;
   }
 
@@ -306,7 +306,7 @@ export class TrapEvaluator implements IPositionEvaluator {
   getTrapPositions(gameState: GameState, forTeam: TeamType): Position[] {
     const allPieces = gameState.getAllPieces();
     const traps = allPieces.filter(
-      p => p.type === PieceType.TRAP && p.team === forTeam
+      p => p.type === (PieceType.TRAP as any) && p.team === (forTeam as any)
     );
     
     return traps.map(t => t.position);

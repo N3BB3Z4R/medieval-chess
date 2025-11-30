@@ -46,8 +46,8 @@ export class MoveGenerator implements IMoveGenerator {
   generateLegalMoves(gameState: GameState, forTeam: TeamType): Move[] {
     const pieces = gameState.getPiecesForTeam(forTeam as any);
     
-    // console.log('[MoveGenerator] Generating moves for team:', forTeam);
-    // console.log('[MoveGenerator] Pieces found:', pieces.length, pieces);
+    console.log('[MoveGenerator] Generating moves for team:', forTeam);
+    console.log('[MoveGenerator] Pieces found:', pieces.length);
     
     const allMoves: Move[] = [];
     let debuggedFirst = false;
@@ -61,7 +61,7 @@ export class MoveGenerator implements IMoveGenerator {
       allMoves.push(...pieceMoves);
     }
 
-    // console.log('[MoveGenerator] Total legal moves:', allMoves.length);
+    console.log('[MoveGenerator] Total legal moves:', allMoves.length);
     return allMoves;
   }
 
@@ -77,8 +77,8 @@ export class MoveGenerator implements IMoveGenerator {
     
     // Debug first FARMER
     if (debug) {
-      // console.log(`[MoveGenerator] DEBUG ${piece.type} at (${from.x},${from.y}), team: ${piece.team}`);
-      // console.log(`[MoveGenerator] Candidates (${candidates.length}):`, candidates);
+      console.log(`[MoveGenerator] DEBUG ${piece.type} at (${from.x},${from.y}), team: ${piece.team}`);
+      console.log(`[MoveGenerator] Candidates (${candidates.length}):`, candidates.map(c => c.toString()));
     }
 
     // Validate each candidate using RuleEngine
@@ -93,7 +93,7 @@ export class MoveGenerator implements IMoveGenerator {
 
       // Debug first FARMER
       if (debug) {
-        // console.log(`[MoveGenerator]   -> (${to.x},${to.y}): ${validation.isValid ? 'VALID ✓' : 'INVALID ✗'} ${validation.isValid ? '' : '- ' + validation.reason}`);
+        console.log(`[MoveGenerator]   -> (${to.x},${to.y}): ${validation.isValid ? 'VALID ✓' : 'INVALID ✗'} ${validation.isValid ? '' : '- ' + validation.reason}`);
       }
 
       if (validation.isValid) {

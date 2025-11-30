@@ -27,8 +27,9 @@
  */
 
 import { GameState } from '../../game/GameState';
-import { TeamType, PieceType, Piece } from '../../../Constants';
+import { TeamType, PieceType } from '../../../Constants';
 import { IPositionEvaluator, IMoveGenerator } from '../interfaces';
+import { GamePiece } from '../../game/GameState';
 
 /**
  * Evaluates mobility advantage.
@@ -178,8 +179,8 @@ export class MobilityEvaluator implements IPositionEvaluator {
    * @param gameState - Current game state
    * @returns Weighted mobility score for piece
    */
-  evaluatePieceMobility(piece: Piece, gameState: GameState): number {
-    const moves = this.moveGenerator.generateMovesForPiece(piece as any, gameState);
+  evaluatePieceMobility(piece: GamePiece, gameState: GameState): number {
+    const moves = this.moveGenerator.generateMovesForPiece(piece, gameState);
     const weight = this.getMobilityWeight(piece.type as any);
     
     return moves.length * weight;
@@ -200,17 +201,17 @@ export class MobilityEvaluator implements IPositionEvaluator {
     gameState: GameState, 
     forTeam: TeamType, 
     threshold: number = 2
-  ): Piece[] {
+  ): GamePiece[] {
     const allPieces = gameState.getAllPieces();
-    const teamPieces = allPieces.filter(p => (p.team as any) === forTeam);
+    const teamPieces = allPieces.filter(p => p.team === (forTeam as any));
     
-    const restrictedPieces: Piece[] = [];
+    const restrictedPieces: GamePiece[] = [];
 
     for (const piece of teamPieces) {
-      const moves = this.moveGenerator.generateMovesForPiece(piece as any, gameState);
+      const moves = this.moveGenerator.generateMovesForPiece(piece, gameState);
       
       if (moves.length < threshold) {
-        restrictedPieces.push(piece as any);
+        restrictedPieces.push(piece);
       }
     }
 

@@ -123,10 +123,10 @@ export class PositionControlEvaluator implements IPositionEvaluator {
 
     for (const piece of allPieces) {
       const baseValue = this.evaluatePiecePosition(piece.position);
-      const pieceBonus = PositionControlEvaluator.PIECE_CENTRALIZATION_BONUS[piece.type] || 0;
+      const pieceBonus = PositionControlEvaluator.PIECE_CENTRALIZATION_BONUS[piece.type as PieceType] || 0;
       const totalValue = baseValue + (this.isInCenterZone(piece.position.x, piece.position.y) ? pieceBonus : 0);
       
-      if (piece.team === forTeam) {
+      if (piece.team === (forTeam as any)) {
         myPositionScore += totalValue;
       } else {
         opponentPositionScore += totalValue;
@@ -219,7 +219,7 @@ export class PositionControlEvaluator implements IPositionEvaluator {
       // Invert: closer = higher score
       const score = Math.max(0, 20 - distance);
       
-      if (piece.team === forTeam) {
+      if (piece.team === (forTeam as any)) {
         myScore += score;
       } else {
         opponentScore += score;
@@ -244,7 +244,7 @@ export class PositionControlEvaluator implements IPositionEvaluator {
    */
   private evaluateAdvancement(gameState: GameState, forTeam: TeamType): number {
     const allPieces = gameState.getAllPieces();
-    const teamPieces = allPieces.filter(p => p.team === forTeam);
+    const teamPieces = allPieces.filter(p => p.team === (forTeam as any));
     
     let advancementScore = 0;
 
@@ -275,7 +275,7 @@ export class PositionControlEvaluator implements IPositionEvaluator {
    */
   private evaluateClustering(gameState: GameState, forTeam: TeamType): number {
     const allPieces = gameState.getAllPieces();
-    const teamPieces = allPieces.filter(p => p.team === forTeam);
+    const teamPieces = allPieces.filter(p => p.team === (forTeam as any));
     
     if (teamPieces.length <= 1) {
       return 0;

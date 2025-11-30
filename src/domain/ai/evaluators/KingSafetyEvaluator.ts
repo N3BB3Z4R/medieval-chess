@@ -32,8 +32,9 @@
 
 import { GameState } from '../../game/GameState';
 import { Position } from '../../core/Position';
-import { TeamType, PieceType, Piece } from '../../../Constants';
+import { TeamType, PieceType } from '../../../Constants';
 import { IPositionEvaluator, IThreatDetector, IMoveGenerator } from '../interfaces';
+import { GamePiece } from '../../game/GameState';
 
 /**
  * Evaluates king safety using threat detection.
@@ -127,8 +128,8 @@ export class KingSafetyEvaluator implements IPositionEvaluator {
    * @param gameState - Current game state
    * @returns Threat penalty (negative value)
    */
-  private evaluateThreats(king: Piece, gameState: GameState): number {
-    const threats = this.threatDetector.detectThreats(king as any, gameState, 3);
+  private evaluateThreats(king: GamePiece, gameState: GameState): number {
+    const threats = this.threatDetector.detectThreats(king, gameState, 3);
     
     if (threats.length === 0) {
       return 0; // No threats
@@ -168,22 +169,22 @@ export class KingSafetyEvaluator implements IPositionEvaluator {
    * @param forTeam - King's team
    * @returns Defender bonus (positive value)
    */
-  private evaluateDefenders(king: Piece, gameState: GameState, forTeam: TeamType): number {
+  private evaluateDefenders(king: GamePiece, gameState: GameState, forTeam: TeamType): number {
     const allPieces = gameState.getAllPieces();
-    const kingPos = king.position as any;
+    const kingPos = king.position;
     
     let defenderCount = 0;
 
     for (const piece of allPieces) {
       // Same team, not the king itself
-      if ((piece.team as any) === forTeam && (piece.type as any) !== (PieceType.KING as any)) {
-        const distance = this.manhattanDistance(piece.position as any, kingPos);
+      if (piece.team === (forTeam as any) && piece.type !== (PieceType.KING as any)) {
+        const distance = this.manhattanDistance(piece.position, kingPos);
         
         if (distance <= KingSafetyEvaluator.DEFENDER_RADIUS) {
           defenderCount++;
           
           // Bonus for TEMPLAR (counter-attack) and TRAP (concealed)
-          if ((piece.type as any) === (PieceType.TEMPLAR as any) || (piece.type as any) === (PieceType.TRAP as any)) {
+          if (piece.type === (PieceType.TEMPLAR as any) || piece.type === (PieceType.TRAP as any)) {
             defenderCount += 0.5;
           }
         }
@@ -200,8 +201,8 @@ export class KingSafetyEvaluator implements IPositionEvaluator {
    * @param gameState - Current game state
    * @returns Escape square bonus (positive value)
    */
-  private evaluateEscapeSquares(king: Piece, gameState: GameState): number {
-    const moves = this.moveGenerator.generateMovesForPiece(king as any, gameState);
+  private evaluateEscapeSquares(king: GamePiece, gameState: GameState): number {
+    const moves = this.moveGenerator.generateMovesForPiece(king, gameState);
     
     return moves.length * KingSafetyEvaluator.ESCAPE_SQUARE_BONUS;
   }
@@ -241,12 +242,12 @@ export class KingSafetyEvaluator implements IPositionEvaluator {
    * @param forTeam - Team whose king to find
    * @returns King piece or undefined
    */
-  private findKing(gameState: GameState, forTeam: TeamType): Piece | undefined {
+  private findKing(gameState: GameState, forTeam: TeamType): GamePiece | undefined {
     const allPieces = gameState.getAllPieces();
     
     return allPieces.find(
-      p => (p.type as any) === (PieceType.KING as any) && (p.team as any) === forTeam
-    ) as any;
+      p => p.type === (PieceType.KING as any) && p.team === (forTeam as any)
+    );
   }
 
   /**
@@ -284,7 +285,7 @@ export class KingSafetyEvaluator implements IPositionEvaluator {
       return true; // No king = definitely in danger
     }
 
-    const threats = this.threatDetector.detectThreats(king as any, gameState, 1);
+    const threats = this.threatDetector.detectThreats(king, gameState, 1);
     
     return threats.length > 0;
   }

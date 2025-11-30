@@ -14,13 +14,14 @@ Implementar un motor de IA capaz de jugar Medieval Chess respetando las reglas n
 - Tipos y interfaces en `domain/core/types.ts`
 - GameState inmutable con métodos de consulta
 - TurnManager para gestión de turnos
+- **Motor de IA (Minimax con alpha-beta pruning)**
+- **Evaluador de posiciones (heurísticas específicas del juego)**
+- **Generación de movimientos legales**
 
 ### ❌ Pendiente de Implementar
-- Motor de IA (Minimax con alpha-beta pruning)
-- Evaluador de posiciones (heurísticas específicas del juego)
-- Generación de movimientos legales
-- Integración con UI (selector de oponente IA)
-- Niveles de dificultad ajustables
+- Integración final con UI (selector de oponente IA)
+- Ajuste fino de pesos de evaluación
+- Tests exhaustivos de endgame
 
 ---
 

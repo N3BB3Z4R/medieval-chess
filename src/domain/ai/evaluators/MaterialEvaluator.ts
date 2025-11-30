@@ -19,9 +19,9 @@
  */
 
 import { GameState } from '../../game/GameState';
-import { TeamType, PieceType } from '../../../Constants';
+import { TeamType } from '../../../Constants';
 import { IPositionEvaluator } from '../interfaces';
-import { REFINED_PIECE_VALUES, getPieceValue } from '../PieceValues';
+import { getPieceValue } from '../PieceValues';
 
 /**
  * Evaluates material balance between teams.

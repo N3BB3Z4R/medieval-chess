@@ -13,6 +13,7 @@ import type { Move } from '../core/Move';
 import type { GameState } from '../game/GameState';
 import type { MoveValidator, ValidationResult } from './MoveValidator';
 import { PieceType } from '../core/types';
+import { isInForbiddenZone } from '../core/boardConfig';
 
 /**
  * Central rule engine that delegates validation to appropriate validators.
@@ -81,6 +82,11 @@ export class RuleEngine {
    * ```
    */
   validate(move: Move, gameState: GameState): ValidationResult {
+    // Global check: Forbidden zones
+    if (isInForbiddenZone(move.to.x, move.to.y)) {
+      return { isValid: false, reason: 'Cannot move to forbidden zone' };
+    }
+
     const validator = this.validators.get(move.pieceType as PieceType);
 
     if (!validator) {

@@ -104,7 +104,7 @@ export default function Messboard({
         // Calculate valid moves for visual indicators
         const { validMoves: validMovesArray, captureMoves: captureMovesArray } = calculateValidMoves(
           currentPiece,
-          pieces,
+          gameState,
           referee
         );
         
@@ -230,22 +230,6 @@ export default function Messboard({
           setCaptureMoves([]);
           return;
         }
-        
-        const validMove = referee.isValidMove(
-          grabPosition,
-          { x, y },
-          currentPiece.type,
-          currentPiece.team,
-          pieces
-        );
-
-        const isEnPassantMove = referee.isEnPassantMove(
-          grabPosition,
-          { x, y },
-          currentPiece.type,
-          currentPiece.team,
-          pieces
-        );
 
         // CRITICAL: Detect if there's a piece at the destination (capture)
         const capturedPiece = pieces.find((p) => samePosition(p.position, { x, y }));
@@ -253,6 +237,26 @@ export default function Messboard({
           type: capturedPiece.type, // No conversion needed - string enum
           position: new PositionClass(capturedPiece.position.x, capturedPiece.position.y)
         } : undefined;
+
+        // Construct the Move object for validation
+        const candidateMove = new Move({
+          from: new PositionClass(grabPosition.x, grabPosition.y),
+          to: new PositionClass(x, y),
+          pieceType: currentPiece.type,
+          team: currentPiece.team,
+          capturedPiece: capturedPieceInfo
+        });
+
+        // Check for En Passant using new method
+        const isEnPassantMove = referee.checkEnPassant(candidateMove, gameState);
+        
+        // Update move with isEnPassant flag if needed
+        const moveWithEnPassant = isEnPassantMove 
+          ? new Move({ ...candidateMove, isEnPassant: true })
+          : candidateMove;
+
+        // Validate using the new Domain Logic (RuleEngine via Referee)
+        const validationResult = referee.validateMove(moveWithEnPassant, gameState);
 
         if (isEnPassantMove) {
           // Dispatch en passant move to GameContext
@@ -262,29 +266,20 @@ export default function Messboard({
             p.position.x === x && p.position.y === enPassantCaptureY
           );
           
-          const move = new Move({
-            from: new PositionClass(grabPosition.x, grabPosition.y),
-            to: new PositionClass(x, y),
-            pieceType: currentPiece.type, // No conversion needed - string enum
-            team: currentPiece.team, // No conversion needed - string enum
-            isEnPassant: true,
+          // Re-create move with correct capture info for En Passant
+          const finalMove = new Move({
+            ...candidateMove,
             capturedPiece: enPassantCapturedPiece ? {
-              type: enPassantCapturedPiece.type, // No conversion needed - string enum
+              type: enPassantCapturedPiece.type,
               position: new PositionClass(enPassantCapturedPiece.position.x, enPassantCapturedPiece.position.y)
             } : undefined
           });
-          dispatch({ type: 'MAKE_MOVE', payload: { move } });
           
-        } else if (validMove) {
-          // Dispatch regular move to GameContext (with capture info if applicable)
-          const move = new Move({
-            from: new PositionClass(grabPosition.x, grabPosition.y),
-            to: new PositionClass(x, y),
-            pieceType: currentPiece.type, // No conversion needed - string enum
-            team: currentPiece.team, // No conversion needed - string enum
-            capturedPiece: capturedPieceInfo
-          });
-          dispatch({ type: 'MAKE_MOVE', payload: { move } });
+          dispatch({ type: 'MAKE_MOVE', payload: { move: finalMove } });
+          
+        } else if (validationResult.isValid) {
+          // Dispatch regular move to GameContext
+          dispatch({ type: 'MAKE_MOVE', payload: { move: candidateMove } });
         }
         // Note: No need to reset activePiece position since it never moved
       }

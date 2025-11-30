@@ -22,7 +22,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { GameState } from '../domain/game/GameState';
 import { Move } from '../domain/core/Move';
 import { AIConfig } from '../domain/ai/interfaces';
-import { TeamType as DomainTeamType } from '../domain/core/types';
 import { GameConfig } from '../domain/game/GameConfig';
 import { useAI } from './useAI';
 

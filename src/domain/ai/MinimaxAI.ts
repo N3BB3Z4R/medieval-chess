@@ -169,7 +169,7 @@ export class MinimaxAI implements IAIPlayer {
     }
 
     // Log statistics
-    const elapsed = Date.now() - this.startTime;
+    // const elapsed = Date.now() - this.startTime;
     // console.log(`[MinimaxAI] Evaluated ${this.nodesEvaluated} nodes in ${elapsed}ms`);
     // console.log(`[MinimaxAI] Pruned ${this.pruneCount} branches`);
     // console.log(`[MinimaxAI] Best score: ${bestScore}`);
@@ -200,12 +200,12 @@ export class MinimaxAI implements IAIPlayer {
 
     // Check time limit
     if (this.isTimeUp()) {
-      return this.positionEvaluator.evaluate(gameState, ourTeam, {} as any);
+      return this.positionEvaluator.evaluate(gameState, ourTeam, undefined as any);
     }
 
     // Terminal node or depth limit reached
     if (depth === 0) {
-      return this.positionEvaluator.evaluate(gameState, ourTeam, {} as any);
+      return this.positionEvaluator.evaluate(gameState, ourTeam, undefined as any);
     }
 
     const currentTeam = gameState.getCurrentTurn();
@@ -213,7 +213,7 @@ export class MinimaxAI implements IAIPlayer {
 
     // No legal moves - terminal position
     if (legalMoves.length === 0) {
-      return this.positionEvaluator.evaluate(gameState, ourTeam, {} as any);
+      return this.positionEvaluator.evaluate(gameState, ourTeam, undefined as any);
     }
 
     // Order moves for better pruning
@@ -484,7 +484,16 @@ export class MinimaxAI implements IAIPlayer {
    */
   private getForwardBonus(move: Move): number {
     const deltaY = move.to.y - move.from.y;
-    return Math.max(0, deltaY); // Positive Y = forward for OUR team
+    
+    // Check direction based on team
+    // OUR team (White) moves DOWN (positive Y)
+    // OPPONENT team (Black) moves UP (negative Y)
+    // Note: Using string comparison to be safe with enum types
+    if ((move.team as any) === 'OUR' || (move.team as any) === 1) {
+      return Math.max(0, deltaY);
+    } else {
+      return Math.max(0, -deltaY);
+    }
   }
 
   /**

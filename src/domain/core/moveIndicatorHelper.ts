@@ -5,6 +5,10 @@
 
 import { Position } from '../../domain/core/Position';
 import { Piece, TeamType } from '../../Constants';
+import { GameState } from '../game/GameState';
+import { Move } from '../core/Move';
+import { Position as PositionClass } from '../core/Position';
+import Referee from '../../referee/Referee';
 
 export interface TileState {
   position: Position;
@@ -75,13 +79,12 @@ export function getTileClasses(
 }
 
 /**
- * Calculate all valid moves for a piece
- * This will be integrated with the Referee/RuleEngine later
+ * Calculate all valid moves for a piece using the RuleEngine
  */
 export function calculateValidMoves(
   piece: Piece,
-  allPieces: Piece[],
-  referee: any // TODO: Type this properly when Referee is refactored
+  gameState: GameState,
+  referee: Referee
 ): { validMoves: Position[]; captureMoves: Position[] } {
   const validMoves: Position[] = [];
   const captureMoves: Position[] = [];
@@ -101,22 +104,22 @@ export function calculateValidMoves(
         continue;
       }
       
+      // Construct Move object
+      const move = new Move({
+        from: new PositionClass(piece.position.x, piece.position.y),
+        to: new PositionClass(x, y),
+        pieceType: piece.type,
+        team: piece.team
+      });
+
       // Check if move is valid using referee
-      const isValid = referee.isValidMove(
-        piece.position,
-        targetPosition,
-        piece.type,
-        piece.team,
-        allPieces
-      );
+      const validation = referee.validateMove(move, gameState);
       
-      if (isValid) {
+      if (validation.isValid) {
         // Check if there's an opponent piece at target
-        const targetPiece = allPieces.find(p => 
-          Position.equals(p.position, targetPosition) && p.team !== piece.team
-        );
+        const targetPiece = gameState.getPieceAt(new PositionClass(x, y));
         
-        if (targetPiece) {
+        if (targetPiece && targetPiece.team !== piece.team) {
           captureMoves.push(new Position(x, y));
         } else {
           validMoves.push(new Position(x, y));
