@@ -28,7 +28,7 @@ interface CornerPlayerCardProps {
 
 /**
  * Ultra-compact player card for board corners.
- * Fits in the 4x4 forbidden zones of the medieval chess board.
+ * Modern, clean design with essential information only.
  */
 const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
   const {
@@ -74,7 +74,7 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
         </div>
       )}
 
-      {/* Header: Avatar + Info Principal */}
+      {/* Header: Avatar + Name + Stats */}
       <div className="corner-player-card__header">
         <div className="corner-player-card__avatar-container">
           <img 
@@ -82,7 +82,7 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
             alt={playerName}
             className="corner-player-card__avatar"
           />
-          {isActive && <div className="corner-player-card__active-indicator">●</div>}
+          {isActive && <div className="corner-player-card__active-indicator" />}
         </div>
         
         <div className="corner-player-card__main-info">
@@ -90,19 +90,21 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
             {playerName} {isAI && '🤖'}
           </div>
           
-          {/* Stats Grid */}
+          {/* Stats Grid - compact */}
           <div className="corner-player-card__stats">
-            <div className="corner-player-card__stat">
-              <span className="corner-player-card__stat-icon">⚔️</span>
+            <div className="corner-player-card__stat" title="Piezas vivas">
+              <span className="corner-player-card__stat-icon">♟️</span>
               <span className="corner-player-card__stat-value">{piecesRemaining}</span>
             </div>
-            <div className="corner-player-card__stat">
+            <div className="corner-player-card__stat" title="Puntuación">
               <span className="corner-player-card__stat-icon">⭐</span>
-              <span className="corner-player-card__stat-value">{score}</span>
+              <span className="corner-player-card__stat-value">{score}pts</span>
             </div>
             {materialAdvantage !== 0 && (
-              <div className={`corner-player-card__stat corner-player-card__stat--advantage ${materialAdvantage > 0 ? 'positive' : 'negative'}`}>
-                <span className="corner-player-card__stat-icon">📊</span>
+              <div 
+                className={`corner-player-card__stat corner-player-card__stat--advantage ${materialAdvantage > 0 ? 'positive' : 'negative'}`}
+                title="Ventaja material"
+              >
                 <span className="corner-player-card__stat-value">
                   {materialAdvantage > 0 ? '+' : ''}{materialAdvantage}
                 </span>
@@ -125,7 +127,7 @@ const CornerPlayerCard: React.FC<CornerPlayerCardProps> = ({ player }) => {
         </div>
       )}
 
-      {/* Captured Pieces Section */}
+      {/* Captured Pieces Section - with grouped display */}
       {capturedPieces.length > 0 && (
         <div className="corner-player-card__captures">
           <div className="corner-player-card__captures-header">

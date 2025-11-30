@@ -12,6 +12,19 @@ interface GroupedCapturedPiecesProps {
   pieces: Array<{ type: PieceType; image: string }>;
 }
 
+// Valores de las piezas para el cálculo de puntos
+const pieceValues: Record<PieceType, number> = {
+  [PieceType.FARMER]: 1,
+  [PieceType.RAM]: 3,
+  [PieceType.TRAP]: 2,
+  [PieceType.KNIGHT]: 4,
+  [PieceType.TEMPLAR]: 5,
+  [PieceType.SCOUT]: 3,
+  [PieceType.TREBUCHET]: 4,
+  [PieceType.TREASURE]: 0,
+  [PieceType.KING]: 0,
+};
+
 /**
  * Groups captured pieces by type and shows count multiplier.
  * Much more space-efficient than showing individual pieces.
@@ -19,12 +32,15 @@ interface GroupedCapturedPiecesProps {
  * Example: ♞x3 ♜x2 ♟x5
  */
 const GroupedCapturedPieces: React.FC<GroupedCapturedPiecesProps> = ({ pieces }) => {
-  // Group pieces by type
-  const groupedPieces = React.useMemo(() => {
+  // Group pieces by type and calculate total points
+  const { groupedPieces, totalPoints } = React.useMemo(() => {
     const groups = new Map<PieceType, CapturedPieceGroup>();
+    let points = 0;
     
     for (const piece of pieces) {
       const existing = groups.get(piece.type);
+      points += pieceValues[piece.type];
+      
       if (existing) {
         existing.count++;
       } else {
@@ -49,9 +65,12 @@ const GroupedCapturedPieces: React.FC<GroupedCapturedPiecesProps> = ({ pieces })
       [PieceType.FARMER]: 1,
     };
     
-    return Array.from(groups.values()).sort((a, b) => 
-      pieceOrder[b.type] - pieceOrder[a.type]
-    );
+    return {
+      groupedPieces: Array.from(groups.values()).sort((a, b) => 
+        pieceOrder[b.type] - pieceOrder[a.type]
+      ),
+      totalPoints: points
+    };
   }, [pieces]);
 
   if (groupedPieces.length === 0) {
@@ -75,6 +94,11 @@ const GroupedCapturedPieces: React.FC<GroupedCapturedPiecesProps> = ({ pieces })
           )}
         </div>
       ))}
+      {totalPoints > 0 && (
+        <div className="grouped-captured-pieces__total">
+          +{totalPoints}
+        </div>
+      )}
     </div>
   );
 };

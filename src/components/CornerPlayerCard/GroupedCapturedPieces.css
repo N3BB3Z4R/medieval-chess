@@ -91,6 +91,31 @@
   }
 }
 
+/* Total Points Display (chess.com style) */
+.grouped-captured-pieces__total {
+  font-size: 15px;
+  font-weight: 900;
+  color: rgb(129, 195, 65);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  background: rgba(129, 195, 65, 0.15);
+  border-radius: 6px;
+  border: 1px solid rgba(129, 195, 65, 0.3);
+  line-height: 1;
+  white-space: nowrap;
+  margin-left: auto;
+  animation: points-glow 2s ease-in-out infinite;
+}
+
+@keyframes points-glow {
+  0%, 100% {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  }
+  50% {
+    text-shadow: 0 2px 8px rgba(129, 195, 65, 0.8), 0 0 12px rgba(129, 195, 65, 0.4);
+  }
+}
+
 /* Responsive sizing */
 @media (max-width: 1400px) {
   .grouped-captured-piece__icon {
@@ -149,5 +174,10 @@
     padding: 1px 3px;
     bottom: -2px;
     right: -4px;
+  }
+  
+  .grouped-captured-pieces__total {
+    font-size: 12px;
+    padding: 3px 6px;
   }
 }

@@ -274,8 +274,8 @@ function AppContent() {
     });
   }, [playersData]);
 
-  // Determine if we should show corner cards (for 3-4 players or on user preference)
-  const showCornerCards = gameConfig.playerCount > 2;
+  // Determine if we should show corner cards (ONLY for 3-4 players, NOT for 2 players)
+  const showCornerCards = gameConfig.playerCount >= 3;
 
   // Generate detailed match type description
   const matchTypeDescription = useMemo(() => {
