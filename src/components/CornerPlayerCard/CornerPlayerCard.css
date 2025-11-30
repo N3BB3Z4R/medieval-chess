@@ -48,21 +48,21 @@
 }
 
 .corner-player-card--left {
+  top: 0;
+  right: 0;
+  border-top: 4px solid rgb(128, 141, 111);
+  border-right: 4px solid rgb(128, 141, 111);
+  border-bottom-left-radius: 16px;
+  border-top-right-radius: 0;
+}
+
+.corner-player-card--right {
   bottom: 0;
   right: 0;
   border-bottom: 4px solid rgb(128, 141, 111);
   border-right: 4px solid rgb(128, 141, 111);
   border-top-left-radius: 16px;
   border-bottom-right-radius: 0;
-}
-
-.corner-player-card--right {
-  top: 0;
-  left: 0;
-  border-top: 4px solid rgb(128, 141, 111);
-  border-left: 4px solid rgb(128, 141, 111);
-  border-bottom-right-radius: 16px;
-  border-top-left-radius: 0;
 }
 
 /* Active State - Glowing border */
