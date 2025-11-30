@@ -248,21 +248,30 @@ function AppContent() {
 
   // Prepare corner player data for board
   const cornerPlayersData = useMemo<CornerPlayerData[]>(() => {
-    return playersData.map(player => ({
-      playerName: player.profile.playerName,
-      playerAvatar: player.profile.playerAvatar,
-      playerPosition: player.profile.playerPosition as 'bottom' | 'top' | 'left' | 'right',
-      team: player.profile.team,
-      score: player.stats.score,
-      materialAdvantage: player.stats.materialAdvantage,
-      capturedPieces: player.stats.capturedPieces,
-      isActive: player.isActive,
-      piecesRemaining: player.stats.piecesRemaining,
-      isAI: player.profile.playerRange !== 'Human',
-      timePerTurn: player.timePerTurn,
-      incrementPerTurn: player.incrementPerTurn,
-      onTimeUp: player.onTimeUp
-    }));
+    // Calculate rankings based on score
+    const rankedPlayers = [...playersData].sort((a, b) => b.stats.score - a.stats.score);
+    
+    return playersData.map(player => {
+      const rank = rankedPlayers.findIndex(p => p.profile.team === player.profile.team) + 1;
+      
+      return {
+        playerName: player.profile.playerName,
+        playerAvatar: player.profile.playerAvatar,
+        playerPosition: player.profile.playerPosition as 'bottom' | 'top' | 'left' | 'right',
+        team: player.profile.team,
+        score: player.stats.score,
+        materialAdvantage: player.stats.materialAdvantage,
+        capturedPieces: player.stats.capturedPieces,
+        isActive: player.isActive,
+        piecesRemaining: player.stats.piecesRemaining,
+        isAI: player.profile.playerRange !== 'Human',
+        timePerTurn: player.timePerTurn,
+        incrementPerTurn: player.incrementPerTurn,
+        onTimeUp: player.onTimeUp,
+        rank: rank,
+        totalPlayers: playersData.length
+      };
+    });
   }, [playersData]);
 
   // Determine if we should show corner cards (for 3-4 players or on user preference)
