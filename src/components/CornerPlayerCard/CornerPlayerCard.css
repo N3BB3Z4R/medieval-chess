@@ -27,51 +27,66 @@
 .corner-player-card--bottom {
   bottom: 0;
   left: 0;
-  border-bottom: 3px solid rgba(141, 197, 63, 0.8);
+  border-bottom: 3px solid rgba(141, 197, 63, 0.9);
 }
 
 .corner-player-card--top {
   top: 0;
   right: 0;
-  border-top: 3px solid rgba(239, 68, 68, 0.8);
+  border-top: 3px solid rgba(239, 68, 68, 0.9);
 }
 
 .corner-player-card--left {
   top: 0;
   left: 0;
-  border-top: 3px solid rgba(168, 85, 247, 0.8);
+  border-top: 3px solid rgba(168, 85, 247, 0.9);
 }
 
 .corner-player-card--right {
   bottom: 0;
   right: 0;
-  border-bottom: 3px solid rgba(251, 146, 60, 0.8);
+  border-bottom: 3px solid rgba(251, 146, 60, 0.9);
 }
 
-/* Active State - Glowing border */
-.corner-player-card--active {
-  background: rgba(30, 30, 30, 0.95);
+/* Active state - subtle inner glow matching team color */
+.corner-player-card--bottom.corner-player-card--active {
   box-shadow:
     0 6px 24px rgba(0, 0, 0, 0.5),
-    0 0 0 2px rgba(255, 215, 0, 0.6),
-    0 0 20px rgba(255, 215, 0, 0.3);
+    0 0 0 2px rgba(255, 215, 0, 0.4),
+    inset 0 -40px 40px -20px rgba(141, 197, 63, 0.12);
+}
+
+.corner-player-card--top.corner-player-card--active {
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(255, 215, 0, 0.4),
+    inset 0 40px 40px -20px rgba(239, 68, 68, 0.12);
+}
+
+.corner-player-card--left.corner-player-card--active {
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(255, 215, 0, 0.4),
+    inset 0 40px 40px -20px rgba(168, 85, 247, 0.12);
+}
+
+.corner-player-card--right.corner-player-card--active {
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(255, 215, 0, 0.4),
+    inset 0 -40px 40px -20px rgba(251, 146, 60, 0.12);
+}
+
+/* Active State - Subtle background glow (mantener color del borde del equipo) */
+.corner-player-card--active {
+  /* Fondo iluminado sutilmente con un gradiente más claro */
+  background: linear-gradient(135deg, rgba(45, 45, 50, 0.95), rgba(35, 35, 40, 0.95));
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(255, 215, 0, 0.4),
+    0 0 16px rgba(255, 215, 0, 0.2),
+    inset 0 1px 0 rgba(255, 215, 0, 0.1);
   transform: scale(1.02);
-}
-
-.corner-player-card--active .corner-player-card--bottom {
-  border-bottom-color: rgba(255, 215, 0, 0.9);
-}
-
-.corner-player-card--active .corner-player-card--top {
-  border-top-color: rgba(255, 215, 0, 0.9);
-}
-
-.corner-player-card--active .corner-player-card--left {
-  border-top-color: rgba(255, 215, 0, 0.9);
-}
-
-.corner-player-card--active .corner-player-card--right {
-  border-bottom-color: rgba(255, 215, 0, 0.9);
 }
 
 /* Active Turn Pulse */
@@ -328,37 +343,37 @@
     0px 0 0 1px rgba(186, 194, 141, 0.4);
 }
 
-/* Team Colors */
+/* Team Colors - Borders más visibles */
 .corner-player-card[data-team="OUR"] .corner-player-card__avatar {
-  border-color: #10b981;
+  border-color: rgba(141, 197, 63, 0.9);
 }
 
 .corner-player-card[data-team="OUR"] .corner-player-card__rank-badge {
-  border-color: #10b981;
+  border-color: rgba(141, 197, 63, 0.9);
 }
 
 .corner-player-card[data-team="OPPONENT"] .corner-player-card__avatar {
-  border-color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.9);
 }
 
 .corner-player-card[data-team="OPPONENT"] .corner-player-card__rank-badge {
-  border-color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.9);
 }
 
 .corner-player-card[data-team="OPPONENT_2"] .corner-player-card__avatar {
-  border-color: #f59e0b;
+  border-color: rgba(251, 146, 60, 0.9);
 }
 
 .corner-player-card[data-team="OPPONENT_2"] .corner-player-card__rank-badge {
-  border-color: #f59e0b;
+  border-color: rgba(251, 146, 60, 0.9);
 }
 
 .corner-player-card[data-team="OPPONENT_3"] .corner-player-card__avatar {
-  border-color: #8b5cf6;
+  border-color: rgba(168, 85, 247, 0.9);
 }
 
 .corner-player-card[data-team="OPPONENT_3"] .corner-player-card__rank-badge {
-  border-color: #8b5cf6;
+  border-color: rgba(168, 85, 247, 0.9);
 }
 
 /* Responsive Sizing */
