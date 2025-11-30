@@ -41,11 +41,18 @@ export default function Messboard({
   const [grabPosition, setGrabPosition] = useState<Position>({ x: -1, y: -1 });
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [captureMoves, setCaptureMoves] = useState<Position[]>([]);
+  // Animated piece for AI moves
+  const [animatedPiece, setAnimatedPiece] = useState<{
+    image: string;
+    from: Position;
+    to: Position;
+  } | null>(null);
   const messboardRef = useRef<HTMLDivElement>(null);
   const referee = useMemo(() => new Referee(), []);
   const { gameState, dispatch, reviewMode, reviewSnapshot, reviewMoveIndex } = useGame();
   const currentTurn = gameState.getCurrentTurn();
   const moveHistory = gameState.getMoveHistory();
+  const lastMoveIndexRef = useRef<number>(0);
   
   // Helper functions for type conversion
   
@@ -74,6 +81,44 @@ export default function Messboard({
       enPassant: false, // Snapshots don't store enPassant flag
     }));
   }, [gameState, reviewMode, reviewSnapshot]);
+
+  // Effect to animate AI moves
+  React.useEffect(() => {
+    // Skip if in review mode or no new moves
+    if (reviewMode || moveHistory.length === 0) {
+      return;
+    }
+
+    // Check if there's a new move since last render
+    if (moveHistory.length > lastMoveIndexRef.current) {
+      // eslint-disable-next-line prefer-destructuring
+      const lastMove = moveHistory[moveHistory.length - 1];
+      lastMoveIndexRef.current = moveHistory.length;
+
+      if (!lastMove) return;
+
+      // Find the piece that moved
+      const movedPiece = pieces.find((p) =>
+        samePosition(p.position, { x: lastMove.to.x, y: lastMove.to.y })
+      );
+
+      if (movedPiece) {
+        // Trigger animation
+        setAnimatedPiece({
+          image: movedPiece.image,
+          from: { x: lastMove.from.x, y: lastMove.from.y },
+          to: { x: lastMove.to.x, y: lastMove.to.y },
+        });
+
+        // Clear animation after it completes (600ms duration)
+        const timer = setTimeout(() => {
+          setAnimatedPiece(null);
+        }, 600);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [moveHistory, pieces, reviewMode]);
 
   function handleGrabPiece(e: React.MouseEvent) {
     // Disable interaction during review mode
@@ -298,6 +343,7 @@ export default function Messboard({
     const board = [];
     
     // Get last move for highlighting
+    // eslint-disable-next-line prefer-destructuring
     const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
     
     for (let j = VERTICAL_AXIS.length - 1; j >= 0; j--) {
@@ -305,6 +351,11 @@ export default function Messboard({
         const number = j + i + 2;
         const piece = pieces.find((p) => samePosition(p.position, { x: i, y: j }));
         let image = piece ? piece.image : undefined;
+        
+        // Hide the piece at destination while it's being animated
+        if (animatedPiece && samePosition(animatedPiece.to, { x: i, y: j })) {
+          image = undefined;
+        }
         
         // Get piece info from gameState for TRAP invisibility
         const gamePiece = reviewMode && reviewSnapshot
@@ -388,6 +439,20 @@ export default function Messboard({
             className={reviewMode ? 'messboard--review-mode' : ''}
           >
             {generateBoard()}
+            
+            {/* Animated piece for AI moves */}
+            {animatedPiece && messboardRef.current && (
+              <div
+                className="mess-piece mess-piece--animated"
+                style={{
+                  backgroundImage: `url(${animatedPiece.image})`,
+                  '--from-x': `${animatedPiece.from.x * BoardConfig.GRID_SIZE}px`,
+                  '--from-y': `${(15 - animatedPiece.from.y) * BoardConfig.GRID_SIZE}px`,
+                  '--to-x': `${animatedPiece.to.x * BoardConfig.GRID_SIZE}px`,
+                  '--to-y': `${(15 - animatedPiece.to.y) * BoardConfig.GRID_SIZE}px`,
+                } as React.CSSProperties}
+              />
+            )}
             
             {/* Corner Player Cards - only show if cornerPlayers data is provided */}
             {cornerPlayers.length > 0 && cornerPlayers.map((player) => (

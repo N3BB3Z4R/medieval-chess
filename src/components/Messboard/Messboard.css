@@ -99,6 +99,44 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* ===================================
+   ANIMATED PIECE (AI MOVES)
+   =================================== */
+
+.mess-piece--animated {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 999;
+  /* Initial position (from) */
+  left: var(--from-x);
+  top: var(--from-y);
+  /* Animate to final position */
+  animation: pieceMove 600ms cubic-bezier(0.42, 0, 0.58, 1) forwards;
+  /* Add a subtle glow effect */
+  filter: drop-shadow(0 0 8px rgba(255, 255, 100, 0.6));
+}
+
+@keyframes pieceMove {
+  0% {
+    left: var(--from-x);
+    top: var(--from-y);
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    left: var(--to-x);
+    top: var(--to-y);
+    transform: scale(1);
+  }
   z-index: 500;
   pointer-events: none; /* Allow clicks to pass through to board */
   border-radius: 20%;
