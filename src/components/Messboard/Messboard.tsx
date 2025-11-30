@@ -295,6 +295,10 @@ export default function Messboard({
 
   function generateBoard() {
     const board = [];
+    
+    // Get last move for highlighting
+    const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
+    
     for (let j = VERTICAL_AXIS.length - 1; j >= 0; j--) {
       for (let i = 0; i < HORIZONTAL_AXIS.length; i++) {
         const number = j + i + 2;
@@ -315,6 +319,10 @@ export default function Messboard({
         // Check if this tile is a capture move
         const isCaptureMove = captureMoves.some((pos) => samePosition(pos, { x: i, y: j }));
         
+        // Check if this is the last move origin or destination
+        const isLastMoveOrigin = lastMove ? samePosition(lastMove.from, { x: i, y: j }) : false;
+        const isLastMoveDestination = lastMove ? samePosition(lastMove.to, { x: i, y: j }) : false;
+        
         board.push(
           <Tile 
             key={`${j},${i}`} 
@@ -328,6 +336,8 @@ export default function Messboard({
             currentTurn={currentTurn}
             pieceType={gamePiece?.type}
             pieceTeam={gamePiece?.team}
+            isLastMoveOrigin={isLastMoveOrigin}
+            isLastMoveDestination={isLastMoveDestination}
           />
         );
       }

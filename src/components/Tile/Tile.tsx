@@ -14,6 +14,8 @@ interface Props {
   currentTurn?: DomainTeamType;
   pieceType?: DomainPieceType;
   pieceTeam?: DomainTeamType;
+  isLastMoveOrigin?: boolean;
+  isLastMoveDestination?: boolean;
 }
 
 export default function Tile({ 
@@ -28,7 +30,9 @@ export default function Tile({
   isSpecialAbility = false,
   currentTurn,
   pieceType,
-  pieceTeam
+  pieceTeam,
+  isLastMoveOrigin = false,
+  isLastMoveDestination = false
 }: Props) {
     // Build CSS classes array
     const classes = ['tile'];
@@ -43,6 +47,8 @@ export default function Tile({
     if (isCaptureMove) classes.push('tile--capture-move');
     if (isUnderAttack) classes.push('tile--under-attack');
     if (isSpecialAbility) classes.push('tile--special-ability');
+    if (isLastMoveOrigin) classes.push('tile--last-move-origin');
+    if (isLastMoveDestination) classes.push('tile--last-move-destination');
     
     // TRAP INVISIBILITY: Hide opponent's TRAPs
     // Rule: "es invisible para el oponente"
