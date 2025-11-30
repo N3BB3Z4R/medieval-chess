@@ -2,3 +2,4 @@
 - Arreglar tamaño contador de piezas eliminadas en el playercard.
 - Hacer que se vean las playercards integradas en el tablero tambien en modo 2 jugadores.
 - Hacer que el boton de rendirse funcione en el playercard para cada jugador.
+- que el trinquete (el que ataque de lejos o especial) pueda atacar en las cuatro direcciones en modo 3 y 4 jugadores.
