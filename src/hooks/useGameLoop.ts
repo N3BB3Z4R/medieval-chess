@@ -11,14 +11,13 @@
  * ```typescript
  * const { isProcessingAI } = useGameLoop({
  *   gameState,
- *   gameMode: 'ai',
- *   aiConfig,
+ *   gameConfig,
  *   onMoveExecuted: (move) => executeMove(move)
  * });
  * ```
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { GameState } from '../domain/game/GameState';
 import { Move } from '../domain/core/Move';
 import { AIConfig } from '../domain/ai/interfaces';
@@ -27,11 +26,12 @@ import { useAI } from './useAI';
 
 interface UseGameLoopOptions {
   gameState: GameState;
-  gameMode: 'pvp' | 'ai';
-  aiConfig: AIConfig | null;
   gameConfig: GameConfig; // Need this to know which player is AI
   onMoveExecuted: (move: Move) => void;
   onAIThinking?: (isThinking: boolean) => void;
+  // Deprecated options kept for compatibility but ignored
+  gameMode?: 'pvp' | 'ai';
+  aiConfig?: AIConfig | null;
 }
 
 interface UseGameLoopReturn {
@@ -48,17 +48,27 @@ interface UseGameLoopReturn {
 export function useGameLoop(options: UseGameLoopOptions): UseGameLoopReturn {
   const {
     gameState,
-    gameMode,
-    aiConfig,
     gameConfig,
     onMoveExecuted,
     onAIThinking
   } = options;
 
   const [isProcessingAI, setIsProcessingAI] = useState(false);
-  const { calculateMove, isThinking, aiStats } = useAI(aiConfig);
   const processingRef = useRef(false); // Prevent multiple simultaneous AI calculations
-  const currentTurn = gameState.getCurrentTurn(); // Extract for useEffect dependency
+  
+  // Determine current AI config based on whose turn it is
+  const currentTurn = gameState.getCurrentTurn();
+  const currentPlayer = gameConfig.players.find(p => p.team === currentTurn);
+  
+  const currentAIConfig = useMemo(() => {
+    if (currentPlayer?.isAI && currentPlayer.aiConfig) {
+      return currentPlayer.aiConfig;
+    }
+    return null;
+  }, [currentPlayer]);
+
+  // Initialize AI with current player's config (if they are AI)
+  const { calculateMove, isThinking, aiStats } = useAI(currentAIConfig);
 
   // Notify parent of AI thinking state
   useEffect(() => {
@@ -78,14 +88,11 @@ export function useGameLoop(options: UseGameLoopOptions): UseGameLoopReturn {
     }
 
     const currentTurn = gameState.getCurrentTurn();
-    
-    // Find if current player is AI
     const currentPlayer = gameConfig.players.find(p => p.team === currentTurn);
-    const isAITurn = gameMode === 'ai' && currentPlayer?.isAI === true;
+    const isAITurn = currentPlayer?.isAI === true;
 
     console.log('[useGameLoop] Turn check:', {
       currentTurn,
-      gameMode,
       currentPlayer,
       isAI: currentPlayer?.isAI,
       isAITurn,
@@ -128,22 +135,23 @@ export function useGameLoop(options: UseGameLoopOptions): UseGameLoopReturn {
       processingRef.current = false;
       setIsProcessingAI(false);
     }
-  }, [gameState, gameMode, gameConfig, isProcessingAI, calculateMove, onMoveExecuted]);
+  }, [gameState, gameConfig, isProcessingAI, calculateMove, onMoveExecuted]);
 
   // Trigger AI move when turn changes
   useEffect(() => {
     const currentTurn = gameState.getCurrentTurn();
     const currentPlayer = gameConfig.players.find(p => p.team === currentTurn);
-    const isAITurn = gameMode === 'ai' && currentPlayer?.isAI === true;
+    const isAITurn = currentPlayer?.isAI === true;
     
     // Only process if it's AI's turn and not already processing
     if (isAITurn && !isProcessingAI && !processingRef.current) {
       processAITurn();
     }
-  }, [currentTurn, gameMode, gameConfig.players, isProcessingAI, processAITurn, gameState]); // Only trigger on turn or mode change
+  }, [currentTurn, gameConfig.players, isProcessingAI, processAITurn, gameState]); // Only trigger on turn or mode change
 
   return {
     isProcessingAI: isProcessingAI || isThinking,
     aiStats
   };
 }
+

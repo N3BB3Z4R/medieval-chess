@@ -3,10 +3,10 @@ import { GameState } from '../domain/game/GameState';
 import { TurnManager } from '../domain/game/TurnManager';
 import { WinConditionChecker } from '../domain/game/WinConditionChecker';
 import { GameConfig, create2PlayerGame } from '../domain/game/GameConfig';
+import { BoardFactory } from '../domain/game/BoardFactory';
 import { Move } from '../domain/core/Move';
 import { Position } from '../domain/core/Position';
 import { GameStatus, TeamType as DomainTeamType, PieceType } from '../domain/core/types';
-import { initialBoardState } from '../Constants';
 
 /**
  * Game Context for managing global game state.
@@ -23,7 +23,7 @@ import { initialBoardState } from '../Constants';
  */
 
 // Domain service instances (singleton pattern)
-const turnManager = new TurnManager();
+// const turnManager = new TurnManager(); // Moved to state
 const winConditionChecker = new WinConditionChecker();
 
 /**
@@ -104,14 +104,20 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
     }
     
     case 'RESET_GAME': {
-      // Reload initial pieces from Constants.ts
+      // Reload pieces using BoardFactory with current config
+      const pieces = BoardFactory.createBoard(state.gameConfig);
       const freshGameState = GameState.fromLegacyPieces(
-        initialBoardState,
+        pieces,
         DomainTeamType.OUR
       );
+      
+      // Reset TurnManager based on config
+      const newTurnManager = new TurnManager(state.gameConfig.playerCount);
+
       return {
         ...state,
         gameState: freshGameState,
+        turnManager: newTurnManager,
       };
     }
     
@@ -124,9 +130,23 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
     }
     
     case 'SET_CONFIG': {
+      const newConfig = action.payload;
+      
+      // Create new board based on new config
+      const pieces = BoardFactory.createBoard(newConfig);
+      const freshGameState = GameState.fromLegacyPieces(
+        pieces,
+        DomainTeamType.OUR
+      );
+      
+      // Create new TurnManager for the new player count
+      const newTurnManager = new TurnManager(newConfig.playerCount);
+
       return {
         ...state,
-        gameConfig: action.payload,
+        gameConfig: newConfig,
+        gameState: freshGameState,
+        turnManager: newTurnManager,
       };
     }
     
@@ -169,17 +189,20 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
  * Wrap your app with this to provide game state to all components.
  */
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Initialize GameState with pieces from Constants.ts
-  // fromLegacyPieces() handles the conversion internally
+  // Initialize with default 2-player game
+  const defaultConfig = create2PlayerGame();
+  
+  // Initialize GameState with pieces from BoardFactory
+  const initialPieces = BoardFactory.createBoard(defaultConfig);
   const initialGameState = GameState.fromLegacyPieces(
-    initialBoardState,
+    initialPieces,
     DomainTeamType.OUR
   );
 
   const [state, dispatch] = useReducer(gameReducer, {
-    gameState: initialGameState, // Initialize with 32 starting pieces
-    gameConfig: create2PlayerGame(), // Default: 2-player game
-    turnManager,
+    gameState: initialGameState,
+    gameConfig: defaultConfig,
+    turnManager: new TurnManager(defaultConfig.playerCount),
     winConditionChecker,
     // Time Travel initial state
     reviewMode: false,

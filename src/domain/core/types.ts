@@ -227,11 +227,10 @@ export function getDirectionForTeam(team: TeamType): DirectionVector {
       return { x: 0, y: 1 }; // Moves UP
     case TeamType.OPPONENT:
       return { x: 0, y: -1 }; // Moves DOWN
-    // Future 4-player support:
-    // case TeamType.OPPONENT_2:
-    //   return { x: 1, y: 0 }; // Moves RIGHT
-    // case TeamType.OPPONENT_3:
-    //   return { x: -1, y: 0 }; // Moves LEFT
+    case TeamType.OPPONENT_2:
+      return { x: 1, y: 0 }; // Moves RIGHT
+    case TeamType.OPPONENT_3:
+      return { x: -1, y: 0 }; // Moves LEFT
     default:
       throw new Error(`Unknown team type: ${team}`);
   }

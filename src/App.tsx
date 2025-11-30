@@ -33,10 +33,6 @@ function AppContent() {
   const [showSetup, setShowSetup] = useState(true);
   const [isMobile, setIsMobile] = useState(globalThis.innerWidth <= 768);
   
-  // AI Configuration State
-  const [gameMode, setGameMode] = useState<'pvp' | 'ai'>('pvp');
-  const [aiConfig, setAIConfig] = useState<AIConfig | undefined>(undefined);
-  
   // AI Game Loop Integration
   const handleMoveExecuted = React.useCallback((move: Move) => {
     dispatch({ 
@@ -52,8 +48,6 @@ function AppContent() {
   
   const { isProcessingAI } = useGameLoop({
     gameState,
-    gameMode,
-    aiConfig: aiConfig ?? null,
     gameConfig,
     onMoveExecuted: handleMoveExecuted,
     onAIThinking: handleAIThinking,
@@ -84,17 +78,6 @@ function AppContent() {
 
   const handleStartNewGame = (config: GameSetupConfig) => {
     console.log('[App] Starting new game with config:', config);
-    
-    // Extract AI configuration if present
-    if (config.mode && config.aiConfig) {
-      setGameMode(config.mode);
-      setAIConfig(config.aiConfig);
-      console.log('[App] AI mode enabled:', config.mode, config.aiConfig);
-    } else {
-      setGameMode('pvp');
-      setAIConfig(undefined);
-      console.log('[App] PvP mode');
-    }
     
     // Initialize game with base config
     const gameConfig: GameConfig = {
