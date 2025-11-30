@@ -6,12 +6,13 @@ import Messboard from './components/Messboard/Messboard';
 import GameSidebar from './components/GameSidebar/GameSidebar';
 import GameControlPanel from './components/GameControlPanel/GameControlPanel';
 import MoveHistory from './components/MoveHistory/MoveHistory';
-import GameSetupModal, { GameSetupConfig, AIConfig } from './components/GameSetupModal/GameSetupModal';
+import GameSetupModal, { GameSetupConfig } from './components/GameSetupModal/GameSetupModal';
 import PieceLegend from './components/PieceLegend/PieceLegend';
 import { GameProvider, useGame } from './context/GameContext';
 import { GameConfig } from './domain/game/GameConfig';
 import { GameStatus, PieceType } from './domain/core/types';
 import { PlayerProfile, PlayerStats, PlayerStatus } from './components/PlayerCard/PlayerCard';
+import { CornerPlayerData } from './components/CornerPlayerCard/CornerPlayerCard';
 import { useGameLoop } from './hooks/useGameLoop';
 import { Move } from './domain/core/Move';
 
@@ -210,6 +211,25 @@ function AppContent() {
   const ourPlayer = playersData.find(p => p.profile.team === 'OUR');
   const opponentPlayer = playersData.find(p => p.profile.team === 'OPPONENT');
 
+  // Prepare corner player data for board
+  const cornerPlayersData = useMemo<CornerPlayerData[]>(() => {
+    return playersData.map(player => ({
+      playerName: player.profile.playerName,
+      playerAvatar: player.profile.playerAvatar,
+      playerPosition: player.profile.playerPosition as 'bottom' | 'top' | 'left' | 'right',
+      team: player.profile.team,
+      score: player.stats.score,
+      materialAdvantage: player.stats.materialAdvantage,
+      capturedPieces: player.stats.capturedPieces,
+      isActive: player.isActive,
+      piecesRemaining: player.stats.piecesRemaining,
+      isAI: player.profile.playerRange !== 'Human'
+    }));
+  }, [playersData]);
+
+  // Determine if we should show corner cards (for 3-4 players or on user preference)
+  const showCornerCards = gameConfig.playerCount > 2;
+
   return (
     <div id="app">
       <header>
@@ -251,6 +271,7 @@ function AppContent() {
                 topPlayerElo={opponentPlayer?.profile.playerElo}
                 bottomPlayerElo={ourPlayer?.profile.playerElo}
                 isAIThinking={isProcessingAI}
+                cornerPlayers={showCornerCards ? cornerPlayersData : []}
               />
             </div>
           </>
@@ -266,13 +287,16 @@ function AppContent() {
                 matchType={`${playersData.length} Jugadores`}
                 timeControl={gameConfig.timePerTurn ? `${gameConfig.timePerTurn/60}min` : 'Sin límite'}
               />
-              <div className="desktop-players-compact">
-                <GameSidebar 
-                  players={playersData}
-                  moveHistory={[]} 
-                  variant="compact"
-                />
-              </div>
+              {/* Only show sidebar players if 2 players (for 3-4, use corner cards) */}
+              {!showCornerCards && (
+                <div className="desktop-players-compact">
+                  <GameSidebar 
+                    players={playersData}
+                    moveHistory={[]} 
+                    variant="compact"
+                  />
+                </div>
+              )}
             </div>
             
             {/* Center: Board */}
@@ -282,6 +306,7 @@ function AppContent() {
               topPlayerElo={opponentPlayer?.profile.playerElo}
               bottomPlayerElo={ourPlayer?.profile.playerElo}
               isAIThinking={isProcessingAI}
+              cornerPlayers={showCornerCards ? cornerPlayersData : []}
             />
             
             {/* Right Panel: Move History */}

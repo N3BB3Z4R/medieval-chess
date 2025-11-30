@@ -51,7 +51,15 @@
   grid-template-rows: repeat(16, 50px);
   width: 800px;
   height: 800px;
-  position: relative; /* Required for absolute positioning of dragged pieces */
+  position: relative; /* Required for absolute positioning of dragged pieces and corner cards */
+  overflow: visible; /* Allow corner cards to extend slightly beyond board if needed */
+}
+
+/* Corner player cards positioning adjustments */
+#messboard .corner-player-card {
+  /* Each tile is 50px, forbidden zones are 4x4 tiles = 200px */
+  max-width: 200px;
+  max-height: 200px;
 }
 
 /* tabla madera redonda bajo tablero */

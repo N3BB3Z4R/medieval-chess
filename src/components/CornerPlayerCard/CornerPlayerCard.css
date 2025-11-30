@@ -1,0 +1,297 @@
+/* ==========================================================================
+   CORNER PLAYER CARD - Ultra-compact for board corners
+   ========================================================================== */
+
+.corner-player-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background-color: rgba(129, 119, 97, 0.95);
+  background-image: url("/src/components/Messboard/wood.jpg");
+  background-position: center;
+  background-size: 200%;
+  border-radius: 12px;
+  color: rgb(245, 255, 220);
+  box-shadow:
+    inset 0px 1px 30px 5px rgb(8, 8, 8),
+    0px 0 15px 5px rgba(43, 44, 41, 0.8);
+  transition: all 0.3s ease;
+  z-index: 10;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Position variants - align to board corners */
+.corner-player-card--bottom {
+  bottom: 0;
+  left: 0;
+  border-bottom: 3px solid rgb(128, 141, 111);
+  border-left: 3px solid rgb(128, 141, 111);
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+}
+
+.corner-player-card--top {
+  top: 0;
+  right: 0;
+  border-top: 3px solid rgb(128, 141, 111);
+  border-right: 3px solid rgb(128, 141, 111);
+  border-bottom-left-radius: 12px;
+  border-top-right-radius: 0;
+}
+
+.corner-player-card--left {
+  bottom: 0;
+  right: 0;
+  border-bottom: 3px solid rgb(128, 141, 111);
+  border-right: 3px solid rgb(128, 141, 111);
+  border-top-left-radius: 12px;
+  border-bottom-right-radius: 0;
+}
+
+.corner-player-card--right {
+  top: 0;
+  left: 0;
+  border-top: 3px solid rgb(128, 141, 111);
+  border-left: 3px solid rgb(128, 141, 111);
+  border-bottom-right-radius: 12px;
+  border-top-left-radius: 0;
+}
+
+/* Active State - Glowing border */
+.corner-player-card--active {
+  border-color: rgb(186, 194, 141);
+  box-shadow:
+    inset 0px 1px 30px 5px rgb(8, 8, 8),
+    0px 0 20px 8px rgba(186, 194, 141, 0.6);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0px 1px 30px 5px rgb(8, 8, 8),
+      0px 0 20px 8px rgba(186, 194, 141, 0.6);
+  }
+  50% {
+    box-shadow:
+      inset 0px 1px 30px 5px rgb(8, 8, 8),
+      0px 0 30px 12px rgba(186, 194, 141, 0.8);
+  }
+}
+
+/* Active Turn Pulse */
+.corner-player-card__pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: pulse-animation 2s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes pulse-animation {
+  0%, 100% {
+    background: rgba(186, 194, 141, 0.1);
+  }
+  50% {
+    background: rgba(186, 194, 141, 0.3);
+  }
+}
+
+/* Header Layout */
+.corner-player-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.corner-player-card__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(186, 194, 141, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.corner-player-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.corner-player-card__name {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(228, 255, 177);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.corner-player-card__pieces {
+  font-size: 10px;
+  color: rgba(228, 255, 177, 0.7);
+  font-weight: 500;
+}
+
+.corner-player-card__score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.corner-player-card__score-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: rgb(228, 255, 177);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  line-height: 1;
+}
+
+.corner-player-card__advantage {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.corner-player-card__advantage.positive {
+  color: #34d399;
+}
+
+.corner-player-card__advantage.negative {
+  color: #fca5a5;
+}
+
+/* Captured Pieces Row */
+.corner-player-card__captured {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(186, 194, 141, 0.3) rgba(0, 0, 0, 0.2);
+}
+
+.corner-player-card__captured::-webkit-scrollbar {
+  height: 4px;
+}
+
+.corner-player-card__captured::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.corner-player-card__captured::-webkit-scrollbar-thumb {
+  background: rgba(186, 194, 141, 0.3);
+  border-radius: 2px;
+}
+
+.corner-player-card__piece-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.corner-player-card__more {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(228, 255, 177, 0.7);
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+/* Hover Effect */
+.corner-player-card:hover {
+  background-position: center;
+  transform: scale(1.05);
+  z-index: 15;
+}
+
+/* Team-specific accents */
+.corner-player-card[data-team="OUR"] .corner-player-card__avatar {
+  border-color: #10b981;
+}
+
+.corner-player-card[data-team="OPPONENT"] .corner-player-card__avatar {
+  border-color: #ef4444;
+}
+
+.corner-player-card[data-team="OPPONENT_2"] .corner-player-card__avatar {
+  border-color: #f59e0b;
+}
+
+.corner-player-card[data-team="OPPONENT_3"] .corner-player-card__avatar {
+  border-color: #8b5cf6;
+}
+
+/* Responsive Sizing */
+@media (max-width: 1200px) {
+  .corner-player-card {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .corner-player-card__avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .corner-player-card__name {
+    font-size: 11px;
+  }
+
+  .corner-player-card__score-value {
+    font-size: 14px;
+  }
+
+  .corner-player-card__piece-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .corner-player-card {
+    padding: 5px;
+    gap: 3px;
+  }
+
+  .corner-player-card__avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .corner-player-card__name {
+    font-size: 10px;
+  }
+
+  .corner-player-card__pieces {
+    font-size: 9px;
+  }
+
+  .corner-player-card__score-value {
+    font-size: 13px;
+  }
+
+  .corner-player-card__piece-icon {
+    width: 14px;
+    height: 14px;
+  }
+}

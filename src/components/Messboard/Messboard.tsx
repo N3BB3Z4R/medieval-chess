@@ -18,6 +18,7 @@ import { calculateValidMoves } from '../../domain/core/moveIndicatorHelper';
 import { useGame, useResetGame } from '../../context/GameContext';
 import { Move } from '../../domain/core/Move';
 import GameOverModal from '../GameOverModal/GameOverModal';
+import CornerPlayerCard, { CornerPlayerData } from '../CornerPlayerCard/CornerPlayerCard';
 
 interface MessboardProps {
   topPlayerName?: string;
@@ -25,6 +26,7 @@ interface MessboardProps {
   topPlayerElo?: number;
   bottomPlayerElo?: number;
   isAIThinking?: boolean;
+  cornerPlayers?: CornerPlayerData[]; // Array of 2-4 players for corner display
 }
 
 export default function Messboard({ 
@@ -32,7 +34,8 @@ export default function Messboard({
   bottomPlayerName,
   topPlayerElo,
   bottomPlayerElo,
-  isAIThinking = false 
+  isAIThinking = false,
+  cornerPlayers = []
 }: MessboardProps = {}) {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [ghostPiece, setGhostPiece] = useState<HTMLElement | null>(null);
@@ -377,6 +380,14 @@ export default function Messboard({
             className={reviewMode ? 'messboard--review-mode' : ''}
           >
             {generateBoard()}
+            
+            {/* Corner Player Cards - only show if cornerPlayers data is provided */}
+            {cornerPlayers.length > 0 && cornerPlayers.map((player) => (
+              <CornerPlayerCard 
+                key={`${player.team}-${player.playerPosition}`}
+                player={player}
+              />
+            ))}
           </div>
         </div>
         
