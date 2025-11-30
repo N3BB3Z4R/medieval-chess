@@ -140,7 +140,7 @@ export function useGameLoop(options: UseGameLoopOptions): UseGameLoopReturn {
     if (isAITurn && !isProcessingAI && !processingRef.current) {
       processAITurn();
     }
-  }, [currentTurn, gameMode]); // Only trigger on turn or mode change
+  }, [currentTurn, gameMode, gameConfig.players, isProcessingAI, processAITurn, gameState]); // Only trigger on turn or mode change
 
   return {
     isProcessingAI: isProcessingAI || isThinking,

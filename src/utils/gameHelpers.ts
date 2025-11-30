@@ -118,7 +118,7 @@ export function isInCheck(team: TeamType, gameState: GameState): boolean {
   }
   
   // Check if any opponent piece threatens king
-  const opponentPieces = allPieces.filter(p => (p.team as any) !== team);
+  // const opponentPieces = allPieces.filter(p => (p.team as any) !== team);
   
   // Simple check: see if opponent has piece that could move to king's position
   // TODO: Use proper move validation when integrated

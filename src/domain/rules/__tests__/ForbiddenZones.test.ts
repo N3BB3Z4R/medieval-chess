@@ -58,8 +58,7 @@ describe('RuleEngine - Forbidden Zones', () => {
     // Let's just check that it doesn't return the forbidden zone error
     const result = ruleEngine.validate(move, gameState);
     
-    if (!result.isValid) {
-      expect(result.reason).not.toBe('Cannot move to forbidden zone');
-    }
+    const isForbiddenZoneError = !result.isValid && result.reason === 'Cannot move to forbidden zone';
+    expect(isForbiddenZoneError).toBe(false);
   });
 });

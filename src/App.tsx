@@ -15,6 +15,19 @@ import { PlayerProfile, PlayerStats, PlayerStatus } from './components/PlayerCar
 import { useGameLoop } from './hooks/useGameLoop';
 import { Move } from './domain/core/Move';
 
+// Piece values for material advantage calculation
+const pieceValues: Record<PieceType, number> = {
+  [PieceType.FARMER]: 1,
+  [PieceType.RAM]: 3,
+  [PieceType.TRAP]: 2,
+  [PieceType.KNIGHT]: 4,
+  [PieceType.TEMPLAR]: 5,
+  [PieceType.SCOUT]: 3,
+  [PieceType.TREBUCHET]: 4,
+  [PieceType.TREASURE]: 0,
+  [PieceType.KING]: 0, // King is invaluable
+};
+
 function AppContent() {
   const { gameState, gameConfig, dispatch } = useGame();
   const [showSetup, setShowSetup] = useState(true);
@@ -45,19 +58,6 @@ function AppContent() {
     onMoveExecuted: handleMoveExecuted,
     onAIThinking: handleAIThinking,
   });
-  
-  // Piece values for material advantage calculation
-  const pieceValues: Record<PieceType, number> = {
-    [PieceType.FARMER]: 1,
-    [PieceType.RAM]: 3,
-    [PieceType.TRAP]: 2,
-    [PieceType.KNIGHT]: 4,
-    [PieceType.TEMPLAR]: 5,
-    [PieceType.SCOUT]: 3,
-    [PieceType.TREBUCHET]: 4,
-    [PieceType.TREASURE]: 0,
-    [PieceType.KING]: 0, // King is invaluable
-  };
   
   // Helper to map piece type to image filename
   const mapPieceTypeToImage = (type: PieceType): string => {
@@ -221,7 +221,7 @@ function AppContent() {
         },
       };
     });
-  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, pieceValues, isProcessingAI]);
+  }, [gameConfig, currentTurn, moveHistory, dispatch, gameState, isProcessingAI]);
 
   // Get player names for board labels (Chess.com style)
   const ourPlayer = playersData.find(p => p.profile.team === 'OUR');
