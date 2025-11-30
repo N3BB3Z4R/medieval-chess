@@ -195,11 +195,12 @@ export default class Referee {
       
       const result = this.ruleEngine.validate(move, gameState);
       
-      if (result.isValid) {
-        console.log("Valid Move!");
-      } else if (result.reason) {
-        console.log(`Invalid move: ${result.reason}`);
-      }
+      // Uncomment for debugging move validation:
+      // if (result.isValid) {
+      //   console.log("Valid Move!");
+      // } else if (result.reason) {
+      //   console.log(`Invalid move: ${result.reason}`);
+      // }
       
       return result.isValid;
     } catch (error) {

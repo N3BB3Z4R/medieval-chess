@@ -46,7 +46,7 @@
 
 import { GameState } from '../game/GameState';
 import { Move } from '../core/Move';
-import { TeamType, PieceType } from '../../Constants';
+import { TeamType } from '../../Constants';
 import { 
   IAIPlayer, 
   AIConfig, 
@@ -86,10 +86,10 @@ export class MinimaxAI implements IAIPlayer {
   private pruneCount: number = 0;
   
   // Killer moves: Store two best non-capture moves per depth level
-  private killerMoves: Map<number, [Move | null, Move | null]> = new Map();
+  private readonly killerMoves: Map<number, [Move | null, Move | null]> = new Map();
   
   // History heuristic: Track move success rates
-  private historyTable: Map<string, number> = new Map();
+  private readonly historyTable: Map<string, number> = new Map();
 
   constructor(
     private readonly config: AIConfig,
@@ -170,9 +170,9 @@ export class MinimaxAI implements IAIPlayer {
 
     // Log statistics
     const elapsed = Date.now() - this.startTime;
-    console.log(`[MinimaxAI] Evaluated ${this.nodesEvaluated} nodes in ${elapsed}ms`);
-    console.log(`[MinimaxAI] Pruned ${this.pruneCount} branches`);
-    console.log(`[MinimaxAI] Best score: ${bestScore}`);
+    // console.log(`[MinimaxAI] Evaluated ${this.nodesEvaluated} nodes in ${elapsed}ms`);
+    // console.log(`[MinimaxAI] Pruned ${this.pruneCount} branches`);
+    // console.log(`[MinimaxAI] Best score: ${bestScore}`);
 
     return bestMove;
   }
@@ -370,7 +370,7 @@ export class MinimaxAI implements IAIPlayer {
     // Check if victim is opponent (not same team)
     if (victim.team === move.team) return 0; // Same team, not a capture
     
-    const victimValue = getPieceValue(victim.type as PieceType);
+    const victimValue = getPieceValue(victim.type);
     const attackerValue = getPieceValue(move.pieceType);
     
     // MVV-LVA: Victim value minus (attacker value / 10)
@@ -419,7 +419,8 @@ export class MinimaxAI implements IAIPlayer {
     
     // Decay old history to prevent stale data
     if (this.historyTable.size > 1000) {
-      for (const [k, v] of this.historyTable.entries()) {
+      const entries = Array.from(this.historyTable.entries());
+      for (const [k, v] of entries) {
         this.historyTable.set(k, Math.floor(v * 0.9));
       }
     }

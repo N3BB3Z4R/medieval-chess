@@ -46,8 +46,8 @@ export class MoveGenerator implements IMoveGenerator {
   generateLegalMoves(gameState: GameState, forTeam: TeamType): Move[] {
     const pieces = gameState.getPiecesForTeam(forTeam as any);
     
-    console.log('[MoveGenerator] Generating moves for team:', forTeam);
-    console.log('[MoveGenerator] Pieces found:', pieces.length, pieces);
+    // console.log('[MoveGenerator] Generating moves for team:', forTeam);
+    // console.log('[MoveGenerator] Pieces found:', pieces.length, pieces);
     
     const allMoves: Move[] = [];
     let debuggedFirst = false;
@@ -57,11 +57,11 @@ export class MoveGenerator implements IMoveGenerator {
       if (!debuggedFirst && piece.type === 'FARMER') {
         debuggedFirst = true;
       }
-      console.log(`[MoveGenerator] Piece ${piece.type} at (${piece.position.x},${piece.position.y}): ${pieceMoves.length} moves`);
+      // console.log(`[MoveGenerator] Piece ${piece.type} at (${piece.position.x},${piece.position.y}): ${pieceMoves.length} moves`);
       allMoves.push(...pieceMoves);
     }
 
-    console.log('[MoveGenerator] Total legal moves:', allMoves.length);
+    // console.log('[MoveGenerator] Total legal moves:', allMoves.length);
     return allMoves;
   }
 
@@ -77,8 +77,8 @@ export class MoveGenerator implements IMoveGenerator {
     
     // Debug first FARMER
     if (debug) {
-      console.log(`[MoveGenerator] DEBUG ${piece.type} at (${from.x},${from.y}), team: ${piece.team}`);
-      console.log(`[MoveGenerator] Candidates (${candidates.length}):`, candidates);
+      // console.log(`[MoveGenerator] DEBUG ${piece.type} at (${from.x},${from.y}), team: ${piece.team}`);
+      // console.log(`[MoveGenerator] Candidates (${candidates.length}):`, candidates);
     }
 
     // Validate each candidate using RuleEngine
@@ -93,7 +93,7 @@ export class MoveGenerator implements IMoveGenerator {
 
       // Debug first FARMER
       if (debug) {
-        console.log(`[MoveGenerator]   -> (${to.x},${to.y}): ${validation.isValid ? 'VALID ✓' : 'INVALID ✗'} ${validation.isValid ? '' : '- ' + validation.reason}`);
+        // console.log(`[MoveGenerator]   -> (${to.x},${to.y}): ${validation.isValid ? 'VALID ✓' : 'INVALID ✗'} ${validation.isValid ? '' : '- ' + validation.reason}`);
       }
 
       if (validation.isValid) {
@@ -155,7 +155,7 @@ export class MoveGenerator implements IMoveGenerator {
     const direction = this.getForwardDirection(team);
     const candidates: Position[] = [];
     
-    console.log('[generateFarmerCandidates] Input:', { pos, team, direction });
+    // console.log('[generateFarmerCandidates] Input:', { pos, team, direction });
     
     // Try to create positions, catching errors for invalid coordinates
     const potentialMoves = [
@@ -164,16 +164,16 @@ export class MoveGenerator implements IMoveGenerator {
       { x: pos.x - 1, y: pos.y + direction }
     ];
     
-    console.log('[generateFarmerCandidates] Potential moves:', potentialMoves);
+    // console.log('[generateFarmerCandidates] Potential moves:', potentialMoves);
     
     for (const move of potentialMoves) {
-      console.log('[generateFarmerCandidates] Checking:', move, 'isValid:', Position.isValid(move.x, move.y));
+      // console.log('[generateFarmerCandidates] Checking:', move, 'isValid:', Position.isValid(move.x, move.y));
       if (Position.isValid(move.x, move.y)) {
         candidates.push(new Position(move.x, move.y));
       }
     }
     
-    console.log('[generateFarmerCandidates] Final candidates:', candidates);
+    // console.log('[generateFarmerCandidates] Final candidates:', candidates);
     
     return candidates;
   }
@@ -295,7 +295,13 @@ export class MoveGenerator implements IMoveGenerator {
     const allDirections = Object.values(DIRECTIONS);
 
     for (const dir of allDirections) {
-      candidates.push(new Position(pos.x + dir.x, pos.y + dir.y));
+      const newX = pos.x + dir.x;
+      const newY = pos.y + dir.y;
+      
+      // Validate position is within board bounds before creating Position object
+      if (Position.isValid(newX, newY)) {
+        candidates.push(new Position(newX, newY));
+      }
     }
     return candidates;
   }
@@ -312,7 +318,7 @@ export class MoveGenerator implements IMoveGenerator {
    */
   private getForwardDirection(team: TeamType): number {
     // OUR team moves up (y increases), OPPONENT moves down
-    console.log('[getForwardDirection] team:', team, 'TeamType.OUR:', TeamType.OUR, 'equals:', team === TeamType.OUR);
+    // console.log('[getForwardDirection] team:', team, 'TeamType.OUR:', TeamType.OUR, 'equals:', team === TeamType.OUR);
     return team === TeamType.OUR ? 1 : -1;
   }
 
