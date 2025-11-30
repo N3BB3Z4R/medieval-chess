@@ -286,8 +286,8 @@
 .corner-player-card__clock-container {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 4px;
+  gap: 3px;
+  padding: 1px 2px;
   background: transparent;
   border-radius: 0;
   border: none !important;
@@ -301,10 +301,10 @@
 }
 
 .corner-player-card__clock-label {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
-  color: rgba(200, 200, 200, 0.7);
-  letter-spacing: 0.3px;
+  color: rgba(180, 180, 180, 0.6);
+  letter-spacing: 0.2px;
 }
 
 /* Captures Section */

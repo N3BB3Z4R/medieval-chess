@@ -1,33 +1,35 @@
 .board-clock {
-  background-color: rgb(50, 67, 61);
-  color: rgb(228, 255, 177);
-  border-left: 2px rgb(228, 255, 177) solid;
-  padding: 1.3rem 0.7rem 0.5rem 0.7rem;
-  margin-top: -1rem;
-  border-radius: 0 0 1rem 1rem;
-  font-weight: 300;
-  font-size: 1.5rem;
-  overflow: hidden;
-  width: 4rem;
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  transition: all 0.3s ease;
+  justify-content: center;
+  gap: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgb(220, 220, 220);
+  padding: 1px 3px;
+  background: transparent;
+  border-radius: 3px;
+  min-width: 40px;
+  text-align: center;
+  line-height: 1;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
 }
 
 /* Low time warning (≤20 seconds) */
 .board-clock--low {
-  background-color: rgb(139, 92, 0);
-  color: rgb(255, 220, 120);
-  border-left-color: rgb(255, 220, 120);
+  color: rgb(255, 200, 100);
+  background: transparent;
   animation: pulse-low 1s ease-in-out infinite;
 }
 
 /* Critical time warning (≤10 seconds) */
 .board-clock--critical {
-  background-color: rgb(153, 27, 27);
-  color: rgb(254, 202, 202);
-  border-left-color: rgb(254, 202, 202);
+  color: rgb(255, 100, 100);
+  background: transparent;
   animation: pulse-critical 0.5s ease-in-out infinite;
 }
 
@@ -36,17 +38,15 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.7;
   }
 }
 
 @keyframes pulse-critical {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.05);
+    opacity: 0.5;
   }
 }
