@@ -306,7 +306,15 @@ export class GameState implements GameStateReader, GameStateWriter {
       ];
       
       for (const offset of adjacentOffsets) {
-        const checkPos = new Position(move.to.x + offset.dx, move.to.y + offset.dy);
+        const checkX = move.to.x + offset.dx;
+        const checkY = move.to.y + offset.dy;
+        
+        // Skip invalid positions (off-board)
+        if (!Position.isValid(checkX, checkY)) {
+          continue;
+        }
+
+        const checkPos = new Position(checkX, checkY);
         const adjacentPiece = newPieces.find(p => Position.equals(p.position, checkPos));
         
         // If adjacent piece is enemy TRAP, remove it (deactivate)
