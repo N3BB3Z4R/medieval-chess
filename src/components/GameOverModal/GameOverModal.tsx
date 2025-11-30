@@ -108,11 +108,12 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
                       {player.playerName} {player.isAI && '🤖'}
                     </div>
                     <div className="game-over-modal__player-stats">
-                      {player.capturedPiecesCount} capturas • {player.piecesRemaining} vivas
+                      {player.capturedPiecesCount} {player.capturedPiecesCount === 1 ? 'captura' : 'capturas'} • {player.piecesRemaining} {player.piecesRemaining === 1 ? 'viva' : 'vivas'}
                     </div>
                   </div>
-                  <div className="game-over-modal__score">
-                    {player.score}
+                  <div className="game-over-modal__score" title={`${player.score} puntos de material capturado`}>
+                    <span className="game-over-modal__score-value">{player.score}</span>
+                    <span className="game-over-modal__score-label">pts</span>
                   </div>
                 </div>
               ))}

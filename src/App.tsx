@@ -145,6 +145,13 @@ function AppContent() {
       }
     }
     
+    // Debug: log captures for verification
+    console.log('[App] Captured pieces by player:', Array.from(capturesByTeam.entries()).map(([team, pieces]) => ({
+      team,
+      count: pieces.length,
+      totalValue: pieces.reduce((sum, p) => sum + pieceValues[p.type], 0)
+    })));
+    
     return capturesByTeam;
   }, [moveHistory, gameConfig.players]);
 
@@ -302,7 +309,7 @@ function AppContent() {
 
   // Prepare leaderboard data for GameOverModal
   const playerScoresForLeaderboard = useMemo<PlayerScore[]>(() => {
-    return playersData.map(player => ({
+    const scores = playersData.map(player => ({
       playerName: player.profile.playerName,
       playerAvatar: player.profile.playerAvatar,
       team: player.profile.team,
@@ -311,7 +318,14 @@ function AppContent() {
       piecesRemaining: player.stats.piecesRemaining,
       isAI: player.profile.playerRange !== 'Human'
     }));
-  }, [playersData]);
+    
+    // Debug: log final scores when game ends
+    if (gameStatus !== GameStatus.IN_PROGRESS && gameStatus !== GameStatus.NOT_STARTED) {
+      console.log('[App] Final leaderboard:', scores);
+    }
+    
+    return scores;
+  }, [playersData, gameStatus]);
 
   return (
     <div id="app">
